@@ -301,7 +301,7 @@ export default function ProfileScreen() {
             <View style={styles.avatarWrapper}>
               <View style={styles.avatarRing}>
                 <Image
-                  source={{ uri: AVATAR_URI }}
+                  source={{ uri: profile?.avatar_url || AVATAR_URI }}
                   style={styles.avatarImage}
                 />
               </View>
