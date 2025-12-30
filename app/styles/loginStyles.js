@@ -101,8 +101,29 @@ export const loginStyles = StyleSheet.create({
     height: "100%",
     justifyContent: "center",
   },
+  rememberForgotRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  rememberMe: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  rememberMeText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  rememberMeTextLight: {
+    color: "#64748b",
+  },
+  rememberMeTextDark: {
+    color: "#94a3b8",
+  },
   forgot: {
-    alignItems: "flex-end",
+    alignSelf: "center",
   },
   forgotText: {
     color: PRIMARY,
@@ -161,3 +182,4 @@ export const loginStyles = StyleSheet.create({
     fontWeight: "700",
   },
 });
+export default loginStyles;

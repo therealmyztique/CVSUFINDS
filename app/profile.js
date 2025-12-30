@@ -1,16 +1,17 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ActivityIndicator,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 
 import { supabase } from "../lib/supabaseClient";
@@ -51,7 +52,9 @@ export default function ProfileScreen() {
 
       if (userError) {
         if (mountedRef.current) {
-          setProfileError(userError.message ?? "Unable to identify the current user.");
+          setProfileError(
+            userError.message ?? "Unable to identify the current user."
+          );
         }
         return;
       }
@@ -74,7 +77,9 @@ export default function ProfileScreen() {
       }
 
       if (profileFetchError) {
-        setProfileError(profileFetchError.message ?? "Unable to load profile details.");
+        setProfileError(
+          profileFetchError.message ?? "Unable to load profile details."
+        );
         setProfile(null);
         return;
       }
@@ -102,8 +107,10 @@ export default function ProfileScreen() {
   );
 
   const fullName = useMemo(() => {
-    const first = typeof profile?.first_name === "string" ? profile.first_name.trim() : "";
-    const last = typeof profile?.last_name === "string" ? profile.last_name.trim() : "";
+    const first =
+      typeof profile?.first_name === "string" ? profile.first_name.trim() : "";
+    const last =
+      typeof profile?.last_name === "string" ? profile.last_name.trim() : "";
     const combined = [first, last].filter(Boolean).join(" ");
 
     if (combined) {
@@ -118,12 +125,14 @@ export default function ProfileScreen() {
   }, [profile]);
 
   const courseText = useMemo(() => {
-    const course = typeof profile?.course === "string" ? profile.course.trim() : "";
+    const course =
+      typeof profile?.course === "string" ? profile.course.trim() : "";
     if (course) {
       return course;
     }
 
-    const program = typeof profile?.program === "string" ? profile.program.trim() : "";
+    const program =
+      typeof profile?.program === "string" ? profile.program.trim() : "";
     if (program) {
       return program;
     }
@@ -134,7 +143,8 @@ export default function ProfileScreen() {
   const academicDetails = useMemo(() => {
     const details = [];
     const yearLevel = profile?.year_level;
-    const yearText = typeof yearLevel === "string" ? yearLevel.trim() : yearLevel;
+    const yearText =
+      typeof yearLevel === "string" ? yearLevel.trim() : yearLevel;
     if (yearText) {
       details.push(String(yearText));
     }
@@ -142,15 +152,24 @@ export default function ProfileScreen() {
     const sectionRaw = profile?.section;
     const section = typeof sectionRaw === "string" ? sectionRaw.trim() : "";
     if (section) {
-      details.push(section.toLowerCase().startsWith("section") ? section : `Section ${section}`);
+      details.push(
+        section.toLowerCase().startsWith("section")
+          ? section
+          : `Section ${section}`
+      );
     }
 
-    const studentNumber = typeof profile?.student_number === "string" ? profile.student_number.trim() : "";
+    const studentNumber =
+      typeof profile?.student_number === "string"
+        ? profile.student_number.trim()
+        : "";
     if (!details.length && studentNumber) {
       details.push(`Student No. ${studentNumber}`);
     }
 
-    return details.length ? details.join(" · ") : "Update your academic details";
+    return details.length
+      ? details.join(" · ")
+      : "Update your academic details";
   }, [profile]);
 
   const contactItems = useMemo(() => {
@@ -281,7 +300,10 @@ export default function ProfileScreen() {
 
             <View style={styles.avatarWrapper}>
               <View style={styles.avatarRing}>
-                <Image source={{ uri: AVATAR_URI }} style={styles.avatarImage} />
+                <Image
+                  source={{ uri: AVATAR_URI }}
+                  style={styles.avatarImage}
+                />
               </View>
             </View>
 
@@ -415,6 +437,7 @@ export default function ProfileScreen() {
                     setProfileError(error.message ?? "Unable to log out.");
                     return;
                   }
+                  await AsyncStorage.removeItem("token");
                   router.replace("/login");
                 } catch (logoutError) {
                   setProfileError(logoutError.message ?? "Unable to log out.");
@@ -485,7 +508,9 @@ export default function ProfileScreen() {
 
           <TouchableOpacity style={styles.navButton} activeOpacity={0.85}>
             <MaterialIcons name="person" size={26} color="#2bee79" />
-            <Text style={[styles.navLabel, styles.navLabelActive]}>Profile</Text>
+            <Text style={[styles.navLabel, styles.navLabelActive]}>
+              Profile
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

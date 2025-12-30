@@ -377,3 +377,5 @@ export const homeStyles = StyleSheet.create({
     color: MUTED_DARK,
   },
 });
+
+export default homeStyles;

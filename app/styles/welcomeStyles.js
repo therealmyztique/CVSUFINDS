@@ -37,7 +37,7 @@ export const welcomeStyles = StyleSheet.create({
 
   /* ---------- Logo ---------- */
   logoSection: {
-    alignItems: "center"
+    alignItems: "center",
   },
 
   logoWrapper: {
@@ -184,3 +184,5 @@ export const welcomeStyles = StyleSheet.create({
     color: "#64748b",
   },
 });
+
+export default welcomeStyles;

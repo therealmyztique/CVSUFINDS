@@ -150,3 +150,5 @@ export const editProfileStyles = StyleSheet.create({
     gap: 12,
   },
 });
+
+export default editProfileStyles;
