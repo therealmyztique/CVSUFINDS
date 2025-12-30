@@ -8,6 +8,10 @@ const LIGHT_TEXT = "#0f172a";
 const DARK_TEXT = "#f8fafc";
 const MUTED_LIGHT = "#64748b";
 const MUTED_DARK = "#94a3b8";
+const ERROR_LIGHT = "#b91c1c";
+const ERROR_DARK = "#fca5a5";
+const INFO_LIGHT = "#0f766e";
+const INFO_DARK = "#5eead4";
 
 export const signupStyles = StyleSheet.create({
   container: {
@@ -61,8 +65,11 @@ export const signupStyles = StyleSheet.create({
     width: 40,
     height: 40,
   },
-  content: {
+  contentScroll: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     paddingHorizontal: 24,
     paddingTop: 48,
     paddingBottom: 200,
@@ -132,6 +139,12 @@ export const signupStyles = StyleSheet.create({
     position: "relative",
     justifyContent: "center",
   },
+  eyeButton: {
+    position: "absolute",
+    right: 16,
+    height: "100%",
+    justifyContent: "center",
+  },
   input: {
     height: 56,
     borderRadius: 999,
@@ -183,6 +196,26 @@ export const signupStyles = StyleSheet.create({
   },
   dateTextDark: {
     color: DARK_TEXT,
+  },
+  helperText: {
+    fontSize: 12,
+    marginTop: 6,
+    marginLeft: 8,
+  },
+  helperTextLight: {
+    color: MUTED_LIGHT,
+  },
+  helperTextDark: {
+    color: MUTED_DARK,
+  },
+  helperTextError: {
+    fontWeight: "600",
+  },
+  helperTextErrorLight: {
+    color: ERROR_LIGHT,
+  },
+  helperTextErrorDark: {
+    color: ERROR_DARK,
   },
   termsRow: {
     flexDirection: "row",
@@ -256,6 +289,9 @@ export const signupStyles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
+  signUpButtonDisabled: {
+    opacity: 0.65,
+  },
   signUpButtonText: {
     fontSize: 18,
     fontWeight: "800",
@@ -275,6 +311,30 @@ export const signupStyles = StyleSheet.create({
   },
   footerLink: {
     color: PRIMARY,
+  },
+  feedbackText: {
+    textAlign: "center",
+    fontSize: 13,
+    marginBottom: 12,
+    fontWeight: "600",
+  },
+  feedbackError: {
+    marginBottom: 12,
+  },
+  feedbackErrorLight: {
+    color: ERROR_LIGHT,
+  },
+  feedbackErrorDark: {
+    color: ERROR_DARK,
+  },
+  feedbackInfo: {
+    marginBottom: 16,
+  },
+  feedbackInfoLight: {
+    color: INFO_LIGHT,
+  },
+  feedbackInfoDark: {
+    color: INFO_DARK,
   },
   iosPickerBackdrop: {
     position: "absolute",
