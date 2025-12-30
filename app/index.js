@@ -24,6 +24,7 @@ export default function WelcomeScreen() {
 
     checkAuth();
   }, []);
+  console.log("Token:", token);
 
   return (
     <View
