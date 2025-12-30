@@ -1,5 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import DateTimePicker, {
+  DateTimePickerAndroid,
+} from "@react-native-community/datetimepicker";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -45,7 +47,8 @@ const DARK_BORDER_COLOR = "#326747";
 const LIGHT_TEXT_COLOR = "#0f172a";
 const DARK_TEXT_COLOR = "#f8fafc";
 
-const BASE64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const BASE64_ALPHABET =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 const decodeBase64ToUint8Array = (base64) => {
   if (!base64) {
@@ -102,26 +105,14 @@ const createImageBlob = async (asset, contentType) => {
     return response.blob();
   }
 
+  // For React Native, return the base64 string - we'll handle it differently in upload
   const base64Data =
     asset.base64 ||
     (await FileSystem.readAsStringAsync(asset.uri, {
       encoding: FileSystem.EncodingType.Base64,
     }));
 
-  const byteArray = decodeBase64ToUint8Array(base64Data);
-
-  try {
-    if (Platform.OS === "web" && typeof Blob === "function") {
-      return new Blob([byteArray], { type: contentType });
-    }
-    if (typeof Blob === "function") {
-      return new Blob([byteArray.buffer], { type: contentType });
-    }
-  } catch (_error) {
-    // Fall through to typed array return below when Blob construction fails.
-  }
-
-  return byteArray.buffer;
+  return base64Data;
 };
 
 export default function ReportFoundScreen() {
@@ -199,7 +190,8 @@ export default function ReportFoundScreen() {
 
   const handlePickImage = async () => {
     try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
         Alert.alert(
           "Permission needed",
@@ -209,7 +201,7 @@ export default function ReportFoundScreen() {
       }
 
       const pickerResult = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ["images"],
         allowsEditing: true,
         quality: 0.8,
         base64: true,
@@ -221,7 +213,10 @@ export default function ReportFoundScreen() {
 
       setImageAsset(pickerResult.assets[0]);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to pick image right now.";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to pick image right now.";
       Alert.alert("Image picker error", message);
     }
   };
@@ -231,8 +226,17 @@ export default function ReportFoundScreen() {
       return;
     }
 
-    if (!itemName.trim() || !category || !location.trim() || !dateTime || !contactInfo.trim()) {
-      Alert.alert("Missing details", "Please fill in all required fields before submitting.");
+    if (
+      !itemName.trim() ||
+      !category ||
+      !location.trim() ||
+      !dateTime ||
+      !contactInfo.trim()
+    ) {
+      Alert.alert(
+        "Missing details",
+        "Please fill in all required fields before submitting."
+      );
       return;
     }
 
@@ -244,55 +248,100 @@ export default function ReportFoundScreen() {
     setUploading(true);
 
     try {
-      const fileExtension = imageAsset.uri.split(".").pop()?.toLowerCase() || "jpg";
+      // Get the authenticated user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.error("Auth error:", userError);
+        Alert.alert(
+          "Authentication error",
+          userError.message || "Please log in to submit a report."
+        );
+        setUploading(false);
+        return;
+      }
+
+      if (!user) {
+        Alert.alert(
+          "Authentication required",
+          "Please log in to submit a report."
+        );
+        setUploading(false);
+        return;
+      }
+
+      const fileExtension =
+        imageAsset.uri.split(".").pop()?.toLowerCase() || "jpg";
       const contentType =
-        imageAsset.mimeType || `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
-      const storagePath = `reports/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExtension}`;
+        imageAsset.mimeType ||
+        `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
+      const storagePath = `reports/${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2)}.${fileExtension}`;
 
-      const imageBlob = await createImageBlob(imageAsset, contentType);
+      let uploadError;
 
-      const { error: uploadError } = await supabase
-        .storage
-        .from("item-images")
-        .upload(storagePath, imageBlob, {
-          contentType,
-          cacheControl: "3600",
-          upsert: false,
-        });
+      if (Platform.OS === "web") {
+        const imageBlob = await createImageBlob(imageAsset, contentType);
+        const result = await supabase.storage
+          .from("item-images")
+          .upload(storagePath, imageBlob, {
+            contentType,
+            cacheControl: "3600",
+            upsert: false,
+          });
+        uploadError = result.error;
+      } else {
+        // For React Native, use base64 decode approach
+        const base64Data = await createImageBlob(imageAsset, contentType);
+        const byteArray = decodeBase64ToUint8Array(base64Data);
+
+        const result = await supabase.storage
+          .from("item-images")
+          .upload(storagePath, byteArray, {
+            contentType,
+            cacheControl: "3600",
+            upsert: false,
+          });
+        uploadError = result.error;
+      }
 
       if (uploadError) {
-        throw uploadError;
+        console.error("Upload error:", uploadError);
+        throw new Error(`Image upload failed: ${uploadError.message}`);
       }
 
-      const {
-        data: publicUrlData,
-        error: publicUrlError,
-      } = supabase.storage.from("item-images").getPublicUrl(storagePath);
-
-      if (publicUrlError) {
-        throw publicUrlError;
-      }
+      const { data: publicUrlData } = supabase.storage
+        .from("item-images")
+        .getPublicUrl(storagePath);
 
       const imageUrl = publicUrlData?.publicUrl;
       if (!imageUrl) {
         throw new Error("Unable to retrieve the uploaded image URL.");
       }
 
-      const { error: insertError } = await supabase.from("found_reports").insert({
-        item_name: itemName.trim(),
-        category,
-        description: description.trim() || null,
-        location: location.trim(),
-        reward: reward.trim() || null,
-        notes: notes.trim() || null,
-        contact_pref: contactPref,
-        contact_info: contactInfo.trim(),
-        found_at: dateTime ? dateTime.toISOString() : null,
-        image_url: imageUrl,
-      });
+      const { error: insertError } = await supabase
+        .from("found_reports")
+        .insert({
+          reporter_id: user.id,
+          title: itemName.trim(),
+          category,
+          description: description.trim() || null,
+          location_found: location.trim(),
+          reward: reward.trim() || null,
+          notes: notes.trim() || null,
+          contact_preference: contactPref,
+          contact_value: contactInfo.trim(),
+          found_at: dateTime ? dateTime.toISOString() : null,
+          image_url: imageUrl,
+        });
 
       if (insertError) {
-        throw insertError;
+        console.error("Insert error:", insertError);
+        throw new Error(`Database insert failed: ${insertError.message}`);
       }
 
       Alert.alert("Success", "Found item report submitted.");
@@ -307,10 +356,15 @@ export default function ReportFoundScreen() {
       setShowCategoryList(false);
       setImageAsset(null);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Something went wrong while submitting.";
+      console.error("Submission error:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while submitting.";
       Alert.alert("Submission failed", message);
     } finally {
       setUploading(false);
+      router.back();
     }
   };
 
@@ -330,7 +384,10 @@ export default function ReportFoundScreen() {
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => router.back()}
-          style={[styles.backButton, isDark ? styles.backButtonDark : styles.backButtonLight]}
+          style={[
+            styles.backButton,
+            isDark ? styles.backButtonDark : styles.backButtonLight,
+          ]}
         >
           <MaterialIcons
             name="arrow-back"
@@ -340,7 +397,10 @@ export default function ReportFoundScreen() {
         </TouchableOpacity>
 
         <Text
-          style={[styles.headerTitle, isDark ? styles.headerTitleDark : styles.headerTitleLight]}
+          style={[
+            styles.headerTitle,
+            isDark ? styles.headerTitleDark : styles.headerTitleLight,
+          ]}
         >
           Report Found Item
         </Text>
@@ -354,12 +414,18 @@ export default function ReportFoundScreen() {
       >
         <View>
           <Text
-            style={[styles.heroHeading, isDark ? styles.heroHeadingDark : styles.heroHeadingLight]}
+            style={[
+              styles.heroHeading,
+              isDark ? styles.heroHeadingDark : styles.heroHeadingLight,
+            ]}
           >
             Found something?
           </Text>
           <Text
-            style={[styles.heroBody, isDark ? styles.heroBodyDark : styles.heroBodyLight]}
+            style={[
+              styles.heroBody,
+              isDark ? styles.heroBodyDark : styles.heroBodyLight,
+            ]}
           >
             Upload a photo to help our AI match it with lost reports.
           </Text>
@@ -368,7 +434,10 @@ export default function ReportFoundScreen() {
         <TouchableOpacity activeOpacity={0.9} onPress={handlePickImage}>
           <ImageBackground
             source={imageAsset ? { uri: imageAsset.uri } : PLACEHOLDER_IMAGE}
-            style={[styles.uploadCard, isDark ? styles.uploadCardDark : styles.uploadCardLight]}
+            style={[
+              styles.uploadCard,
+              isDark ? styles.uploadCardDark : styles.uploadCardLight,
+            ]}
             imageStyle={{ opacity: 0.85 }}
           >
             <View
@@ -393,12 +462,18 @@ export default function ReportFoundScreen() {
 
         <View style={styles.inputGroup}>
           <Text
-            style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
+            style={[
+              styles.label,
+              isDark ? styles.labelDark : styles.labelLight,
+            ]}
           >
             Item Name
           </Text>
           <TextInput
-            style={[styles.textInput, isDark ? styles.textInputDark : styles.textInputLight]}
+            style={[
+              styles.textInput,
+              isDark ? styles.textInputDark : styles.textInputLight,
+            ]}
             placeholder="e.g. Blue Backpack"
             placeholderTextColor={placeholderColor}
             value={itemName}
@@ -408,7 +483,10 @@ export default function ReportFoundScreen() {
 
         <View style={styles.inputGroup}>
           <Text
-            style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
+            style={[
+              styles.label,
+              isDark ? styles.labelDark : styles.labelLight,
+            ]}
           >
             Item Category
           </Text>
@@ -426,11 +504,18 @@ export default function ReportFoundScreen() {
               <Text
                 style={[
                   styles.pickerTriggerText,
-                  { color: category ? (isDark ? "#f8fafc" : "#0f172a") : placeholderColor },
+                  {
+                    color: category
+                      ? isDark
+                        ? "#f8fafc"
+                        : "#0f172a"
+                      : placeholderColor,
+                  },
                 ]}
               >
                 {category
-                  ? CATEGORY_OPTIONS.find((option) => option.value === category)?.label
+                  ? CATEGORY_OPTIONS.find((option) => option.value === category)
+                      ?.label
                   : "Select a category"}
               </Text>
               <MaterialIcons
@@ -450,8 +535,14 @@ export default function ReportFoundScreen() {
                     overflow: "hidden",
                   },
                   isDark
-                    ? { backgroundColor: DARK_SURFACE_COLOR, borderColor: DARK_BORDER_COLOR }
-                    : { backgroundColor: LIGHT_SURFACE_COLOR, borderColor: LIGHT_BORDER_COLOR },
+                    ? {
+                        backgroundColor: DARK_SURFACE_COLOR,
+                        borderColor: DARK_BORDER_COLOR,
+                      }
+                    : {
+                        backgroundColor: LIGHT_SURFACE_COLOR,
+                        borderColor: LIGHT_BORDER_COLOR,
+                      },
                 ]}
               >
                 {CATEGORY_OPTIONS.map((option) => {
@@ -494,7 +585,10 @@ export default function ReportFoundScreen() {
 
         <View style={styles.inputGroup}>
           <Text
-            style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
+            style={[
+              styles.label,
+              isDark ? styles.labelDark : styles.labelLight,
+            ]}
           >
             Description
           </Text>
@@ -513,7 +607,10 @@ export default function ReportFoundScreen() {
 
         <View style={styles.inputGroup}>
           <Text
-            style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
+            style={[
+              styles.label,
+              isDark ? styles.labelDark : styles.labelLight,
+            ]}
           >
             Location Found
           </Text>
@@ -540,7 +637,10 @@ export default function ReportFoundScreen() {
 
         <View style={styles.inputGroup}>
           <Text
-            style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
+            style={[
+              styles.label,
+              isDark ? styles.labelDark : styles.labelLight,
+            ]}
           >
             Date & Time Found
           </Text>
@@ -557,7 +657,11 @@ export default function ReportFoundScreen() {
             >
               <Text
                 style={{
-                  color: formattedDateTime ? (isDark ? "#f8fafc" : "#0f172a") : placeholderColor,
+                  color: formattedDateTime
+                    ? isDark
+                      ? "#f8fafc"
+                      : "#0f172a"
+                    : placeholderColor,
                   fontSize: 16,
                 }}
               >
@@ -575,9 +679,15 @@ export default function ReportFoundScreen() {
 
         <View style={styles.inputGroup}>
           <Text
-            style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
+            style={[
+              styles.label,
+              isDark ? styles.labelDark : styles.labelLight,
+            ]}
           >
-            Reward <Text style={isDark ? styles.optionalDark : styles.optionalLight}>(Optional)</Text>
+            Reward{" "}
+            <Text style={isDark ? styles.optionalDark : styles.optionalLight}>
+              (Optional)
+            </Text>
           </Text>
           <View style={{ position: "relative" }}>
             <TextInput
@@ -602,9 +712,15 @@ export default function ReportFoundScreen() {
 
         <View style={styles.inputGroup}>
           <Text
-            style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
+            style={[
+              styles.label,
+              isDark ? styles.labelDark : styles.labelLight,
+            ]}
           >
-            Additional Notes <Text style={isDark ? styles.optionalDark : styles.optionalLight}>(Optional)</Text>
+            Additional Notes{" "}
+            <Text style={isDark ? styles.optionalDark : styles.optionalLight}>
+              (Optional)
+            </Text>
           </Text>
           <TextInput
             multiline
@@ -622,7 +738,10 @@ export default function ReportFoundScreen() {
 
         <View style={styles.inputGroup}>
           <Text
-            style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
+            style={[
+              styles.label,
+              isDark ? styles.labelDark : styles.labelLight,
+            ]}
           >
             Contact Preference
           </Text>
@@ -636,9 +755,13 @@ export default function ReportFoundScreen() {
                   onPress={() => setContactPref(option.value)}
                   style={[
                     styles.contactOption,
-                    isDark ? styles.contactOptionDark : styles.contactOptionLight,
+                    isDark
+                      ? styles.contactOptionDark
+                      : styles.contactOptionLight,
                     isSelected ? styles.contactOptionActive : null,
-                    isSelected && isDark ? styles.contactOptionActiveDark : null,
+                    isSelected && isDark
+                      ? styles.contactOptionActiveDark
+                      : null,
                   ]}
                 >
                   <Text
@@ -660,7 +783,10 @@ export default function ReportFoundScreen() {
             })}
           </View>
           <TextInput
-            style={[styles.textInput, isDark ? styles.textInputDark : styles.textInputLight]}
+            style={[
+              styles.textInput,
+              isDark ? styles.textInputDark : styles.textInputLight,
+            ]}
             placeholder="Enter link, email, or phone number"
             placeholderTextColor={placeholderColor}
             value={contactInfo}
@@ -728,7 +854,9 @@ export default function ReportFoundScreen() {
               style={{ alignSelf: "flex-end", marginTop: 12 }}
               onPress={() => setShowIOSPicker(false)}
             >
-              <Text style={{ color: "#2bee79", fontSize: 16, fontWeight: "600" }}>
+              <Text
+                style={{ color: "#2bee79", fontSize: 16, fontWeight: "600" }}
+              >
                 Done
               </Text>
             </TouchableOpacity>

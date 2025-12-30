@@ -1,4 +1,6 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
 import { Text, View, useColorScheme } from "react-native";
 import AppLogo from "./components/AppLogo";
 import LoginButton from "./components/LogInButton";
@@ -9,6 +11,19 @@ export default function WelcomeScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      // Check if the user is already authenticated
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        // If authenticated, navigate to the home screen
+        router.replace("/home");
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   return (
     <View
@@ -21,7 +36,10 @@ export default function WelcomeScreen() {
       <View style={welcomeStyles.mainContent}>
         <AppLogo />
         <Text
-          style={[welcomeStyles.title, isDark ? welcomeStyles.titleDark : welcomeStyles.titleLight]}
+          style={[
+            welcomeStyles.title,
+            isDark ? welcomeStyles.titleDark : welcomeStyles.titleLight,
+          ]}
         >
           CvSU Finds
         </Text>
@@ -31,7 +49,7 @@ export default function WelcomeScreen() {
             isDark ? welcomeStyles.subtitleDark : welcomeStyles.subtitleLight,
           ]}
         >
-            Snap a photo. Find your item.
+          Snap a photo. Find your item.
         </Text>
       </View>
 
@@ -47,13 +65,14 @@ export default function WelcomeScreen() {
         <Text
           style={[
             welcomeStyles.footerText,
-            isDark ? welcomeStyles.footerTextDark : welcomeStyles.footerTextLight,
+            isDark
+              ? welcomeStyles.footerTextDark
+              : welcomeStyles.footerTextLight,
           ]}
         >
           By continuing, you agree to our Terms of Service and Privacy Policy
         </Text>
       </View>
-
     </View>
   );
 }

@@ -284,3 +284,5 @@ export const reportFoundStyles = StyleSheet.create({
     color: DARK_BACKGROUND,
   },
 });
+
+export default reportFoundStyles;

@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -24,6 +25,7 @@ export default function LoginScreen() {
   const [focusedField, setFocusedField] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   const placeholderColor = "#94a3b8";
   const iconColor = (field) =>
@@ -44,7 +46,7 @@ export default function LoginScreen() {
       setLoading(true);
       setErrorMessage("");
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
         password,
       });
@@ -52,6 +54,11 @@ export default function LoginScreen() {
       if (error) {
         setErrorMessage(error.message);
         return;
+      }
+
+      // Store the session token in AsyncStorage only if "Remember Me" is checked
+      if (rememberMe && data?.session) {
+        await AsyncStorage.setItem("token", JSON.stringify(data.session));
       }
 
       router.replace("/home");
@@ -93,7 +100,10 @@ export default function LoginScreen() {
         {/* Email */}
         <View style={styles.inputGroup}>
           <Text
-            style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
+            style={[
+              styles.label,
+              isDark ? styles.labelDark : styles.labelLight,
+            ]}
           >
             Email
           </Text>
@@ -105,7 +115,10 @@ export default function LoginScreen() {
               style={styles.inputIcon}
             />
             <TextInput
-              style={[styles.input, isDark ? styles.inputDark : styles.inputLight]}
+              style={[
+                styles.input,
+                isDark ? styles.inputDark : styles.inputLight,
+              ]}
               placeholder="Enter your email"
               placeholderTextColor={placeholderColor}
               value={email}
@@ -119,7 +132,10 @@ export default function LoginScreen() {
         {/* Password */}
         <View style={styles.inputGroup}>
           <Text
-            style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
+            style={[
+              styles.label,
+              isDark ? styles.labelDark : styles.labelLight,
+            ]}
           >
             Password
           </Text>
@@ -131,7 +147,10 @@ export default function LoginScreen() {
               style={styles.inputIcon}
             />
             <TextInput
-              style={[styles.input, isDark ? styles.inputDark : styles.inputLight]}
+              style={[
+                styles.input,
+                isDark ? styles.inputDark : styles.inputLight,
+              ]}
               placeholder="Enter your password"
               placeholderTextColor={placeholderColor}
               secureTextEntry={!showPassword}
@@ -154,9 +173,31 @@ export default function LoginScreen() {
         </View>
 
         {/* Forgot password */}
-        <TouchableOpacity style={styles.forgot}>
-          <Text style={styles.forgotText}>Forgot Password?</Text>
-        </TouchableOpacity>
+        <View style={styles.rememberForgotRow}>
+          <TouchableOpacity
+            style={styles.rememberMe}
+            onPress={() => setRememberMe(!rememberMe)}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons
+              name={rememberMe ? "check-box" : "check-box-outline-blank"}
+              size={22}
+              color={rememberMe ? "#2bee79" : placeholderColor}
+            />
+            <Text
+              style={[
+                styles.rememberMeText,
+                isDark ? styles.rememberMeTextDark : styles.rememberMeTextLight,
+              ]}
+            >
+              Remember Me
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.forgot}>
+            <Text style={styles.forgotText}>Forgot Password?</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Login button */}
         {errorMessage ? (
@@ -195,11 +236,9 @@ export default function LoginScreen() {
           ]}
         >
           Don’t have an account?
-          <Text
-            style={styles.signUp}
-            onPress={() => router.push("/signup")}
-          >
-            {" "}Sign Up
+          <Text style={styles.signUp} onPress={() => router.push("/signup")}>
+            {" "}
+            Sign Up
           </Text>
         </Text>
       </View>

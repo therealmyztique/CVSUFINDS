@@ -290,3 +290,5 @@ export const profileStyles = StyleSheet.create({
     color: MUTED_DARK,
   },
 });
+
+export default profileStyles;

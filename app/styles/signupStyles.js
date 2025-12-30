@@ -371,3 +371,5 @@ export const signupStyles = StyleSheet.create({
     color: PRIMARY,
   },
 });
+
+export default signupStyles;
