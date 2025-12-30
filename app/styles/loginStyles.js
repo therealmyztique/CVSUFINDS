@@ -8,6 +8,8 @@ const LIGHT_TEXT = "#0f172a";
 const DARK_TEXT = "#f8fafc";
 const MUTED_LIGHT = "#64748b";
 const MUTED_DARK = "#94a3b8";
+const ERROR_LIGHT = "#b91c1c";
+const ERROR_DARK = "#fca5a5";
 
 export const loginStyles = StyleSheet.create({
   container: {
@@ -121,10 +123,25 @@ export const loginStyles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
+  loginButtonDisabled: {
+    opacity: 0.65,
+  },
   loginText: {
     fontSize: 18,
     fontWeight: "800",
     color: DARK_BACKGROUND,
+  },
+  errorText: {
+    textAlign: "center",
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 12,
+  },
+  errorTextLight: {
+    color: ERROR_LIGHT,
+  },
+  errorTextDark: {
+    color: ERROR_DARK,
   },
   footer: {
     alignItems: "center",

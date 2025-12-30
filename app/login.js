@@ -2,12 +2,14 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Text,
   TextInput,
   TouchableOpacity,
   View,
   useColorScheme,
 } from "react-native";
+import { supabase } from "../lib/supabaseClient";
 import AppLogo from "./components/AppLogo";
 import { loginStyles as styles } from "./styles/loginStyles";
 
@@ -16,14 +18,49 @@ export default function LoginScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const placeholderColor = "#94a3b8";
   const iconColor = (field) =>
     focusedField === field ? "#2bee79" : isDark ? "#94a3b8" : "#94a3b8";
+
+  async function loginWithEmail() {
+    if (loading) {
+      return;
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !password) {
+      setErrorMessage("Please enter your email and password.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password,
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      router.replace("/home");
+    } catch (authError) {
+      setErrorMessage(authError.message ?? "Unable to log in right now.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <View
@@ -53,27 +90,27 @@ export default function LoginScreen() {
 
       {/* ---------- Form ---------- */}
       <View style={styles.form}>
-        {/* Username */}
+        {/* Email */}
         <View style={styles.inputGroup}>
           <Text
             style={[styles.label, isDark ? styles.labelDark : styles.labelLight]}
           >
-            Username or Email
+            Email
           </Text>
           <View style={styles.inputWrapper}>
             <MaterialIcons
               name="person"
               size={22}
-              color={iconColor("username")}
+              color={iconColor("email")}
               style={styles.inputIcon}
             />
             <TextInput
               style={[styles.input, isDark ? styles.inputDark : styles.inputLight]}
-              placeholder="Enter your username"
+              placeholder="Enter your email"
               placeholderTextColor={placeholderColor}
-              value={username}
-              onChangeText={setUsername}
-              onFocus={() => setFocusedField("username")}
+              value={email}
+              onChangeText={setEmail}
+              onFocus={() => setFocusedField("email")}
               onBlur={() => setFocusedField(null)}
             />
           </View>
@@ -122,8 +159,30 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         {/* Login button */}
-        <TouchableOpacity style={styles.loginButton}>
-          <Text style={styles.loginText}>Log In</Text>
+        {errorMessage ? (
+          <Text
+            style={[
+              styles.errorText,
+              isDark ? styles.errorTextDark : styles.errorTextLight,
+            ]}
+          >
+            {errorMessage}
+          </Text>
+        ) : null}
+
+        <TouchableOpacity
+          style={[
+            styles.loginButton,
+            loading ? styles.loginButtonDisabled : null,
+          ]}
+          activeOpacity={loading ? 1 : 0.85}
+          onPress={loginWithEmail}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#102217" />
+          ) : (
+            <Text style={styles.loginText}>Log In</Text>
+          )}
         </TouchableOpacity>
       </View>
 

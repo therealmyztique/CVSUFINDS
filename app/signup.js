@@ -1,9 +1,12 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
+    ActivityIndicator,
     Platform,
+    ScrollView,
     Text,
     TextInput,
     TouchableOpacity,
@@ -11,6 +14,7 @@ import {
     useColorScheme,
 } from "react-native";
 
+import { supabase } from "../lib/supabaseClient";
 import AppLogo from "./components/AppLogo";
 import SignUpButton from "./components/SignUpButton";
 import { signupStyles as styles } from "./styles/signupStyles";
@@ -29,9 +33,149 @@ export default function SignUpScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const [showIOSPicker, setShowIOSPicker] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [infoMessage, setInfoMessage] = useState("");
 
   const emailValue = email.trim().toLowerCase();
   const emailIsEdu = emailValue.endsWith(".edu") || emailValue.endsWith(".edu.ph");
+  const trimmedFirstName = firstName.trim();
+  const trimmedLastName = lastName.trim();
+  const trimmedStudentNumber = studentNumber.trim();
+  const hasPasswordMinimum = password.length >= 8;
+  const passwordsMatch = password === confirmPassword;
+  const hasRequiredFields =
+    Boolean(
+      trimmedFirstName &&
+        trimmedLastName &&
+        emailValue &&
+        password &&
+        confirmPassword
+    );
+
+  const canSubmit =
+    termsAccepted &&
+    hasRequiredFields &&
+    hasPasswordMinimum &&
+    passwordsMatch;
+
+  async function signUpWithEmail() {
+    if (loading) {
+      return;
+    }
+
+    if (!termsAccepted) {
+      setErrorMessage("You must accept the terms to continue.");
+      return;
+    }
+
+    if (!trimmedFirstName || !trimmedLastName) {
+      setErrorMessage("Please provide your first and last name.");
+      return;
+    }
+
+    if (!emailValue) {
+      setErrorMessage("Please enter your university email.");
+      return;
+    }
+
+    if (!emailIsEdu) {
+      setErrorMessage("Use your university email ending in .edu or .edu.ph.");
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage("Create a password to continue.");
+      return;
+    }
+
+    if (!hasPasswordMinimum) {
+      setErrorMessage("Password must be at least 8 characters long.");
+      return;
+    }
+
+    if (!confirmPassword) {
+      setErrorMessage("Confirm your password to continue.");
+      return;
+    }
+
+    if (!passwordsMatch) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setErrorMessage("");
+      setInfoMessage("");
+
+      const redirectTo = Linking.createURL("/auth/callback");
+
+      const { data, error } = await supabase.auth.signUp({
+        email: emailValue,
+        password,
+        options: {
+          emailRedirectTo: redirectTo,
+          data: {
+            first_name: trimmedFirstName,
+            last_name: trimmedLastName,
+            student_number: trimmedStudentNumber || null,
+            birthday: birthday ? birthday.toISOString() : null,
+          },
+        },
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      if (data?.user) {
+        const { error: profileError } = await supabase.from("profiles").upsert({
+          id: data.user.id,
+          first_name: trimmedFirstName,
+          last_name: trimmedLastName,
+          student_number: trimmedStudentNumber || null,
+          birthday: birthday ? birthday.toISOString() : null,
+          email: emailValue,
+        });
+
+        if (profileError && profileError.code !== "42P01") {
+          setErrorMessage(profileError.message);
+          return;
+        }
+      }
+
+      if (data?.session) {
+        router.replace("/home");
+        return;
+      }
+
+      setInfoMessage("Check your inbox and tap the verification link to activate your account.");
+    } catch (signUpError) {
+      setErrorMessage(signUpError.message ?? "Unable to sign up right now.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleSignUpPress = () => {
+    if (loading) {
+      return;
+    }
+
+    if (!canSubmit) {
+      setErrorMessage("Complete all required fields before signing up.");
+      return;
+    }
+
+    signUpWithEmail();
+  };
+
 
   const placeholderColor = "#94a3b8";
   const iconColor = (field) =>
@@ -91,7 +235,12 @@ export default function SignUpScreen() {
         isDark ? styles.containerDark : styles.containerLight,
       ]}
     >
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.contentScroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.logoContainer}>
           <AppLogo />
         </View>
@@ -269,6 +418,111 @@ export default function SignUpScreen() {
                 isDark ? styles.labelDark : styles.labelLight,
               ]}
             >
+              Password
+            </Text>
+            <View style={styles.inputWrapper}>
+              <MaterialIcons
+                name="lock"
+                size={20}
+                style={styles.inputIcon}
+                color={iconColor("password")}
+              />
+              <TextInput
+                style={[
+                  styles.input,
+                  isDark ? styles.inputDark : styles.inputLight,
+                ]}
+                placeholder="Create a password"
+                placeholderTextColor={placeholderColor}
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                onFocus={() => setFocusedField("password")}
+                onBlur={() => setFocusedField(null)}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword((prev) => !prev)}
+              >
+                <MaterialIcons
+                  name={showPassword ? "visibility" : "visibility-off"}
+                  size={22}
+                  color={iconColor("password")}
+                />
+              </TouchableOpacity>
+            </View>
+            <Text
+              style={[
+                styles.helperText,
+                isDark ? styles.helperTextDark : styles.helperTextLight,
+              ]}
+            >
+              Minimum 8 characters.
+            </Text>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text
+              style={[
+                styles.label,
+                isDark ? styles.labelDark : styles.labelLight,
+              ]}
+            >
+              Confirm Password
+            </Text>
+            <View style={styles.inputWrapper}>
+              <MaterialIcons
+                name="lock-outline"
+                size={20}
+                style={styles.inputIcon}
+                color={iconColor("confirmPassword")}
+              />
+              <TextInput
+                style={[
+                  styles.input,
+                  isDark ? styles.inputDark : styles.inputLight,
+                ]}
+                placeholder="Re-enter your password"
+                placeholderTextColor={placeholderColor}
+                secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                onFocus={() => setFocusedField("confirmPassword")}
+                onBlur={() => setFocusedField(null)}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowConfirmPassword((prev) => !prev)}
+              >
+                <MaterialIcons
+                  name={showConfirmPassword ? "visibility" : "visibility-off"}
+                  size={22}
+                  color={iconColor("confirmPassword")}
+                />
+              </TouchableOpacity>
+            </View>
+            {confirmPassword.length > 0 && confirmPassword !== password ? (
+              <Text
+                style={[
+                  styles.helperText,
+                  styles.helperTextError,
+                  isDark ? styles.helperTextErrorDark : styles.helperTextErrorLight,
+                ]}
+              >
+                Passwords must match.
+              </Text>
+            ) : null}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text
+              style={[
+                styles.label,
+                isDark ? styles.labelDark : styles.labelLight,
+              ]}
+            >
               Birthday
             </Text>
             <View style={styles.inputWrapper}>
@@ -327,16 +581,50 @@ export default function SignUpScreen() {
             </Text>
           </View>
         </View>
-      </View>
+      </ScrollView>
 
       {/* Sticky footer */}
       <View
         style={[styles.footer, isDark ? styles.footerDark : styles.footerLight]}
       >
+        {errorMessage ? (
+          <Text
+            style={[
+              styles.feedbackText,
+              styles.feedbackError,
+              isDark ? styles.feedbackErrorDark : styles.feedbackErrorLight,
+            ]}
+          >
+            {errorMessage}
+          </Text>
+        ) : null}
+
+        {infoMessage ? (
+          <Text
+            style={[
+              styles.feedbackText,
+              styles.feedbackInfo,
+              isDark ? styles.feedbackInfoDark : styles.feedbackInfoLight,
+            ]}
+          >
+            {infoMessage}
+          </Text>
+        ) : null}
+
         <SignUpButton
-          onPress={() => {}}
-          style={styles.signUpButton}
+          onPress={handleSignUpPress}
+          style={[
+            styles.signUpButton,
+            (loading || !canSubmit) ? styles.signUpButtonDisabled : null,
+          ]}
           textStyle={styles.signUpButtonText}
+          label={loading ? "Creating account..." : "Sign Up"}
+          rightIcon={
+            loading ? (
+              <ActivityIndicator size="small" color="#102217" />
+            ) : null
+          }
+          activeOpacity={loading || !canSubmit ? 1 : 0.9}
         />
 
         <Text

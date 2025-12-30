@@ -4,8 +4,15 @@ export const welcomeStyles = StyleSheet.create({
   /* ---------- Layout ---------- */
   container: {
     flex: 1,
-    backgroundColor: "#102217",
     justifyContent: "space-between",
+  },
+
+  containerDark: {
+    backgroundColor: "#102217",
+  },
+
+  containerLight: {
+    backgroundColor: "#f8fafc",
   },
 
   mainContent: {
@@ -18,6 +25,14 @@ export const welcomeStyles = StyleSheet.create({
   actions: {
     paddingHorizontal: 24,
     paddingBottom: 32,
+  },
+
+  actionsDark: {
+    backgroundColor: "transparent",
+  },
+
+  actionsLight: {
+    backgroundColor: "#f1f5f9",
   },
 
   /* ---------- Logo ---------- */
@@ -63,14 +78,28 @@ export const welcomeStyles = StyleSheet.create({
   title: {
     fontSize: 40,
     fontWeight: "900",
+  },
+
+  titleDark: {
     color: "#ffffff",
+  },
+
+  titleLight: {
+    color: "#0f172a",
   },
 
   subtitle: {
     fontSize: 16,
-    color: "#c4c4c4",
     textAlign: "center",
     maxWidth: 260,
+  },
+
+  subtitleDark: {
+    color: "#c4c4c4",
+  },
+
+  subtitleLight: {
+    color: "#475569",
   },
 
   /* ---------- Illustration ---------- */
@@ -117,10 +146,26 @@ export const welcomeStyles = StyleSheet.create({
     alignItems: "center",
   },
 
+  loginButtonDark: {
+    borderColor: "rgba(43,238,121,0.3)",
+  },
+
+  loginButtonLight: {
+    borderColor: "rgba(16,34,23,0.15)",
+  },
+
   loginText: {
     fontSize: 18,
     fontWeight: "900",
-    color: "#2bee79"
+    color: "#2bee79",
+  },
+
+  loginTextDark: {
+    color: "#2bee79",
+  },
+
+  loginTextLight: {
+    color: "#15803d",
   },
 
   /* ---------- Footer ---------- */
@@ -128,7 +173,14 @@ export const welcomeStyles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 20,
     fontSize: 9,
-    color: "#94a3b8",
     textAlign: "center",
+  },
+
+  footerTextDark: {
+    color: "#94a3b8",
+  },
+
+  footerTextLight: {
+    color: "#64748b",
   },
 });
