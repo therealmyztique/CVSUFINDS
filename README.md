@@ -35,6 +35,14 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Supabase configuration
+
+Make sure the Supabase project is configured before testing authentication:
+
+- In the Supabase dashboard go to **Authentication → URL Configuration** and set **Site URL** to your deployed domain (or a testing tunnel). Add `newapp://` (or your custom scheme) to the list of additional redirect URLs if you are using deep links.
+- Update your `.env` file with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`, then restart Expo with `npx expo start` so the new values are loaded.
+- The email confirmation link is redirected to the Expo screen at `/auth/callback`, which handles verification and guides the user back into the app.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
