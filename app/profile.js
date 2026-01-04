@@ -488,7 +488,11 @@ export default function ProfileScreen() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.navButton} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={styles.navButton}
+            activeOpacity={0.85}
+            onPress={() => router.push("/resolved-items")}
+          >
             <MaterialIcons
               name="task-alt"
               size={26}
