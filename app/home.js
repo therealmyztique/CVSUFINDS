@@ -10,6 +10,7 @@ import {
   useColorScheme,
 } from "react-native";
 import FoundItems from "./components/FoundItems";
+import LostItems from "./components/LostItems";
 import { homeStyles as styles } from "./styles/homeStyles";
 
 const FILTERS = ["All", "Lost", "Found"];
@@ -48,6 +49,7 @@ export default function HomeScreen() {
   const isDark = colorScheme === "dark";
   const [activeFilter, setActiveFilter] = useState("All");
   const [foundReports, setFoundReports] = useState([]);
+  const [lostReports, setLostReports] = useState([]);
 
   const baseTextColor = isDark ? DARK_TEXT_COLOR : LIGHT_TEXT_COLOR;
   const mutedTextColor = isDark ? MUTED_DARK_COLOR : MUTED_LIGHT_COLOR;
@@ -67,19 +69,55 @@ export default function HomeScreen() {
     return `${diffDays}d`;
   };
   // Transform found_reports data to match post format
-  const transformedPosts = useMemo(() => {
+  const transformedFoundPosts = useMemo(() => {
     return foundReports.map((report) => ({
       id: report.id,
       title: report.title,
       status: "Found",
+      category: report.category || "other",
       location: report.location_found || "Unknown location",
+      dateTime: report.found_at,
       author: report.reporter_name || "Anonymous",
       timeAgo: getTimeAgo(report.created_at),
       image: report.image_url || "https://via.placeholder.com/150",
       description: report.description,
       avatar: report.avatar_url,
+      reward: report.reward,
+      notes: report.notes,
+      contactPreference: report.contact_preference,
+      contactValue: report.contact_value,
+      reporterId: report.reporter_id,
     }));
   }, [foundReports]);
+
+  // Transform lost_reports data to match post format
+  const transformedLostPosts = useMemo(() => {
+    return lostReports.map((report) => ({
+      id: report.id,
+      title: report.title,
+      status: "Lost",
+      category: report.category || "other",
+      location: report.last_seen || "Unknown location",
+      dateTime: report.lost_at,
+      author: report.reporter_name || "Anonymous",
+      timeAgo: getTimeAgo(report.created_at),
+      image: report.image_url || "https://via.placeholder.com/150",
+      description: report.description,
+      avatar: report.avatar_url,
+      reward: report.reward,
+      notes: report.notes,
+      contactPreference: report.contact_preference,
+      contactValue: report.contact_value,
+      reporterId: report.reporter_id,
+    }));
+  }, [lostReports]);
+
+  // Combine found and lost posts
+  const transformedPosts = useMemo(() => {
+    return [...transformedFoundPosts, ...transformedLostPosts].sort(
+      (a, b) => new Date(b.timeAgo) - new Date(a.timeAgo)
+    );
+  }, [transformedFoundPosts, transformedLostPosts]);
 
   // Use database posts
   const allPosts = useMemo(() => {
@@ -101,6 +139,11 @@ export default function HomeScreen() {
     console.log("Found reports loaded:", data);
   }, []);
 
+  const handleLostDataLoaded = useCallback((data) => {
+    setLostReports(data);
+    console.log("Lost reports loaded:", data);
+  }, []);
+
   return (
     <View
       style={[
@@ -110,6 +153,8 @@ export default function HomeScreen() {
     >
       {/* FoundItems component fetches data and passes it via callback */}
       <FoundItems onDataLoaded={handleFoundDataLoaded} filter={activeFilter} />
+      {/* LostItems component fetches data and passes it via callback */}
+      <LostItems onDataLoaded={handleLostDataLoaded} filter={activeFilter} />
 
       <View
         style={[
@@ -171,7 +216,11 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.actionRow}>
-          <TouchableOpacity activeOpacity={0.9} style={styles.actionButton}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            style={styles.actionButton}
+            onPress={() => router.push("/report-lost")}
+          >
             <View style={styles.actionCircle}>
               <MaterialIcons
                 name="search"
@@ -285,6 +334,28 @@ export default function HomeScreen() {
                 key={post.id}
                 activeOpacity={0.92}
                 style={[styles.postCard, isDark ? styles.postCardDark : null]}
+                onPress={() =>
+                  router.push({
+                    pathname: "/item-detail",
+                    params: {
+                      id: post.id,
+                      title: post.title,
+                      status: post.status,
+                      category: post.category,
+                      description: post.description,
+                      location: post.location,
+                      dateTime: post.dateTime,
+                      reward: post.reward,
+                      notes: post.notes,
+                      image: post.image,
+                      author: post.author,
+                      avatar: post.avatar,
+                      contactPreference: post.contactPreference,
+                      contactValue: post.contactValue,
+                      reporterId: post.reporterId,
+                    },
+                  })
+                }
               >
                 <View style={styles.postImageWrapper}>
                   <Image
