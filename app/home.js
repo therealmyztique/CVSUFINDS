@@ -451,16 +451,25 @@ export default function HomeScreen() {
             <MaterialIcons name="home" size={26} color={PRIMARY_COLOR} />
             <Text style={[styles.navLabel, styles.navLabelActive]}>Home</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton} activeOpacity={0.85}>
-            <MaterialIcons name="fact-check" size={26} color={mutedTextColor} />
+          <TouchableOpacity
+            style={styles.navButton}
+            activeOpacity={0.85}
+            onPress={() => router.push("/resolved-items")}
+          >
+            <MaterialIcons
+              name="task-alt"
+              size={26}
+              color={isDark ? "#94a3b8" : "#94a3b8"}
+            />
             <Text
               style={[
                 styles.navLabel,
-                isDark ? styles.navLabelInactiveDark : styles.navLabelInactive,
+                isDark
+                  ? styles.navLabelInactiveDark
+                  : styles.navLabelInactiveLight,
               ]}
             >
-              Resolved
-              {"\n"}Items
+              Resolved Items
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
