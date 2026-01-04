@@ -1,19 +1,71 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 
 import { supabase } from "../lib/supabaseClient";
 import { editProfileStyles as styles } from "./styles/editProfileStyles";
+
+const DEFAULT_AVATAR = "https://via.placeholder.com/150";
+
+const BASE64_ALPHABET =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+const decodeBase64ToUint8Array = (base64) => {
+  if (!base64) {
+    return new Uint8Array();
+  }
+
+  if (typeof global.atob === "function") {
+    const binaryString = global.atob(base64);
+    const length = binaryString.length;
+    const bytes = new Uint8Array(length);
+    for (let i = 0; i < length; i += 1) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  const sanitized = base64.replace(/[^A-Za-z0-9+/=]/g, "");
+  const output = [];
+  let buffer = 0;
+  let bitsCollected = 0;
+
+  for (let i = 0; i < sanitized.length; i += 1) {
+    const char = sanitized.charAt(i);
+    if (char === "=") {
+      break;
+    }
+    const value = BASE64_ALPHABET.indexOf(char);
+    if (value === -1) {
+      continue;
+    }
+
+    buffer = (buffer << 6) | value;
+    bitsCollected += 6;
+
+    if (bitsCollected >= 8) {
+      bitsCollected -= 8;
+      output.push((buffer >> bitsCollected) & 0xff);
+    }
+  }
+
+  return new Uint8Array(output);
+};
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -27,6 +79,9 @@ export default function EditProfileScreen() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [facebookName, setFacebookName] = useState("");
   const [profileId, setProfileId] = useState(null);
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarAsset, setAvatarAsset] = useState(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -78,7 +133,9 @@ export default function EditProfileScreen() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("first_name, last_name, email, course, phone_num, fb_name")
+        .select(
+          "first_name, last_name, email, course, phone_num, fb_name, avatar_url"
+        )
         .eq("id", user.id)
         .maybeSingle();
 
@@ -100,6 +157,7 @@ export default function EditProfileScreen() {
       setCourse(data?.course ?? "");
       setPhoneNumber(data?.phone_num ?? "");
       setFacebookName(data?.fb_name ?? "");
+      setAvatarUrl(data?.avatar_url ?? "");
     } catch (error) {
       if (mountedRef.current) {
         setErrorMessage(error.message ?? "Unable to load profile details.");
@@ -114,6 +172,103 @@ export default function EditProfileScreen() {
   useEffect(() => {
     loadProfile();
   }, [loadProfile]);
+
+  const handlePickAvatar = useCallback(async () => {
+    try {
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert(
+          "Permission needed",
+          "Please allow access to your photos to change your profile picture."
+        );
+        return;
+      }
+
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+        base64: true,
+      });
+
+      if (pickerResult.canceled || !pickerResult.assets?.length) {
+        return;
+      }
+
+      setAvatarAsset(pickerResult.assets[0]);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to pick image right now.";
+      Alert.alert("Image picker error", message);
+    }
+  }, []);
+
+  const uploadAvatar = useCallback(async () => {
+    if (!avatarAsset?.uri || !profileId) {
+      return null;
+    }
+
+    setUploadingAvatar(true);
+
+    try {
+      const fileExtension =
+        avatarAsset.uri.split(".").pop()?.toLowerCase() || "jpg";
+      const contentType =
+        avatarAsset.mimeType ||
+        `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
+      const storagePath = `${profileId}/${Date.now()}.${fileExtension}`;
+
+      let uploadError;
+
+      if (Platform.OS === "web") {
+        const response = await fetch(avatarAsset.uri);
+        const blob = await response.blob();
+        const result = await supabase.storage
+          .from("avatar")
+          .upload(storagePath, blob, {
+            contentType,
+            cacheControl: "3600",
+            upsert: true,
+          });
+        uploadError = result.error;
+      } else {
+        const base64Data =
+          avatarAsset.base64 ||
+          (await FileSystem.readAsStringAsync(avatarAsset.uri, {
+            encoding: FileSystem.EncodingType.Base64,
+          }));
+        const byteArray = decodeBase64ToUint8Array(base64Data);
+
+        const result = await supabase.storage
+          .from("avatar")
+          .upload(storagePath, byteArray, {
+            contentType,
+            cacheControl: "3600",
+            upsert: true,
+          });
+        uploadError = result.error;
+      }
+
+      if (uploadError) {
+        throw new Error(`Avatar upload failed: ${uploadError.message}`);
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("avatar")
+        .getPublicUrl(storagePath);
+
+      return publicUrlData?.publicUrl || null;
+    } catch (error) {
+      console.error("Avatar upload error:", error);
+      throw error;
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }, [avatarAsset, profileId]);
 
   const handleSave = useCallback(async () => {
     if (saving || !profileId) {
@@ -138,17 +293,32 @@ export default function EditProfileScreen() {
       setErrorMessage("");
       setInfoMessage("");
 
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({
-          id: profileId,
-          first_name: trimmedFirstName || null,
-          last_name: trimmedLastName || null,
-          email: trimmedEmail || null,
-          course: trimmedCourse || null,
-          phone_num: trimmedPhone || null,
-          fb_name: trimmedFacebook || null,
-        });
+      let newAvatarUrl = avatarUrl;
+
+      // Upload new avatar if selected
+      if (avatarAsset?.uri) {
+        try {
+          const uploadedUrl = await uploadAvatar();
+          if (uploadedUrl) {
+            newAvatarUrl = uploadedUrl;
+          }
+        } catch (error) {
+          setErrorMessage(error.message || "Failed to upload avatar.");
+          setSaving(false);
+          return;
+        }
+      }
+
+      const { error } = await supabase.from("profiles").upsert({
+        id: profileId,
+        first_name: trimmedFirstName || null,
+        last_name: trimmedLastName || null,
+        email: trimmedEmail || null,
+        course: trimmedCourse || null,
+        phone_num: trimmedPhone || null,
+        fb_name: trimmedFacebook || null,
+        avatar_url: newAvatarUrl || null,
+      });
 
       if (error) {
         setErrorMessage(error.message ?? "Unable to save changes.");
@@ -162,7 +332,20 @@ export default function EditProfileScreen() {
     } finally {
       setSaving(false);
     }
-  }, [course, email, facebookName, firstName, lastName, phoneNumber, profileId, router, saving]);
+  }, [
+    avatarAsset,
+    avatarUrl,
+    course,
+    email,
+    facebookName,
+    firstName,
+    lastName,
+    phoneNumber,
+    profileId,
+    router,
+    saving,
+    uploadAvatar,
+  ]);
 
   return (
     <SafeAreaView
@@ -225,26 +408,80 @@ export default function EditProfileScreen() {
         ) : (
           <>
             {errorMessage ? (
-              <Text
-                style={[
-                  styles.message,
-                  styles.messageError,
-                ]}
-              >
+              <Text style={[styles.message, styles.messageError]}>
                 {errorMessage}
               </Text>
             ) : null}
 
             {infoMessage ? (
-              <Text
-                style={[
-                  styles.message,
-                  styles.messageInfo,
-                ]}
-              >
+              <Text style={[styles.message, styles.messageInfo]}>
                 {infoMessage}
               </Text>
             ) : null}
+
+            <View style={{ alignItems: "center", marginBottom: 24 }}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={handlePickAvatar}
+                disabled={uploadingAvatar}
+                style={{
+                  position: "relative",
+                }}
+              >
+                <View
+                  style={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: 60,
+                    borderWidth: 3,
+                    borderColor: "#2bee79",
+                    overflow: "hidden",
+                    backgroundColor: isDark ? "#193324" : "#e2e8f0",
+                  }}
+                >
+                  <Image
+                    source={{
+                      uri: avatarAsset?.uri || avatarUrl || DEFAULT_AVATAR,
+                    }}
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                </View>
+                <View
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: "#2bee79",
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 3,
+                    borderColor: isDark ? "#102217" : "#f6f8f7",
+                  }}
+                >
+                  {uploadingAvatar ? (
+                    <ActivityIndicator size="small" color="#102217" />
+                  ) : (
+                    <MaterialIcons
+                      name="camera-alt"
+                      size={18}
+                      color="#102217"
+                    />
+                  )}
+                </View>
+              </TouchableOpacity>
+              <Text
+                style={[
+                  styles.helper,
+                  isDark ? styles.helperDark : styles.helperLight,
+                  { marginTop: 8 },
+                ]}
+              >
+                Tap to change profile photo
+              </Text>
+            </View>
 
             <View style={styles.inputGroup}>
               <Text
@@ -425,11 +662,7 @@ export default function EditProfileScreen() {
               {saving ? (
                 <ActivityIndicator size="small" color="#102217" />
               ) : (
-                <MaterialIcons
-                  name="save"
-                  size={22}
-                  color="#102217"
-                />
+                <MaterialIcons name="save" size={22} color="#102217" />
               )}
               <Text style={styles.buttonText}>
                 {saving ? "Saving..." : "Save Changes"}
