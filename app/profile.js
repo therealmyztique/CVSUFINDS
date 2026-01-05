@@ -398,6 +398,7 @@ export default function ProfileScreen() {
                         item.isEmpty ? { opacity: 0.6 } : null,
                       ]}
                     >
+                      co
                       {item.displayValue}
                     </Text>
                   </View>
