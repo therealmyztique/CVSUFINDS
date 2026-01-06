@@ -115,6 +115,12 @@ const createImageBlob = async (asset, contentType) => {
   return base64Data;
 };
 
+const insertLostReport = async (payload) =>
+  supabase.from("lost_reports").insert({
+    ...payload,
+    status: "active",
+  });
+
 export default function ReportLostScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
@@ -323,21 +329,19 @@ export default function ReportLostScreen() {
         throw new Error("Unable to retrieve the uploaded image URL.");
       }
 
-      const { error: insertError } = await supabase
-        .from("lost_reports")
-        .insert({
-          reporter_id: user.id,
-          title: itemName.trim(),
-          category,
-          description: description.trim() || null,
-          last_seen: lastSeen.trim(),
-          lost_at: dateTime ? dateTime.toISOString() : null,
-          reward: reward.trim() || null,
-          notes: notes.trim() || null,
-          contact_preference: contactPref,
-          contact_value: contactInfo.trim(),
-          image_url: imageUrl,
-        });
+      const { error: insertError } = await insertLostReport({
+        reporter_id: user.id,
+        title: itemName.trim(),
+        category,
+        description: description.trim() || null,
+        last_seen: lastSeen.trim(),
+        lost_at: dateTime ? dateTime.toISOString() : null,
+        reward: reward.trim() || null,
+        notes: notes.trim() || null,
+        contact_preference: contactPref,
+        contact_value: contactInfo.trim(),
+        image_url: imageUrl,
+      });
 
       if (insertError) {
         console.error("Insert error:", insertError);
