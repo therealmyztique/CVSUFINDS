@@ -52,14 +52,14 @@ export default function ResolvedItemsScreen() {
         .from("found_reports")
         .select("*")
         .eq("status", "resolved")
-        .order("resolved_at", { ascending: false });
+        .order("updated_at", { ascending: false });
 
       // Fetch resolved lost reports
       const { data: lostData, error: lostError } = await supabase
         .from("lost_reports")
         .select("*")
         .eq("status", "resolved")
-        .order("resolved_at", { ascending: false });
+        .order("updated_at", { ascending: false });
 
       if (foundError) console.warn("Found reports error:", foundError);
       if (lostError) console.warn("Lost reports error:", lostError);
@@ -78,7 +78,7 @@ export default function ResolvedItemsScreen() {
 
       // Combine and sort by resolved date
       const allResolved = [...foundItems, ...lostItems].sort(
-        (a, b) => new Date(b.resolved_at) - new Date(a.resolved_at)
+        (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
       );
 
       // Get reporter profiles
@@ -115,7 +115,7 @@ export default function ResolvedItemsScreen() {
       // Calculate this month's count
       const now = new Date();
       const thisMonth = enrichedItems.filter((item) => {
-        const resolvedDate = new Date(item.resolved_at);
+        const resolvedDate = new Date(item.updated_at);
         return (
           resolvedDate.getMonth() === now.getMonth() &&
           resolvedDate.getFullYear() === now.getFullYear()
@@ -364,7 +364,7 @@ export default function ResolvedItemsScreen() {
                       isDark ? styles.itemDateDark : styles.itemDateLight,
                     ]}
                   >
-                    Resolved {formatDate(item.resolved_at)}
+                    Resolved {formatDate(item.updated_at)}
                   </Text>
                 </View>
                 <View style={styles.returnedBadge}>

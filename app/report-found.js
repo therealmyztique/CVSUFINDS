@@ -18,6 +18,7 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import { generateImageEmbedding } from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
 import { reportFoundStyles as styles } from "./styles/reportFoundStyles";
 
@@ -116,10 +117,14 @@ const createImageBlob = async (asset, contentType) => {
 };
 
 const insertFoundReport = async (payload) =>
-  supabase.from("found_reports").insert({
-    ...payload,
-    status: "active",
-  });
+  supabase
+    .from("found_reports")
+    .insert({
+      ...payload,
+      status: "active",
+    })
+    .select("id")
+    .single();
 
 export default function ReportFoundScreen() {
   const router = useRouter();
@@ -329,23 +334,39 @@ export default function ReportFoundScreen() {
         throw new Error("Unable to retrieve the uploaded image URL.");
       }
 
-      const { error: insertError } = await insertFoundReport({
-        reporter_id: user.id,
-        title: itemName.trim(),
-        category,
-        description: description.trim() || null,
-        location_found: location.trim(),
-        reward: reward.trim() || null,
-        notes: notes.trim() || null,
-        contact_preference: contactPref,
-        contact_value: contactInfo.trim(),
-        found_at: dateTime ? dateTime.toISOString() : null,
-        image_url: imageUrl,
-      });
+      const { data: insertedReport, error: insertError } =
+        await insertFoundReport({
+          reporter_id: user.id,
+          title: itemName.trim(),
+          category,
+          description: description.trim() || null,
+          location_found: location.trim(),
+          reward: reward.trim() || null,
+          notes: notes.trim() || null,
+          contact_preference: contactPref,
+          contact_value: contactInfo.trim(),
+          found_at: dateTime ? dateTime.toISOString() : null,
+          image_url: imageUrl,
+        });
 
       if (insertError) {
         console.error("Insert error:", insertError);
         throw new Error(`Database insert failed: ${insertError.message}`);
+      }
+
+      // Generate CLIP ViT-B-32 image embedding for similarity search
+      if (insertedReport?.id) {
+        generateImageEmbedding(imageUrl, insertedReport.id, "found")
+          .then((result) => {
+            if (!result.success) {
+              console.warn("Image embedding generation failed:", result.error);
+            } else {
+              console.log("Image embedding generated successfully");
+            }
+          })
+          .catch((err) => {
+            console.warn("Image embedding generation error:", err);
+          });
       }
 
       Alert.alert("Success", "Found item report submitted.");
