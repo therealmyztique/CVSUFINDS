@@ -4,14 +4,14 @@ import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 
 import { supabase } from "../lib/supabaseClient";
@@ -62,6 +62,24 @@ export default function SignUpScreen() {
     hasRequiredFields &&
     hasPasswordMinimum &&
     passwordsMatch;
+
+  const formatNameInput = (value) => {
+    if (!value) {
+      return "";
+    }
+
+    const firstLetterIndex = value.search(/[A-Za-z]/);
+    if (firstLetterIndex === -1) {
+      return value;
+    }
+
+    const formattedFirstLetter = value[firstLetterIndex].toUpperCase();
+    return (
+      value.slice(0, firstLetterIndex) +
+      formattedFirstLetter +
+      value.slice(firstLetterIndex + 1)
+    );
+  };
 
   async function signUpWithEmail() {
     if (loading) {
@@ -128,12 +146,15 @@ export default function SignUpScreen() {
           },
         },
       });
-
       if (error) {
-        setErrorMessage(error.message);
+        const normalizedMessage = error.message?.toLowerCase?.() ?? "";
+        if (normalizedMessage.includes("already registered")) {
+          setErrorMessage("That email is already registered. Try logging in instead.");
+        } else {
+          setErrorMessage(error.message);
+        }
         return;
       }
-
       if (data?.user) {
         const { error: profileError } = await supabase.from("profiles").upsert({
           id: data.user.id,
@@ -145,7 +166,16 @@ export default function SignUpScreen() {
         });
 
         if (profileError && profileError.code !== "42P01") {
-          setErrorMessage(profileError.message);
+          const normalizedProfileMessage = profileError.message?.toLowerCase?.() ?? "";
+
+          if (
+            normalizedProfileMessage.includes("duplicate key") &&
+            normalizedProfileMessage.includes("profiles_email_key")
+          ) {
+            setErrorMessage("That email is already registered. Try logging in instead.");
+          } else {
+            setErrorMessage(profileError.message);
+          }
           return;
         }
       }
@@ -293,10 +323,10 @@ export default function SignUpScreen() {
                     placeholder="Jane"
                     placeholderTextColor={placeholderColor}
                     value={firstName}
-                    onChangeText={setFirstName}
+                    onChangeText={(text) => setFirstName(formatNameInput(text))}
                     onFocus={() => setFocusedField("firstName")}
                     onBlur={() => setFocusedField(null)}
-                    autoCapitalize="words"
+                    autoCapitalize="none"
                     returnKeyType="next"
                   />
                 </View>
@@ -328,10 +358,10 @@ export default function SignUpScreen() {
                     placeholder="Doe"
                     placeholderTextColor={placeholderColor}
                     value={lastName}
-                    onChangeText={setLastName}
+                    onChangeText={(text) => setLastName(formatNameInput(text))}
                     onFocus={() => setFocusedField("lastName")}
                     onBlur={() => setFocusedField(null)}
-                    autoCapitalize="words"
+                    autoCapitalize="none"
                     returnKeyType="next"
                   />
                 </View>

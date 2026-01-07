@@ -1,7 +1,7 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
-import { Text, View, useColorScheme } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Text, View, useColorScheme } from "react-native";
+import { supabase } from "../lib/supabaseClient";
 import AppLogo from "./components/AppLogo";
 import LoginButton from "./components/LogInButton";
 import SignUpButton from "./components/SignUpButton";
@@ -11,20 +11,41 @@ export default function WelcomeScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      // Check if the user is already authenticated
-      const token = await AsyncStorage.getItem("token");
-      if (token) {
-        // If authenticated, navigate to the home screen
-        router.replace("/home");
+      try {
+        // Check if the user is already authenticated using Supabase
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // If authenticated, navigate to the home screen
+          router.replace("/home");
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+      } finally {
+        setChecking(false);
       }
     };
 
     checkAuth();
-  }, []);
-  console.log("Token:", token);
+  }, [router]);
+
+  // Show loading while checking auth
+  if (checking) {
+    return (
+      <View
+        style={[
+          welcomeStyles.container,
+          isDark ? welcomeStyles.containerDark : welcomeStyles.containerLight,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color="#2bee79" />
+      </View>
+    );
+  }
 
   return (
     <View

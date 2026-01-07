@@ -173,7 +173,6 @@ export default function LoginScreen() {
           </View>
         </View>
 
-        {/* Forgot password */}
         <View style={styles.rememberForgotRow}>
           <TouchableOpacity
             style={styles.rememberMe}
@@ -193,10 +192,6 @@ export default function LoginScreen() {
             >
               Remember Me
             </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.forgot}>
-            <Text style={styles.forgotText}>Forgot Password?</Text>
           </TouchableOpacity>
         </View>
 

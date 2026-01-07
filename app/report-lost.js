@@ -11,7 +11,6 @@ import {
   Alert,
   Animated,
   Easing,
-  Image,
   ImageBackground,
   Modal,
   Platform,
@@ -20,7 +19,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  useColorScheme,
+  useColorScheme
 } from "react-native";
 import {
   findMatchesForLostItem,
@@ -152,8 +151,7 @@ export default function ReportLostScreen() {
   const [imageAsset, setImageAsset] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  // Matches modal state
-  const [showMatchesModal, setShowMatchesModal] = useState(false);
+  // Matches state
   const [matchedItems, setMatchedItems] = useState([]);
   const [searchingMatches, setSearchingMatches] = useState(false);
   const [searchProgress, setSearchProgress] = useState(0);
@@ -463,10 +461,14 @@ export default function ReportLostScreen() {
             );
 
             if (matchResult.success && matchResult.matches?.length > 0) {
-              setMatchedItems(matchResult.matches);
               setSearchingMatches(false);
-              setShowMatchesModal(true);
-              // Don't navigate away yet - let user see matches
+              // Navigate to match results page
+              const sourceItem = {
+                title: itemName.trim(),
+                image_url: imageUrl,
+                category,
+              };
+              // Reset form
               setItemName("");
               setCategory("");
               setDescription("");
@@ -478,7 +480,16 @@ export default function ReportLostScreen() {
               setShowCategoryList(false);
               setImageAsset(null);
               setUploading(false);
-              return; // Exit early to show matches modal
+              // Navigate to match results page
+              router.push({
+                pathname: "/match-results",
+                params: {
+                  matches: JSON.stringify(matchResult.matches),
+                  sourceItem: JSON.stringify(sourceItem),
+                  reportType: "lost",
+                },
+              });
+              return; // Exit early to navigate to results page
             } else {
               console.log("No matching found items detected");
               setSearchingMatches(false);
@@ -569,23 +580,6 @@ export default function ReportLostScreen() {
   const handleCloseNoMatchModal = () => {
     setShowNoMatchModal(false);
     router.back();
-  };
-
-  // Handle closing the matches modal
-  const handleCloseMatchesModal = () => {
-    setShowMatchesModal(false);
-    setMatchedItems([]);
-    router.back();
-  };
-
-  // Navigate to item detail
-  const handleViewMatch = (item) => {
-    setShowMatchesModal(false);
-    setMatchedItems([]);
-    router.push({
-      pathname: "/item-detail",
-      params: { id: item.id, type: "found" },
-    });
   };
 
   return (
@@ -1084,227 +1078,6 @@ export default function ReportLostScreen() {
         </View>
       ) : null}
 
-      {/* Potential Matches Modal */}
-      <Modal
-        visible={showMatchesModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={handleCloseMatchesModal}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            justifyContent: "flex-end",
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: isDark ? "#193324" : "#ffffff",
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              maxHeight: "80%",
-              paddingBottom: 34,
-            }}
-          >
-            {/* Modal Header */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: 16,
-                borderBottomWidth: 1,
-                borderBottomColor: isDark ? "#326747" : "#e2e8f0",
-              }}
-            >
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "700",
-                    color: isDark ? "#ffffff" : "#0f172a",
-                  }}
-                >
-                  🎉 Potential Matches Found!
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: isDark ? "#92c9a8" : "#64748b",
-                    marginTop: 4,
-                  }}
-                >
-                  We found {matchedItems.length} item(s) that might be yours
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={handleCloseMatchesModal}
-                style={{
-                  padding: 8,
-                  borderRadius: 20,
-                  backgroundColor: isDark ? "#326747" : "#f1f5f9",
-                }}
-              >
-                <MaterialIcons
-                  name="close"
-                  size={24}
-                  color={isDark ? "#ffffff" : "#0f172a"}
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* Matches List */}
-            <ScrollView style={{ padding: 16 }}>
-              {matchedItems.map((item, index) => (
-                <TouchableOpacity
-                  key={item.id}
-                  onPress={() => handleViewMatch(item)}
-                  style={{
-                    backgroundColor: isDark ? "#1e3a2f" : "#f8fafc",
-                    borderRadius: 16,
-                    marginBottom: 12,
-                    overflow: "hidden",
-                    borderWidth: 1,
-                    borderColor: isDark ? "#326747" : "#e2e8f0",
-                  }}
-                >
-                  <View style={{ flexDirection: "row" }}>
-                    {item.image_url ? (
-                      <Image
-                        source={{ uri: item.image_url }}
-                        style={{
-                          width: 100,
-                          height: 100,
-                          borderTopLeftRadius: 15,
-                          borderBottomLeftRadius: 15,
-                        }}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View
-                        style={{
-                          width: 100,
-                          height: 100,
-                          backgroundColor: isDark ? "#326747" : "#e2e8f0",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          borderTopLeftRadius: 15,
-                          borderBottomLeftRadius: 15,
-                        }}
-                      >
-                        <MaterialIcons
-                          name="image"
-                          size={32}
-                          color={isDark ? "#92c9a8" : "#94a3b8"}
-                        />
-                      </View>
-                    )}
-                    <View style={{ flex: 1, padding: 12 }}>
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          fontWeight: "600",
-                          color: isDark ? "#ffffff" : "#0f172a",
-                        }}
-                        numberOfLines={1}
-                      >
-                        {item.title}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: 13,
-                          color: isDark ? "#92c9a8" : "#64748b",
-                          marginTop: 2,
-                        }}
-                        numberOfLines={1}
-                      >
-                        📍 {item.location_found || "Location not specified"}
-                      </Text>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          marginTop: 8,
-                        }}
-                      >
-                        <View
-                          style={{
-                            backgroundColor:
-                              item.similarity >= 0.7
-                                ? "#22c55e"
-                                : item.similarity >= 0.5
-                                ? "#eab308"
-                                : "#f97316",
-                            paddingHorizontal: 8,
-                            paddingVertical: 4,
-                            borderRadius: 12,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              fontWeight: "600",
-                              color: "#ffffff",
-                            }}
-                          >
-                            {Math.round(item.similarity * 100)}% match
-                          </Text>
-                        </View>
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            color: isDark ? "#92c9a8" : "#64748b",
-                            marginLeft: 8,
-                          }}
-                        >
-                          {item.category}
-                        </Text>
-                      </View>
-                    </View>
-                    <View
-                      style={{
-                        justifyContent: "center",
-                        paddingRight: 12,
-                      }}
-                    >
-                      <MaterialIcons
-                        name="chevron-right"
-                        size={24}
-                        color={isDark ? "#92c9a8" : "#94a3b8"}
-                      />
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            {/* Close Button */}
-            <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
-              <TouchableOpacity
-                onPress={handleCloseMatchesModal}
-                style={{
-                  backgroundColor: isDark ? "#326747" : "#f1f5f9",
-                  paddingVertical: 14,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: "600",
-                    color: isDark ? "#ffffff" : "#0f172a",
-                  }}
-                >
-                  Close & Go Back
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
       {/* Searching Matches Modal - Beautiful Design */}
       <Modal
         visible={searchingMatches}
@@ -1440,7 +1213,7 @@ export default function ReportLostScreen() {
                 marginTop: 16,
               }}
             >
-              Analyzing image features and location data
+              Analyzing image features...
             </Text>
           </View>
 

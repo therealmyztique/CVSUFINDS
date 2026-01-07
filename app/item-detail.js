@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import {
   Image,
   Linking,
@@ -10,6 +11,7 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import { supabase } from "../lib/supabaseClient";
 import { itemDetailStyles as styles } from "./styles/itemDetailStyles";
 
 const DEFAULT_AVATAR = "https://via.placeholder.com/150";
@@ -48,6 +50,51 @@ export default function ItemDetailScreen() {
     reporterId: params.reporterId || "",
   };
 
+  const [reporterName, setReporterName] = useState(item.author?.trim());
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadReporterName = async () => {
+      if (!item.reporterId) {
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("first_name, last_name")
+          .eq("id", item.reporterId)
+          .single();
+
+        if (error) {
+          console.warn("Unable to load reporter profile:", error);
+          return;
+        }
+
+        if (!data) {
+          return;
+        }
+
+        const firstName = data.first_name?.trim();
+        const lastName = data.last_name?.trim();
+        const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+
+        if (fullName && isActive) {
+          setReporterName(fullName);
+        }
+      } catch (profileError) {
+        console.warn("Error fetching reporter profile:", profileError);
+      }
+    };
+
+    loadReporterName();
+
+    return () => {
+      isActive = false;
+    };
+  }, [item.reporterId]);
+
   const isFound = item.status === "Found";
   const primaryColor = isFound ? "#2bee79" : "#f43f5e";
 
@@ -79,7 +126,7 @@ export default function ItemDetailScreen() {
   };
 
   const handleContact = () => {
-    const { contactPreference, contactValue, author } = item;
+    const { contactPreference, contactValue } = item;
 
     if (!contactValue) {
       return;
@@ -113,10 +160,13 @@ export default function ItemDetailScreen() {
     }
   };
 
-  const getContactButtonText = () => {
-    const firstName = item.author.split(" ")[0];
-    return `Message ${firstName}`;
-  };
+  const contactCtaText = useMemo(() => {
+    const firstName = (reporterName || "").split(" ")[0]?.trim();
+    if (firstName) {
+      return `Message ${firstName}`;
+    }
+    return "Message the poster";
+  }, [reporterName]);
 
   return (
     <View
@@ -125,7 +175,6 @@ export default function ItemDetailScreen() {
         isDark ? styles.containerDark : styles.containerLight,
       ]}
     >
-      {/* Header */}
       <View
         style={[
           styles.header,
@@ -263,19 +312,8 @@ export default function ItemDetailScreen() {
                     isDark ? styles.userNameDark : styles.userNameLight,
                   ]}
                 >
-                  {item.author}
+                  {reporterName || "Anonymous"}
                 </Text>
-                <View style={styles.userRating}>
-                  <MaterialIcons name="star" size={14} color="#fbbf24" />
-                  <Text
-                    style={[
-                      styles.ratingText,
-                      isDark ? styles.ratingTextDark : styles.ratingTextLight,
-                    ]}
-                  >
-                    4.9 (12 posts)
-                  </Text>
-                </View>
               </View>
             </View>
             <TouchableOpacity
@@ -441,7 +479,7 @@ export default function ItemDetailScreen() {
                 : styles.contactButtonTextLost,
             ]}
           >
-            {getContactButtonText()}
+            {contactCtaText}
           </Text>
         </TouchableOpacity>
       </View>

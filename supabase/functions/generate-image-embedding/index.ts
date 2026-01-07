@@ -191,14 +191,15 @@ Deno.serve(async (req) => {
   try {
     // Check environment variables first - HF_API_URL is no longer needed
     const hfApiToken = getEnv("HF_API_TOKEN");
-    const supabaseUrl = getEnv("EDGE_SUPABASE_URL");
-    const supabaseKey = getEnv("EDGE_SUPABASE_ANON_KEY");
+    const supabaseUrl = getEnv("EDGE_SUPABASE_URL") || getEnv("SUPABASE_URL");
+    // Use service role key to bypass RLS for database updates
+    const supabaseServiceKey = getEnv("EDGE_SERVICE_ROLE_KEY");
 
     // Log which env vars are missing
     const missingVars = [];
     if (!hfApiToken) missingVars.push("HF_API_TOKEN");
     if (!supabaseUrl) missingVars.push("EDGE_SUPABASE_URL");
-    if (!supabaseKey) missingVars.push("EDGE_SUPABASE_ANON_KEY");
+    if (!supabaseServiceKey) missingVars.push("EDGE_SERVICE_ROLE_KEY");
 
     if (missingVars.length > 0) {
       console.error(`Missing environment variables: ${missingVars.join(", ")}`);
@@ -210,7 +211,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl!, supabaseKey!);
+    // Use service role key to bypass RLS for updating embeddings
+    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
     const { image_url: imageUrl, report_id: reportId, report_type: reportType } = await req.json();
 
@@ -260,7 +262,14 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("Edge function error:", error);
-    const message = error instanceof Error ? error.message : "Unexpected server error";
+    let message = "Unexpected server error";
+    if (error instanceof Error) {
+      message = error.message;
+    } else if (typeof error === "string") {
+      message = error;
+    } else if (error && typeof error === "object") {
+      message = JSON.stringify(error);
+    }
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

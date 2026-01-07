@@ -71,8 +71,13 @@ export const welcomeStyles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2,
+    borderWidth: 0.1,
     borderColor: "rgba(43,238,121,0.6)",
+  },
+
+  logoImage: {
+    width: "100%",
+    height: "100%",
   },
 
   title: {
@@ -86,6 +91,10 @@ export const welcomeStyles = StyleSheet.create({
 
   titleLight: {
     color: "#0f172a",
+  },
+
+  titleAccent: {
+    color: "#2bee79",
   },
 
   subtitle: {
