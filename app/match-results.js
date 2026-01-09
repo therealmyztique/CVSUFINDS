@@ -2,15 +2,15 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Modal,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
 import { matchResultsStyles as styles } from "./styles/matchResultsStyles";
@@ -36,11 +36,11 @@ export default function MatchResultsScreen() {
   const [sourceItem, setSourceItem] = useState(null);
   const [reportType, setReportType] = useState("lost");
   const [userProfiles, setUserProfiles] = useState({});
-  
+
   // Item detail modal state
   const [selectedItem, setSelectedItem] = useState(null);
   const [showItemModal, setShowItemModal] = useState(false);
-  
+
   // Claim confirmation modal state
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
@@ -78,8 +78,10 @@ export default function MatchResultsScreen() {
   const fetchUserProfiles = async (matchesList) => {
     try {
       // Get unique reporter IDs
-      const reporterIds = [...new Set(matchesList.map(m => m.reporter_id).filter(Boolean))];
-      
+      const reporterIds = [
+        ...new Set(matchesList.map((m) => m.reporter_id).filter(Boolean)),
+      ];
+
       if (reporterIds.length === 0) return;
 
       const { data, error } = await supabase
@@ -94,7 +96,7 @@ export default function MatchResultsScreen() {
 
       // Create a map of user profiles
       const profilesMap = {};
-      data?.forEach(profile => {
+      data?.forEach((profile) => {
         profilesMap[profile.id] = profile;
       });
       setUserProfiles(profilesMap);
@@ -159,7 +161,10 @@ export default function MatchResultsScreen() {
           if (!profileError && profileData) {
             const firstName = profileData.first_name?.trim();
             const lastName = profileData.last_name?.trim();
-            const combinedName = [firstName, lastName].filter(Boolean).join(" ").trim();
+            const combinedName = [firstName, lastName]
+              .filter(Boolean)
+              .join(" ")
+              .trim();
             if (combinedName) {
               claimantName = combinedName;
             }
@@ -190,6 +195,8 @@ export default function MatchResultsScreen() {
             message: `${claimantName} believes they own "${itemTitle}". Review the claim and coordinate the handover.`,
             related_item_id: selectedItem.id,
             related_item_type: relatedType,
+            contact_preference: sourceItem?.contact_preference || null,
+            contact_value: sourceItem?.contact_value || null,
           });
 
         if (notificationError) {
@@ -262,7 +269,8 @@ export default function MatchResultsScreen() {
 
   const renderHeroCard = (item, index) => {
     const percentage = getMatchPercentage(item.similarity);
-    const location = item.location_found || item.last_seen || "Unknown location";
+    const location =
+      item.location_found || item.last_seen || "Unknown location";
     const dateField = item.found_at || item.lost_at;
     const dateLabel = reportType === "lost" ? "Found" : "Reported";
     const posterName = getUserName(item.reporter_id);
@@ -280,7 +288,9 @@ export default function MatchResultsScreen() {
         </View>
 
         <Image
-          source={{ uri: item.image_url || "https://via.placeholder.com/400x200" }}
+          source={{
+            uri: item.image_url || "https://via.placeholder.com/400x200",
+          }}
           style={styles.heroCardImage}
           resizeMode="cover"
         />
@@ -312,11 +322,13 @@ export default function MatchResultsScreen() {
           </Text>
 
           {/* Posted by */}
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
-            <MaterialIcons 
-              name="person" 
-              size={16} 
-              color={isDark ? "#92c9a8" : "#64748b"} 
+          <View
+            style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
+          >
+            <MaterialIcons
+              name="person"
+              size={16}
+              color={isDark ? "#92c9a8" : "#64748b"}
             />
             <Text
               style={[
@@ -324,7 +336,7 @@ export default function MatchResultsScreen() {
                 isDark
                   ? styles.heroCardDescriptionDark
                   : styles.heroCardDescriptionLight,
-                { marginLeft: 4 }
+                { marginLeft: 4 },
               ]}
             >
               Posted by {posterName}
@@ -347,7 +359,8 @@ export default function MatchResultsScreen() {
   const renderMatchCard = (item, index) => {
     const percentage = getMatchPercentage(item.similarity);
     const confidence = getConfidenceLevel(item.similarity);
-    const location = item.location_found || item.last_seen || "Unknown location";
+    const location =
+      item.location_found || item.last_seen || "Unknown location";
     const dateField = item.found_at || item.lost_at;
     const isLowConfidence = confidence === "low";
     const posterName = getUserName(item.reporter_id);
@@ -444,7 +457,9 @@ export default function MatchResultsScreen() {
         </View>
 
         <Image
-          source={{ uri: item.image_url || "https://via.placeholder.com/96x128" }}
+          source={{
+            uri: item.image_url || "https://via.placeholder.com/96x128",
+          }}
           style={[
             styles.matchCardImage,
             isLowConfidence && styles.matchCardImageLow,
@@ -458,7 +473,10 @@ export default function MatchResultsScreen() {
   const renderItemDetailModal = () => {
     if (!selectedItem) return null;
 
-    const location = selectedItem.location_found || selectedItem.last_seen || "Unknown location";
+    const location =
+      selectedItem.location_found ||
+      selectedItem.last_seen ||
+      "Unknown location";
     const dateField = selectedItem.found_at || selectedItem.lost_at;
     const posterName = getUserName(selectedItem.reporter_id);
     const percentage = getMatchPercentage(selectedItem.similarity);
@@ -525,7 +543,11 @@ export default function MatchResultsScreen() {
             <ScrollView style={{ padding: 16 }}>
               {/* Item Image */}
               <Image
-                source={{ uri: selectedItem.image_url || "https://via.placeholder.com/400x200" }}
+                source={{
+                  uri:
+                    selectedItem.image_url ||
+                    "https://via.placeholder.com/400x200",
+                }}
                 style={{
                   width: "100%",
                   height: 200,
@@ -599,7 +621,9 @@ export default function MatchResultsScreen() {
                     color: isDark ? "#92c9a8" : "#64748b",
                   }}
                 >
-                  {CATEGORY_LABELS[selectedItem.category] || selectedItem.category || "Other"}
+                  {CATEGORY_LABELS[selectedItem.category] ||
+                    selectedItem.category ||
+                    "Other"}
                 </Text>
               </View>
 
@@ -783,7 +807,11 @@ export default function MatchResultsScreen() {
                   <ActivityIndicator size="small" color="#102217" />
                 ) : (
                   <>
-                    <MaterialIcons name="check-circle" size={20} color="#102217" />
+                    <MaterialIcons
+                      name="check-circle"
+                      size={20}
+                      color="#102217"
+                    />
                     <Text
                       style={{
                         fontSize: 16,
@@ -804,7 +832,9 @@ export default function MatchResultsScreen() {
   };
 
   const renderClaimConfirmationModal = () => {
-    const posterName = selectedItem ? getUserName(selectedItem.reporter_id) : "the poster";
+    const posterName = selectedItem
+      ? getUserName(selectedItem.reporter_id)
+      : "the poster";
 
     return (
       <Modal
@@ -844,7 +874,11 @@ export default function MatchResultsScreen() {
                 alignItems: "center",
               }}
             >
-              <MaterialIcons name="notifications-active" size={36} color="#2bee79" />
+              <MaterialIcons
+                name="notifications-active"
+                size={36}
+                color="#2bee79"
+              />
             </View>
           </View>
 
@@ -894,7 +928,8 @@ export default function MatchResultsScreen() {
                 lineHeight: 20,
               }}
             >
-              📧 They will reach out to you soon to verify and arrange the handover. Please wait for their response.
+              📧 They will reach out to you soon to verify and arrange the
+              handover. Please wait for their response.
             </Text>
           </View>
 
@@ -1025,9 +1060,7 @@ export default function MatchResultsScreen() {
           <Text
             style={[
               styles.headlineSubtext,
-              isDark
-                ? styles.headlineSubtextDark
-                : styles.headlineSubtextLight,
+              isDark ? styles.headlineSubtextDark : styles.headlineSubtextLight,
             ]}
           >
             Review the results below to verify your item.

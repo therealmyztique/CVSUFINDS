@@ -3,13 +3,15 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ActivityIndicator,
+  Linking,
+  Modal,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
 import { notificationStyles as styles } from "./styles/notificationStyles";
@@ -41,6 +43,8 @@ export default function NotificationsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Fetch current user
   useEffect(() => {
@@ -137,15 +141,69 @@ export default function NotificationsScreen() {
       await markAsRead(notification.id);
     }
 
-    // Navigate based on notification type
-    if (notification.related_item_id && notification.related_item_type) {
+    // Show modal with notification details
+    setSelectedNotification(notification);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedNotification(null);
+  };
+
+  const handleViewItem = () => {
+    if (
+      selectedNotification?.related_item_id &&
+      selectedNotification?.related_item_type
+    ) {
+      handleCloseModal();
       router.push({
         pathname: "/item-detail",
         params: {
-          id: notification.related_item_id,
-          type: notification.related_item_type,
+          id: selectedNotification.related_item_id,
+          type: selectedNotification.related_item_type,
         },
       });
+    }
+  };
+
+  const handleMessageUser = async () => {
+    if (!selectedNotification?.contact_value) return;
+
+    const contactValue = selectedNotification.contact_value;
+    const contactPref = selectedNotification.contact_preference || "";
+
+    try {
+      let url = "";
+      if (contactPref === "facebook" || contactValue.includes("facebook.com")) {
+        // Facebook link
+        url = contactValue.startsWith("http")
+          ? contactValue
+          : `https://facebook.com/${contactValue}`;
+      } else if (contactPref === "email" || contactValue.includes("@")) {
+        // Email
+        url = `mailto:${contactValue}`;
+      } else if (
+        contactPref === "phone" ||
+        /^[0-9+\-\s]+$/.test(contactValue)
+      ) {
+        // Phone number
+        url = `tel:${contactValue.replace(/\s/g, "")}`;
+      } else {
+        // Default: try to open as URL or use as-is
+        url = contactValue.startsWith("http")
+          ? contactValue
+          : `https://${contactValue}`;
+      }
+
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        console.warn("Cannot open URL:", url);
+      }
+    } catch (error) {
+      console.error("Error opening contact:", error);
     }
   };
 
@@ -188,9 +246,7 @@ export default function NotificationsScreen() {
         key={notification.id}
         style={[
           styles.notificationItem,
-          isDark
-            ? styles.notificationItemDark
-            : styles.notificationItemLight,
+          isDark ? styles.notificationItemDark : styles.notificationItemLight,
           !notification.is_read && styles.notificationUnread,
           !notification.is_read &&
             (isDark
@@ -276,10 +332,7 @@ export default function NotificationsScreen() {
     >
       {/* Header */}
       <View
-        style={[
-          styles.header,
-          isDark ? styles.headerDark : styles.headerLight,
-        ]}
+        style={[styles.header, isDark ? styles.headerDark : styles.headerLight]}
       >
         <TouchableOpacity
           style={[
@@ -393,6 +446,112 @@ export default function NotificationsScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
       )}
+
+      {/* Notification Detail Modal */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCloseModal}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={handleCloseModal}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={[
+              styles.modalContent,
+              isDark ? styles.modalContentDark : styles.modalContentLight,
+            ]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={handleCloseModal}
+            >
+              <MaterialIcons
+                name="close"
+                size={24}
+                color={isDark ? "#94a3b8" : "#64748b"}
+              />
+            </TouchableOpacity>
+
+            {/* Modal Header Icon */}
+            {selectedNotification && (
+              <View
+                style={[
+                  styles.modalIconContainer,
+                  {
+                    backgroundColor: `${
+                      NOTIFICATION_COLORS[selectedNotification.type] ||
+                      "#64748b"
+                    }20`,
+                  },
+                ]}
+              >
+                <MaterialIcons
+                  name={
+                    NOTIFICATION_ICONS[selectedNotification.type] ||
+                    "notifications"
+                  }
+                  size={32}
+                  color={
+                    NOTIFICATION_COLORS[selectedNotification.type] || "#64748b"
+                  }
+                />
+              </View>
+            )}
+
+            {/* Title */}
+            <Text
+              style={[
+                styles.modalTitle,
+                isDark ? styles.modalTitleDark : styles.modalTitleLight,
+              ]}
+            >
+              {selectedNotification?.title || "Notification"}
+            </Text>
+
+            {/* Message/Details */}
+            <Text
+              style={[
+                styles.modalMessage,
+                isDark ? styles.modalMessageDark : styles.modalMessageLight,
+              ]}
+            >
+              {selectedNotification?.message || "No details available."}
+            </Text>
+
+            {/* Time */}
+            <Text
+              style={[
+                styles.modalTime,
+                isDark ? styles.modalTimeDark : styles.modalTimeLight,
+              ]}
+            >
+              {selectedNotification
+                ? formatDate(selectedNotification.created_at)
+                : ""}
+            </Text>
+
+            {/* Action Buttons */}
+            <View style={styles.modalButtonsContainer}>
+              {selectedNotification?.contact_value && (
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.messageUserButton]}
+                  onPress={handleMessageUser}
+                >
+                  <MaterialIcons name="chat" size={18} color="#ffffff" />
+                  <Text style={styles.messageUserButtonText}>Contact User</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

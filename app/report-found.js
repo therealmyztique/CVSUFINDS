@@ -17,8 +17,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  useColorScheme
+  useColorScheme,
 } from "react-native";
+import { generateImageEmbedding } from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
 import { reportFoundStyles as styles } from "./styles/reportFoundStyles";
 
@@ -355,6 +356,30 @@ export default function ReportFoundScreen() {
       if (insertError) {
         console.error("Insert error:", insertError);
         throw new Error(`Database insert failed: ${insertError.message}`);
+      }
+
+      // Generate CLIP image embedding for matching
+      if (insertedReport?.id) {
+        try {
+          const embeddingResult = await generateImageEmbedding(
+            imageUrl,
+            insertedReport.id,
+            "found"
+          );
+          if (embeddingResult.success) {
+            console.log(
+              "Image embedding generated successfully for found report"
+            );
+          } else {
+            console.warn(
+              "Failed to generate embedding:",
+              embeddingResult.error
+            );
+          }
+        } catch (embError) {
+          console.warn("Embedding generation error:", embError);
+          // Don't fail the report submission if embedding fails
+        }
       }
 
       // Report successfully submitted - show success modal
@@ -971,7 +996,8 @@ export default function ReportFoundScreen() {
                 lineHeight: 20,
               }}
             >
-              🔔 You'll be notified when someone claims this item as theirs. Thank you for helping!
+              🔔 You'll be notified when someone claims this item as theirs.
+              Thank you for helping!
             </Text>
           </View>
 

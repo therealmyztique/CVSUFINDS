@@ -224,4 +224,108 @@ export const notificationStyles = StyleSheet.create({
   emptySubtitleDark: {
     color: MUTED_DARK,
   },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: 400,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: "center",
+    position: "relative",
+  },
+  modalContentLight: {
+    backgroundColor: LIGHT_SURFACE,
+  },
+  modalContentDark: {
+    backgroundColor: DARK_SURFACE,
+  },
+  modalCloseButton: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    padding: 4,
+    zIndex: 1,
+  },
+  modalIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  modalTitleLight: {
+    color: LIGHT_TEXT,
+  },
+  modalTitleDark: {
+    color: DARK_TEXT,
+  },
+  modalMessage: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  modalMessageLight: {
+    color: MUTED_LIGHT,
+  },
+  modalMessageDark: {
+    color: MUTED_DARK,
+  },
+  modalTime: {
+    fontSize: 13,
+    marginBottom: 20,
+  },
+  modalTimeLight: {
+    color: "#9ca3af",
+  },
+  modalTimeDark: {
+    color: "#6b7280",
+  },
+  modalButtonsContainer: {
+    flexDirection: "row",
+    gap: 12,
+    width: "100%",
+    justifyContent: "center",
+  },
+  modalButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    gap: 8,
+    flex: 1,
+    maxWidth: 160,
+  },
+  viewItemButton: {
+    backgroundColor: "#3b82f6",
+  },
+  viewItemButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  messageUserButton: {
+    backgroundColor: PRIMARY,
+  },
+  messageUserButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });

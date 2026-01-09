@@ -19,7 +19,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  useColorScheme
+  useColorScheme,
 } from "react-native";
 import {
   findMatchesForLostItem,
@@ -467,6 +467,8 @@ export default function ReportLostScreen() {
                 title: itemName.trim(),
                 image_url: imageUrl,
                 category,
+                contact_preference: contactPref,
+                contact_value: contactInfo.trim(),
               };
               // Reset form
               setItemName("");
