@@ -75,6 +75,8 @@ export default function MatchResultsScreen() {
     }
   }, [params.matches, params.sourceItem, params.reportType]);
 
+  console.log(sourceItem);
+
   const fetchUserProfiles = async (matchesList) => {
     try {
       // Get unique reporter IDs
