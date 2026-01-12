@@ -8,7 +8,6 @@ import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ImageBackground,
   Modal,
   Platform,
@@ -19,8 +18,29 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import Toast from "react-native-root-toast";
 import { generateImageEmbedding } from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
+
+// Helper function to show toast with title and message
+const showToast = (title, message, isError = true) => {
+  Toast.show(`${title}\n${message}`, {
+    duration: Toast.durations.LONG,
+    position: Toast.positions.TOP,
+    shadow: true,
+    animation: true,
+    hideOnPress: true,
+    backgroundColor: isError ? "#dc2626" : "#16a34a",
+    textColor: "#ffffff",
+    opacity: 1,
+    containerStyle: {
+      marginTop: 50,
+      paddingHorizontal: 20,
+      paddingVertical: 14,
+      borderRadius: 12,
+    },
+  });
+};
 
 const CATEGORY_OPTIONS = [
   { label: "Electronics", value: "electronics" },
@@ -231,7 +251,7 @@ export default function ReportFoundScreen() {
         error instanceof Error
           ? error.message
           : "Unable to pick image right now.";
-      Alert.alert("Image picker error", message);
+      showToast("Image picker error", message);
     }
   };
 
@@ -240,23 +260,52 @@ export default function ReportFoundScreen() {
       return;
     }
 
-    if (
-      !itemName.trim() ||
-      !category ||
-      !location.trim() ||
-      !dateTime ||
-      !contactInfo.trim()
-    ) {
-      Alert.alert(
-        "Missing details",
-        "Please fill in all required fields before submitting."
+    // Check for specific missing fields
+    const missingFields = [];
+    if (!itemName.trim()) missingFields.push("Item Name");
+    if (!category) missingFields.push("Category");
+    if (!location.trim()) missingFields.push("Location Found");
+    if (!dateTime) missingFields.push("Date & Time");
+    if (!contactInfo.trim()) missingFields.push("Contact Info");
+
+    if (missingFields.length > 0) {
+      showToast(
+        "Missing fields",
+        `Please fill in: ${missingFields.join(", ")}`
       );
       return;
     }
 
     if (!imageAsset?.uri) {
-      Alert.alert("Image required", "Please upload a photo of the found item.");
+      showToast("Image required", "Please upload a photo of the found item.");
       return;
+    }
+
+    // Validate email format if email is selected as contact preference
+    if (contactPref === "email" && !contactInfo.includes("@")) {
+      showToast(
+        "Invalid Email",
+        "Please enter a valid email address containing '@'."
+      );
+      return;
+    }
+
+    // Validate phone number format if phone is selected as contact preference
+    if (contactPref === "phone") {
+      const digitsOnly = contactInfo.replace(/\D/g, "");
+      const isValid =
+        (digitsOnly.startsWith("09") && digitsOnly.length === 11) ||
+        (digitsOnly.startsWith("9") &&
+          !digitsOnly.startsWith("09") &&
+          digitsOnly.length === 10);
+
+      if (!isValid) {
+        showToast(
+          "Invalid Phone Number",
+          "Phone must be 11 digits starting with 09, or 10 digits starting with 9."
+        );
+        return;
+      }
     }
 
     setUploading(true);
@@ -270,7 +319,7 @@ export default function ReportFoundScreen() {
 
       if (userError) {
         console.error("Auth error:", userError);
-        Alert.alert(
+        showToast(
           "Authentication error",
           userError.message || "Please log in to submit a report."
         );
@@ -279,7 +328,7 @@ export default function ReportFoundScreen() {
       }
 
       if (!user) {
-        Alert.alert(
+        showToast(
           "Authentication required",
           "Please log in to submit a report."
         );
@@ -398,7 +447,7 @@ export default function ReportFoundScreen() {
         error instanceof Error
           ? error.message
           : "Something went wrong while submitting.";
-      Alert.alert("Submission failed", message);
+      showToast("Submission failed", message);
     }
     setUploading(false);
   };

@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Linking,
   Modal,
   RefreshControl,
@@ -168,42 +169,104 @@ export default function NotificationsScreen() {
   };
 
   const handleMessageUser = async () => {
-    if (!selectedNotification?.contact_value) return;
+    if (!selectedNotification?.contact_value) {
+      Alert.alert(
+        "No Contact Info",
+        "No contact information available for this user."
+      );
+      return;
+    }
 
     const contactValue = selectedNotification.contact_value;
     const contactPref = selectedNotification.contact_preference || "";
 
     try {
       let url = "";
-      if (contactPref === "facebook" || contactValue.includes("facebook.com")) {
-        // Facebook link
-        url = contactValue.startsWith("http")
-          ? contactValue
-          : `https://facebook.com/${contactValue}`;
+      let fallbackMessage = "";
+
+      if (
+        contactPref === "facebook" ||
+        contactValue.includes("facebook.com") ||
+        contactValue.includes("fb.com")
+      ) {
+        // Facebook - search for the contact value
+        const searchQuery = encodeURIComponent(contactValue);
+        url = `https://www.facebook.com/search/top?q=${searchQuery}`;
+        fallbackMessage = `Search Facebook for: ${contactValue}`;
+      } else if (contactPref === "messenger") {
+        // Facebook Messenger
+        const messengerUsername = contactValue.replace(/^@/, "");
+        url = `https://m.me/${messengerUsername}`;
+        fallbackMessage = `Open Messenger: ${messengerUsername}`;
       } else if (contactPref === "email" || contactValue.includes("@")) {
-        // Email
-        url = `mailto:${contactValue}`;
+        // Email - open email app to compose email to contact value
+        const emailAddress = contactValue.trim();
+        const subject = encodeURIComponent(
+          "Regarding your lost/found item on CVSU FINDS"
+        );
+        const body = encodeURIComponent(
+          "Hi,\n\nI saw your post on CVSU FINDS and would like to reach out regarding the item.\n\n"
+        );
+        url = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
+        fallbackMessage = `Send email to: ${emailAddress}`;
+      } else if (contactPref === "sms" || contactPref === "text") {
+        // SMS/Text message
+        const phoneNumber = contactValue.replace(/[\s\-()]/g, "");
+        url = `sms:${phoneNumber}`;
+        fallbackMessage = `Send SMS to: ${contactValue}`;
       } else if (
         contactPref === "phone" ||
-        /^[0-9+\-\s]+$/.test(contactValue)
+        contactPref === "call" ||
+        /^[0-9+\-\s()]+$/.test(contactValue)
       ) {
-        // Phone number
-        url = `tel:${contactValue.replace(/\s/g, "")}`;
+        // Phone number - call
+        const phoneNumber = contactValue.replace(/[\s\-()]/g, "");
+        url = `tel:${phoneNumber}`;
+        fallbackMessage = `Call: ${contactValue}`;
+      } else if (contactPref === "viber") {
+        // Viber
+        const phoneNumber = contactValue.replace(/[\s\-()]/g, "");
+        url = `viber://chat?number=${phoneNumber}`;
+        fallbackMessage = `Open Viber: ${contactValue}`;
+      } else if (contactPref === "telegram") {
+        // Telegram
+        const telegramUsername = contactValue.replace(/^@/, "");
+        url = `https://t.me/${telegramUsername}`;
+        fallbackMessage = `Open Telegram: @${telegramUsername}`;
+      } else if (contactPref === "whatsapp") {
+        // WhatsApp
+        const phoneNumber = contactValue.replace(/[\s\-()]/g, "");
+        url = `https://wa.me/${phoneNumber}`;
+        fallbackMessage = `Open WhatsApp: ${contactValue}`;
       } else {
         // Default: try to open as URL or use as-is
         url = contactValue.startsWith("http")
           ? contactValue
           : `https://${contactValue}`;
+        fallbackMessage = `Open: ${contactValue}`;
       }
 
       const canOpen = await Linking.canOpenURL(url);
       if (canOpen) {
         await Linking.openURL(url);
+        handleCloseModal();
       } else {
-        console.warn("Cannot open URL:", url);
+        // Show alert with contact info if can't open
+        Alert.alert(
+          "Contact Information",
+          `Contact preference: ${
+            contactPref || "Not specified"
+          }\n\n${fallbackMessage}\n\nYou can manually reach out using this information.`,
+          [{ text: "OK", style: "default" }]
+        );
       }
     } catch (error) {
       console.error("Error opening contact:", error);
+      Alert.alert(
+        "Error",
+        `Could not open contact. Please try manually:\n\n${contactValue}`,
+        [{ text: "OK" }]
+      );
     }
   };
 
@@ -507,6 +570,56 @@ export default function NotificationsScreen() {
                 ? formatDate(selectedNotification.created_at)
                 : ""}
             </Text>
+
+            {/* Contact Information */}
+            {selectedNotification?.contact_value && (
+              <View
+                className={`w-full p-4 rounded-xl mb-5 ${
+                  isDark ? "bg-[#1e3a2f]" : "bg-slate-100"
+                }`}
+              >
+                <Text
+                  className={`text-xs font-semibold mb-2 ${
+                    isDark ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  CONTACT INFORMATION
+                </Text>
+                <View className="flex-row items-center gap-2">
+                  <MaterialIcons
+                    name={
+                      selectedNotification.contact_preference === "email"
+                        ? "email"
+                        : selectedNotification.contact_preference === "phone" ||
+                          selectedNotification.contact_preference === "call"
+                        ? "phone"
+                        : selectedNotification.contact_preference === "facebook"
+                        ? "facebook"
+                        : "contact-mail"
+                    }
+                    size={20}
+                    color={isDark ? "#4ade80" : "#22c55e"}
+                  />
+                  <View className="flex-1">
+                    <Text
+                      className={`text-xs capitalize ${
+                        isDark ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
+                      {selectedNotification.contact_preference || "Contact"}
+                    </Text>
+                    <Text
+                      className={`text-[15px] font-medium ${
+                        isDark ? "text-text-dark" : "text-text-light"
+                      }`}
+                      selectable={true}
+                    >
+                      {selectedNotification.contact_value}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
 
             {/* Action Buttons */}
             <View className="flex-row gap-3 w-full justify-center">

@@ -17,8 +17,29 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import Toast from "react-native-root-toast";
 
 import { supabase } from "../lib/supabaseClient";
+
+// Helper function to show toast with title and message
+const showToast = (title, message, isError = true) => {
+  Toast.show(`${title}\n${message}`, {
+    duration: Toast.durations.LONG,
+    position: Toast.positions.TOP,
+    shadow: true,
+    animation: true,
+    hideOnPress: true,
+    backgroundColor: isError ? "#dc2626" : "#16a34a",
+    textColor: "#ffffff",
+    opacity: 1,
+    containerStyle: {
+      marginTop: 50,
+      paddingHorizontal: 20,
+      paddingVertical: 14,
+      borderRadius: 12,
+    },
+  });
+};
 
 const DEFAULT_AVATAR = "https://via.placeholder.com/150";
 
@@ -282,10 +303,37 @@ export default function EditProfileScreen() {
     const trimmedFacebook = String(facebookName || "").trim();
     const trimmedEmail = String(email || "").trim();
 
-    if (trimmedPhone && !/^\d{11}$/.test(trimmedPhone)) {
-      setErrorMessage("Phone number must be exactly 11 digits.");
-      setInfoMessage("");
+    // Validate required fields
+    const missingFields = [];
+    if (!trimmedFirstName) missingFields.push("First Name");
+    if (!trimmedLastName) missingFields.push("Last Name");
+
+    if (missingFields.length > 0) {
+      showToast(
+        "Missing fields",
+        `Please fill in: ${missingFields.join(", ")}`
+      );
       return;
+    }
+
+    // Validate phone number format
+    if (trimmedPhone) {
+      const isValid =
+        (trimmedPhone.startsWith("09") &&
+          trimmedPhone.length === 11 &&
+          /^\d+$/.test(trimmedPhone)) ||
+        (trimmedPhone.startsWith("9") &&
+          !trimmedPhone.startsWith("09") &&
+          trimmedPhone.length === 10 &&
+          /^\d+$/.test(trimmedPhone));
+
+      if (!isValid) {
+        showToast(
+          "Invalid Phone Number",
+          "Phone must be 11 digits starting with 09, or 10 digits starting with 9."
+        );
+        return;
+      }
     }
 
     try {

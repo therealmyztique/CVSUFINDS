@@ -490,7 +490,7 @@ export default function MyReportsScreen() {
     return (
       <TouchableOpacity
         key={`${item.type}-${item.id}`}
-        className={`relative rounded-2xl mb-4 overflow-hidden ${
+        className={`relative rounded-2xl mb-4 ${
           isDark ? "bg-surface-dark" : "bg-white"
         }`}
         style={{
@@ -498,7 +498,9 @@ export default function MyReportsScreen() {
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 8,
-          elevation: 3,
+          elevation: isMenuOpen ? 20 : 3,
+          overflow: isMenuOpen ? "visible" : "hidden",
+          zIndex: isMenuOpen ? 999 : 1,
         }}
         onPress={() => handleItemPress(item)}
         activeOpacity={0.7}
@@ -519,7 +521,7 @@ export default function MyReportsScreen() {
         {/* Dropdown Menu */}
         {isMenuOpen && (
           <View
-            className={`absolute top-10 right-3 rounded-xl z-20 py-2 min-w-[120px] ${
+            className={`absolute top-10 right-3 rounded-xl py-2 min-w-[120px] ${
               isDark ? "bg-[#1a3d2a]" : "bg-white"
             }`}
             style={{
@@ -527,7 +529,8 @@ export default function MyReportsScreen() {
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.15,
               shadowRadius: 12,
-              elevation: 8,
+              elevation: 20,
+              zIndex: 999,
             }}
           >
             <TouchableOpacity
@@ -589,7 +592,7 @@ export default function MyReportsScreen() {
                 <View
                   className={`px-2 py-1 rounded-full ${
                     isResolved
-                      ? "bg-[#dcfce7]"
+                      ? "bg-[#dbeafe]"
                       : isLost
                       ? isDark
                         ? "bg-[#3d1f25]"
@@ -600,7 +603,7 @@ export default function MyReportsScreen() {
                   <Text
                     className={`text-xs font-semibold ${
                       isResolved
-                        ? "text-[#22c55e]"
+                        ? "text-[#3b82f6]"
                         : isLost
                         ? isDark
                           ? "text-[#fda4af]"
@@ -618,6 +621,7 @@ export default function MyReportsScreen() {
                     isDark ? "text-text-dark" : "text-text-light"
                   }`}
                   numberOfLines={1}
+                  ellipsizeMode="tail"
                 >
                   {item.title}
                 </Text>
@@ -636,6 +640,7 @@ export default function MyReportsScreen() {
                   isDark ? "text-muted-dark" : "text-muted-light"
                 }`}
                 numberOfLines={1}
+                ellipsizeMode="tail"
               >
                 {item.location || "Unknown location"}
               </Text>
