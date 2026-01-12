@@ -11,7 +11,6 @@ import {
   useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import { resolvedItemsStyles as styles } from "../styles/resolvedItemsStyles";
 
 const PRIMARY_COLOR = "#2bee79";
 const MUTED_LIGHT_COLOR = "#64748b";
@@ -134,28 +133,25 @@ export default function ResolvedItemsScreen() {
   }, [fetchResolvedItems]);
 
   const renderEmptyState = () => (
-    <View style={styles.emptyState}>
+    <View className="flex-1 items-center justify-center py-16 px-6">
       <View
-        style={[
-          styles.emptyIconWrapper,
-          isDark ? styles.emptyIconWrapperDark : styles.emptyIconWrapperLight,
-        ]}
+        className={`w-20 h-20 rounded-full items-center justify-center mb-5 ${
+          isDark ? "bg-[#12251a]" : "bg-[#e8faf0]"
+        }`}
       >
         <MaterialIcons name="check-circle" size={40} color={PRIMARY_COLOR} />
       </View>
       <Text
-        style={[
-          styles.emptyTitle,
-          isDark ? styles.emptyTitleDark : styles.emptyTitleLight,
-        ]}
+        className={`text-xl font-bold mb-2 text-center ${
+          isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+        }`}
       >
         No Resolved Items Yet
       </Text>
       <Text
-        style={[
-          styles.emptyText,
-          isDark ? styles.emptyTextDark : styles.emptyTextLight,
-        ]}
+        className={`text-sm text-center leading-5 ${
+          isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+        }`}
       >
         Items that have been successfully returned to their owners will appear
         here.
@@ -164,29 +160,22 @@ export default function ResolvedItemsScreen() {
   );
 
   return (
-    <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
-    >
+    <View className={`flex-1 ${isDark ? "bg-[#0b1610]" : "bg-[#f8fafc]"}`}>
       {/* Header */}
-      <View style={styles.header}>
+      <View className="flex-row items-center justify-between px-5 pt-14 pb-4">
         <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.headerTitleDark : styles.headerTitleLight,
-          ]}
+          className={`text-2xl font-bold ${
+            isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+          }`}
         >
           Resolved History
         </Text>
-        <View style={styles.headerActions}>
+        <View className="flex-row items-center gap-2">
           <TouchableOpacity
             activeOpacity={0.85}
-            style={[
-              styles.headerButton,
-              isDark ? styles.headerButtonDark : styles.headerButtonLight,
-            ]}
+            className={`w-10 h-10 rounded-xl items-center justify-center ${
+              isDark ? "bg-[#12251a]" : "bg-[#f1f5f9]"
+            }`}
           >
             <MaterialIcons
               name="search"
@@ -196,10 +185,9 @@ export default function ResolvedItemsScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={0.85}
-            style={[
-              styles.headerButton,
-              isDark ? styles.headerButtonDark : styles.headerButtonLight,
-            ]}
+            className={`w-10 h-10 rounded-xl items-center justify-center ${
+              isDark ? "bg-[#12251a]" : "bg-[#f1f5f9]"
+            }`}
           >
             <MaterialIcons
               name="tune"
@@ -211,24 +199,29 @@ export default function ResolvedItemsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Stats Cards */}
-        <View style={styles.statsRow}>
+        <View className="flex-row gap-3 mb-6">
           <View
-            style={[
-              styles.statCard,
-              isDark ? styles.statCardDark : styles.statCardLight,
-            ]}
+            className={`flex-1 rounded-2xl p-4 ${
+              isDark ? "bg-[#12251a]" : "bg-white"
+            }`}
+            style={
+              !isDark && {
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 8,
+                elevation: 2,
+              }
+            }
           >
             <View
-              style={[
-                styles.statIconWrapper,
-                isDark
-                  ? styles.statIconWrapperDark
-                  : styles.statIconWrapperLight,
-              ]}
+              className={`w-11 h-11 rounded-xl items-center justify-center mb-3 ${
+                isDark ? "bg-[#1a3d28]" : "bg-[#e8faf0]"
+              }`}
             >
               <MaterialIcons
                 name="check-circle"
@@ -237,69 +230,70 @@ export default function ResolvedItemsScreen() {
               />
             </View>
             <Text
-              style={[
-                styles.statLabel,
-                isDark ? styles.statLabelDark : styles.statLabelLight,
-              ]}
+              className={`text-xs mb-1 ${
+                isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+              }`}
             >
               Total Returned
             </Text>
             <Text
-              style={[
-                styles.statValue,
-                isDark ? styles.statValueDark : styles.statValueLight,
-              ]}
+              className={`text-2xl font-bold ${
+                isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+              }`}
             >
               {totalReturned}
             </Text>
           </View>
 
-          <View style={[styles.statCard, styles.statCardAccent]}>
-            <View
-              style={[styles.statIconWrapper, styles.statIconWrapperAccent]}
-            >
+          <View className="flex-1 rounded-2xl p-4 bg-[#2bee79]">
+            <View className="w-11 h-11 rounded-xl items-center justify-center mb-3 bg-[#102217]/20">
               <MaterialIcons name="calendar-today" size={24} color="#102217" />
             </View>
-            <Text style={[styles.statLabel, styles.statLabelAccent]}>
-              This Month
-            </Text>
-            <Text style={[styles.statValue, styles.statValueAccent]}>
+            <Text className="text-xs mb-1 text-[#102217]/70">This Month</Text>
+            <Text className="text-2xl font-bold text-[#102217]">
               {thisMonthCount}
             </Text>
           </View>
         </View>
 
         {/* Recent Returns Section */}
-        <View style={styles.sectionHeader}>
+        <View className="flex-row items-center justify-between mb-4">
           <Text
-            style={[
-              styles.sectionTitle,
-              isDark ? styles.sectionTitleDark : styles.sectionTitleLight,
-            ]}
+            className={`text-lg font-semibold ${
+              isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+            }`}
           >
             Recent Returns
           </Text>
           <TouchableOpacity activeOpacity={0.8}>
-            <Text style={styles.viewAll}>View All</Text>
+            <Text className="text-sm font-medium text-[#2bee79]">View All</Text>
           </TouchableOpacity>
         </View>
 
         {loading ? (
-          <View style={styles.loadingContainer}>
+          <View className="py-16 items-center justify-center">
             <ActivityIndicator size="large" color={PRIMARY_COLOR} />
           </View>
         ) : resolvedItems.length === 0 ? (
           renderEmptyState()
         ) : (
-          <View style={styles.itemsList}>
+          <View className="gap-3">
             {resolvedItems.map((item) => (
               <TouchableOpacity
                 key={item.id}
                 activeOpacity={0.9}
-                style={[
-                  styles.itemCard,
-                  isDark ? styles.itemCardDark : styles.itemCardLight,
-                ]}
+                className={`flex-row items-center rounded-2xl p-3 ${
+                  isDark ? "bg-[#12251a]" : "bg-white"
+                }`}
+                style={
+                  !isDark && {
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 8,
+                    elevation: 2,
+                  }
+                }
                 onPress={() =>
                   router.push({
                     pathname: "/item-detail",
@@ -328,47 +322,44 @@ export default function ResolvedItemsScreen() {
                   source={{
                     uri: item.image_url || "https://via.placeholder.com/150",
                   }}
-                  style={styles.itemImage}
+                  className="w-16 h-16 rounded-xl"
                 />
-                <View style={styles.itemInfo}>
+                <View className="flex-1 ml-3">
                   <Text
-                    style={[
-                      styles.itemTitle,
-                      isDark ? styles.itemTitleDark : styles.itemTitleLight,
-                    ]}
+                    className={`text-base font-semibold mb-1 ${
+                      isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+                    }`}
                     numberOfLines={1}
                   >
                     {item.title}
                   </Text>
-                  <View style={styles.itemLocation}>
+                  <View className="flex-row items-center mb-1">
                     <MaterialIcons
                       name="location-on"
                       size={12}
                       color={mutedTextColor}
                     />
                     <Text
-                      style={[
-                        styles.itemLocationText,
-                        isDark
-                          ? styles.itemLocationTextDark
-                          : styles.itemLocationTextLight,
-                      ]}
+                      className={`text-xs ml-1 ${
+                        isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+                      }`}
                       numberOfLines={1}
                     >
                       {item.location || "Unknown location"}
                     </Text>
                   </View>
                   <Text
-                    style={[
-                      styles.itemDate,
-                      isDark ? styles.itemDateDark : styles.itemDateLight,
-                    ]}
+                    className={`text-xs ${
+                      isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+                    }`}
                   >
                     Resolved {formatDate(item.updated_at)}
                   </Text>
                 </View>
-                <View style={styles.returnedBadge}>
-                  <Text style={styles.returnedBadgeText}>Returned</Text>
+                <View className="bg-[#2bee79]/20 px-3 py-1.5 rounded-full">
+                  <Text className="text-xs font-semibold text-[#2bee79]">
+                    Returned
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -378,51 +369,45 @@ export default function ResolvedItemsScreen() {
 
       {/* Bottom Navigation */}
       <View
-        style={[
-          styles.bottomNav,
-          isDark ? styles.bottomNavDark : styles.bottomNavLight,
-        ]}
+        className={`absolute bottom-0 left-0 right-0 pb-6 pt-3 px-6 border-t ${
+          isDark ? "bg-[#0b1610] border-[#12251a]" : "bg-white border-[#f1f5f9]"
+        }`}
       >
-        <View style={styles.navItems}>
+        <View className="flex-row items-center justify-around">
           <TouchableOpacity
-            style={styles.navButton}
+            className="items-center py-2"
             activeOpacity={0.85}
             onPress={() => router.push("/home")}
           >
             <MaterialIcons name="home" size={26} color={mutedTextColor} />
             <Text
-              style={[
-                styles.navLabel,
-                isDark ? styles.navLabelInactiveDark : styles.navLabelInactive,
-              ]}
+              className={`text-xs mt-1 ${
+                isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+              }`}
             >
               Home
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton} activeOpacity={0.85}>
+          <TouchableOpacity className="items-center py-2" activeOpacity={0.85}>
             <MaterialIcons name="task-alt" size={26} color={PRIMARY_COLOR} />
             <Text
-              style={[
-                styles.navLabel,
-                isDark
-                  ? styles.navLabelInactiveDark
-                  : styles.navLabelInactiveLight,
-              ]}
+              className={`text-xs mt-1 ${
+                isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+              }`}
             >
               Resolved Items
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.navButton}
+            className="items-center py-2"
             activeOpacity={0.85}
             onPress={() => router.push("/profile")}
           >
             <MaterialIcons name="person" size={26} color={mutedTextColor} />
             <Text
-              style={[
-                styles.navLabel,
-                isDark ? styles.navLabelInactiveDark : styles.navLabelInactive,
-              ]}
+              className={`text-xs mt-1 ${
+                isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+              }`}
             >
               Profile
             </Text>

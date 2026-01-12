@@ -21,7 +21,6 @@ import {
 } from "react-native";
 import { generateImageEmbedding } from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
-import { reportFoundStyles as styles } from "../styles/reportFoundStyles";
 
 const CATEGORY_OPTIONS = [
   { label: "Electronics", value: "electronics" },
@@ -411,25 +410,18 @@ export default function ReportFoundScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
-    >
+    <View className={`flex-1 ${isDark ? "bg-[#102217]" : "bg-[#f8fafc]"}`}>
       <View
-        style={[
-          styles.header,
-          isDark ? styles.headerSurfaceDark : styles.headerSurfaceLight,
-        ]}
+        className={`flex-row items-center justify-between px-4 pt-14 pb-4 ${
+          isDark ? "bg-[#193324]" : "bg-white"
+        }`}
       >
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => router.back()}
-          style={[
-            styles.backButton,
-            isDark ? styles.backButtonDark : styles.backButtonLight,
-          ]}
+          className={`w-11 h-11 rounded-full items-center justify-center ${
+            isDark ? "bg-[#102217]" : "bg-[#f1f5f9]"
+          }`}
         >
           <MaterialIcons
             name="arrow-back"
@@ -439,35 +431,32 @@ export default function ReportFoundScreen() {
         </TouchableOpacity>
 
         <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.headerTitleDark : styles.headerTitleLight,
-          ]}
+          className={`text-lg font-semibold ${
+            isDark ? "text-white" : "text-[#0f172a]"
+          }`}
         >
           Report Found Item
         </Text>
 
-        <View style={{ width: 44 }} />
+        <View className="w-11" />
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
         <View>
           <Text
-            style={[
-              styles.heroHeading,
-              isDark ? styles.heroHeadingDark : styles.heroHeadingLight,
-            ]}
+            className={`text-2xl font-bold mb-2 ${
+              isDark ? "text-white" : "text-[#0f172a]"
+            }`}
           >
             Found something?
           </Text>
           <Text
-            style={[
-              styles.heroBody,
-              isDark ? styles.heroBodyDark : styles.heroBodyLight,
-            ]}
+            className={`text-base mb-6 ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Upload a photo to help our AI match it with lost reports.
           </Text>
@@ -476,46 +465,44 @@ export default function ReportFoundScreen() {
         <TouchableOpacity activeOpacity={0.9} onPress={handlePickImage}>
           <ImageBackground
             source={imageAsset ? { uri: imageAsset.uri } : PLACEHOLDER_IMAGE}
-            style={[
-              styles.uploadCard,
-              isDark ? styles.uploadCardDark : styles.uploadCardLight,
-            ]}
+            className={`h-52 rounded-2xl overflow-hidden mb-6 border ${
+              isDark ? "border-[#326747]" : "border-[#e2e8f0]"
+            }`}
             imageStyle={{ opacity: 0.85 }}
           >
             <View
-              style={[
-                styles.uploadOverlay,
-                imageAsset ? { backgroundColor: "rgba(0,0,0,0.25)" } : null,
-              ]}
+              className={`flex-1 items-center justify-center ${
+                imageAsset ? "bg-black/25" : ""
+              }`}
             >
-              <View style={styles.uploadIconWrapper}>
+              <View className="w-16 h-16 rounded-full bg-[#2bee79]/15 items-center justify-center mb-3">
                 <MaterialIcons
                   name={imageAsset ? "photo-camera" : "add-a-photo"}
                   size={32}
                   color="#2bee79"
                 />
               </View>
-              <Text style={styles.uploadText}>
+              <Text className="text-white text-base font-semibold">
                 {imageAsset ? "Tap to change photo" : "Tap to Upload Photo"}
               </Text>
             </View>
           </ImageBackground>
         </TouchableOpacity>
 
-        <View style={styles.inputGroup}>
+        <View className="mb-5">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-medium mb-2 ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Item Name
           </Text>
           <TextInput
-            style={[
-              styles.textInput,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`h-14 px-4 rounded-2xl text-base border ${
+              isDark
+                ? "bg-[#193324] border-[#326747] text-[#f8fafc]"
+                : "bg-white border-[#e2e8f0] text-[#0f172a]"
+            }`}
             placeholder="e.g. Blue Backpack"
             placeholderTextColor={placeholderColor}
             value={itemName}
@@ -523,37 +510,33 @@ export default function ReportFoundScreen() {
           />
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mb-5">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-medium mb-2 ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Item Category
           </Text>
-          <View style={styles.pickerContainer}>
+          <View>
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={() => setShowCategoryList((prev) => !prev)}
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-                styles.pickerTrigger,
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl border flex-row items-center ${
+                isDark
+                  ? "bg-[#193324] border-[#326747]"
+                  : "bg-white border-[#e2e8f0]"
+              }`}
             >
               <Text
-                style={[
-                  styles.pickerTriggerText,
-                  {
-                    color: category
-                      ? isDark
-                        ? "#f8fafc"
-                        : "#0f172a"
-                      : placeholderColor,
-                  },
-                ]}
+                style={{
+                  color: category
+                    ? isDark
+                      ? "#f8fafc"
+                      : "#0f172a"
+                    : placeholderColor,
+                  fontSize: 16,
+                }}
               >
                 {category
                   ? CATEGORY_OPTIONS.find((option) => option.value === category)
@@ -564,28 +547,16 @@ export default function ReportFoundScreen() {
                 name={showCategoryList ? "expand-less" : "expand-more"}
                 size={24}
                 color={placeholderColor}
-                style={styles.trailingIcon}
+                style={{ position: "absolute", right: 16 }}
               />
             </TouchableOpacity>
             {showCategoryList ? (
               <View
-                style={[
-                  {
-                    marginTop: 8,
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    overflow: "hidden",
-                  },
+                className={`mt-2 rounded-2xl border overflow-hidden ${
                   isDark
-                    ? {
-                        backgroundColor: DARK_SURFACE_COLOR,
-                        borderColor: DARK_BORDER_COLOR,
-                      }
-                    : {
-                        backgroundColor: LIGHT_SURFACE_COLOR,
-                        borderColor: LIGHT_BORDER_COLOR,
-                      },
-                ]}
+                    ? "bg-[#193324] border-[#326747]"
+                    : "bg-white border-[#e2e8f0]"
+                }`}
               >
                 {CATEGORY_OPTIONS.map((option) => {
                   const isSelected = option.value === category;
@@ -597,13 +568,9 @@ export default function ReportFoundScreen() {
                         setCategory(option.value);
                         setShowCategoryList(false);
                       }}
-                      style={{
-                        paddingVertical: 14,
-                        paddingHorizontal: 16,
-                        backgroundColor: isSelected
-                          ? "rgba(43,238,121,0.12)"
-                          : "transparent",
-                      }}
+                      className={`py-3.5 px-4 ${
+                        isSelected ? "bg-[#2bee79]/10" : ""
+                      }`}
                     >
                       <Text
                         style={{
@@ -625,21 +592,22 @@ export default function ReportFoundScreen() {
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mb-5">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-medium mb-2 ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Description
           </Text>
           <TextInput
             multiline
-            style={[
-              styles.textArea,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`min-h-[100px] p-4 rounded-2xl text-base border ${
+              isDark
+                ? "bg-[#193324] border-[#326747] text-[#f8fafc]"
+                : "bg-white border-[#e2e8f0] text-[#0f172a]"
+            }`}
+            style={{ textAlignVertical: "top" }}
             placeholder="Describe the item (color, brand, distinguishing marks...)"
             placeholderTextColor={placeholderColor}
             value={description}
@@ -647,22 +615,21 @@ export default function ReportFoundScreen() {
           />
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mb-5">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-medium mb-2 ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Location Found
           </Text>
-          <View style={{ position: "relative" }}>
+          <View className="relative">
             <TextInput
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl text-base border ${
+                isDark
+                  ? "bg-[#193324] border-[#326747] text-[#f8fafc]"
+                  : "bg-white border-[#e2e8f0] text-[#0f172a]"
+              }`}
               placeholder="e.g. DIT 5th Floor"
               placeholderTextColor={placeholderColor}
               value={location}
@@ -672,30 +639,28 @@ export default function ReportFoundScreen() {
               name="location-on"
               size={22}
               color={placeholderColor}
-              style={styles.trailingIcon}
+              style={{ position: "absolute", right: 16, top: 16 }}
             />
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mb-5">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-medium mb-2 ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Date & Time Found
           </Text>
-          <View style={{ position: "relative" }}>
+          <View className="relative">
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={openDateTimePicker}
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-                { justifyContent: "center" },
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl border justify-center ${
+                isDark
+                  ? "bg-[#193324] border-[#326747]"
+                  : "bg-white border-[#e2e8f0]"
+              }`}
             >
               <Text
                 style={{
@@ -714,30 +679,29 @@ export default function ReportFoundScreen() {
               name="calendar-today"
               size={22}
               color={placeholderColor}
-              style={styles.trailingIcon}
+              style={{ position: "absolute", right: 16, top: 16 }}
             />
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mb-5">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-medium mb-2 ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Reward{" "}
-            <Text style={isDark ? styles.optionalDark : styles.optionalLight}>
+            <Text className={isDark ? "text-[#5e8c72]" : "text-[#94a3b8]"}>
               (Optional)
             </Text>
           </Text>
-          <View style={{ position: "relative" }}>
+          <View className="relative">
             <TextInput
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl text-base border ${
+                isDark
+                  ? "bg-[#193324] border-[#326747] text-[#f8fafc]"
+                  : "bg-white border-[#e2e8f0] text-[#0f172a]"
+              }`}
               placeholder="e.g. ₱100"
               placeholderTextColor={placeholderColor}
               value={reward}
@@ -747,30 +711,30 @@ export default function ReportFoundScreen() {
               name="payments"
               size={22}
               color={placeholderColor}
-              style={styles.trailingIcon}
+              style={{ position: "absolute", right: 16, top: 16 }}
             />
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mb-5">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-medium mb-2 ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Additional Notes{" "}
-            <Text style={isDark ? styles.optionalDark : styles.optionalLight}>
+            <Text className={isDark ? "text-[#5e8c72]" : "text-[#94a3b8]"}>
               (Optional)
             </Text>
           </Text>
           <TextInput
             multiline
-            style={[
-              styles.textArea,
-              styles.textAreaSmall,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`min-h-[80px] p-4 rounded-2xl text-base border ${
+              isDark
+                ? "bg-[#193324] border-[#326747] text-[#f8fafc]"
+                : "bg-white border-[#e2e8f0] text-[#0f172a]"
+            }`}
+            style={{ textAlignVertical: "top" }}
             placeholder="Any other details?"
             placeholderTextColor={placeholderColor}
             value={notes}
@@ -778,16 +742,15 @@ export default function ReportFoundScreen() {
           />
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mb-5">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-medium mb-2 ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Contact Preference
           </Text>
-          <View style={styles.contactGrid}>
+          <View className="flex-row gap-3 mb-3">
             {CONTACT_OPTIONS.map((option) => {
               const isSelected = option.value === contactPref;
               return (
@@ -795,28 +758,24 @@ export default function ReportFoundScreen() {
                   key={option.value}
                   activeOpacity={0.85}
                   onPress={() => setContactPref(option.value)}
-                  style={[
-                    styles.contactOption,
-                    isDark
-                      ? styles.contactOptionDark
-                      : styles.contactOptionLight,
-                    isSelected ? styles.contactOptionActive : null,
-                    isSelected && isDark
-                      ? styles.contactOptionActiveDark
-                      : null,
-                  ]}
+                  className={`flex-1 py-3 rounded-xl border items-center ${
+                    isSelected
+                      ? "bg-[#2bee79]/15 border-[#2bee79]"
+                      : isDark
+                      ? "bg-[#193324] border-[#326747]"
+                      : "bg-white border-[#e2e8f0]"
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.contactLabel,
+                    className={`text-sm font-medium ${
                       isSelected
                         ? isDark
-                          ? styles.contactLabelActiveDark
-                          : styles.contactLabelActive
+                          ? "text-[#2bee79]"
+                          : "text-[#059669]"
                         : isDark
-                        ? styles.contactLabelDark
-                        : styles.contactLabelLight,
-                    ]}
+                        ? "text-[#92c9a8]"
+                        : "text-[#64748b]"
+                    }`}
                   >
                     {option.label}
                   </Text>
@@ -825,10 +784,11 @@ export default function ReportFoundScreen() {
             })}
           </View>
           <TextInput
-            style={[
-              styles.textInput,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`h-14 px-4 rounded-2xl text-base border ${
+              isDark
+                ? "bg-[#193324] border-[#326747] text-[#f8fafc]"
+                : "bg-white border-[#e2e8f0] text-[#0f172a]"
+            }`}
             placeholder="Enter link, email, or phone number"
             placeholderTextColor={placeholderColor}
             value={contactInfo}
@@ -838,15 +798,19 @@ export default function ReportFoundScreen() {
       </ScrollView>
 
       <View
-        style={[styles.footer, isDark ? styles.footerDark : styles.footerLight]}
+        className={`px-4 pt-3 pb-8 border-t ${
+          isDark ? "bg-[#193324] border-[#326747]" : "bg-white border-[#e2e8f0]"
+        }`}
       >
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handleSubmit}
           disabled={uploading}
-          style={[styles.submitButton, uploading ? { opacity: 0.6 } : null]}
+          className={`flex-row items-center justify-center py-4 rounded-full bg-[#2bee79] ${
+            uploading ? "opacity-60" : ""
+          }`}
         >
-          <Text style={styles.submitText}>
+          <Text className="text-[#102217] text-base font-semibold mr-2">
             {uploading ? "Submitting..." : "Submit Report"}
           </Text>
           {uploading ? (
@@ -858,28 +822,11 @@ export default function ReportFoundScreen() {
       </View>
 
       {Platform.OS === "ios" && showIOSPicker ? (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.4)",
-            alignItems: "center",
-            justifyContent: "flex-end",
-          }}
-        >
+        <View className="absolute inset-0 bg-black/40 items-center justify-end">
           <View
-            style={{
-              width: "100%",
-              backgroundColor: isDark ? "#193324" : "#ffffff",
-              paddingHorizontal: 16,
-              paddingTop: 12,
-              paddingBottom: 24,
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-            }}
+            className={`w-full px-4 pt-3 pb-6 rounded-t-3xl ${
+              isDark ? "bg-[#193324]" : "bg-white"
+            }`}
           >
             <DateTimePicker
               mode="datetime"
@@ -893,12 +840,10 @@ export default function ReportFoundScreen() {
               themeVariant={isDark ? "dark" : "light"}
             />
             <TouchableOpacity
-              style={{ alignSelf: "flex-end", marginTop: 12 }}
+              className="self-end mt-3"
               onPress={() => setShowIOSPicker(false)}
             >
-              <Text
-                style={{ color: "#2bee79", fontSize: 16, fontWeight: "600" }}
-              >
+              <Text className="text-[#2bee79] text-base font-semibold">
                 Done
               </Text>
             </TouchableOpacity>
@@ -913,87 +858,27 @@ export default function ReportFoundScreen() {
         animationType="fade"
         statusBarTranslucent
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(16, 34, 23, 0.95)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 24,
-          }}
-        >
+        <View className="flex-1 bg-[#102217]/95 justify-center items-center p-6">
           {/* Icon */}
-          <View
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: "rgba(43, 238, 121, 0.15)",
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 24,
-            }}
-          >
-            <View
-              style={{
-                width: 70,
-                height: 70,
-                borderRadius: 35,
-                backgroundColor: "rgba(43, 238, 121, 0.25)",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+          <View className="w-24 h-24 rounded-full bg-[#2bee79]/15 justify-center items-center mb-6">
+            <View className="w-[70px] h-[70px] rounded-full bg-[#2bee79]/25 justify-center items-center">
               <MaterialIcons name="check-circle" size={36} color="#2bee79" />
             </View>
           </View>
 
           {/* Title */}
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "700",
-              color: "#ffffff",
-              marginBottom: 12,
-              textAlign: "center",
-            }}
-          >
+          <Text className="text-2xl font-bold text-white mb-3 text-center">
             Item Posted!
           </Text>
 
           {/* Subtitle */}
-          <Text
-            style={{
-              fontSize: 15,
-              color: "#92c9a8",
-              textAlign: "center",
-              marginBottom: 16,
-              lineHeight: 22,
-              paddingHorizontal: 20,
-            }}
-          >
+          <Text className="text-[15px] text-[#92c9a8] text-center mb-4 leading-[22px] px-5">
             Your found item has been successfully posted.
           </Text>
 
           {/* Info Box */}
-          <View
-            style={{
-              backgroundColor: "rgba(43, 238, 121, 0.1)",
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 32,
-              width: "100%",
-              maxWidth: 300,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#92c9a8",
-                textAlign: "center",
-                lineHeight: 20,
-              }}
-            >
+          <View className="bg-[#2bee79]/10 rounded-xl p-4 mb-8 w-full max-w-[300px]">
+            <Text className="text-sm text-[#92c9a8] text-center leading-5">
               🔔 You'll be notified when someone claims this item as theirs.
               Thank you for helping!
             </Text>
@@ -1002,20 +887,9 @@ export default function ReportFoundScreen() {
           {/* Button */}
           <TouchableOpacity
             onPress={handleCloseSuccessModal}
-            style={{
-              backgroundColor: "#2bee79",
-              paddingVertical: 14,
-              paddingHorizontal: 48,
-              borderRadius: 25,
-            }}
+            className="bg-[#2bee79] py-3.5 px-12 rounded-full"
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#102217",
-              }}
-            >
+            <Text className="text-base font-semibold text-[#102217]">
               Go to Home
             </Text>
           </TouchableOpacity>

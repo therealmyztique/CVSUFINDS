@@ -1,5 +1,4 @@
 import { Text, TouchableOpacity, View } from "react-native";
-import { welcomeStyles } from "../styles/welcomeStyles";
 
 export default function SignUpButton({
   onPress,
@@ -12,17 +11,19 @@ export default function SignUpButton({
   return (
     <TouchableOpacity
       activeOpacity={activeOpacity}
-      style={[
-        welcomeStyles.signUpButton,
-        rightIcon ? welcomeStyles.signUpButtonWithIcon : null,
-        style,
-      ]}
+      className={`h-14 rounded-full bg-primary justify-center items-center mb-4 ${
+        rightIcon ? "flex-row" : ""
+      }`}
+      style={style}
       onPress={onPress}
     >
-      <Text style={[welcomeStyles.signUpText, textStyle]}>{label}</Text>
-      {rightIcon ? (
-        <View style={welcomeStyles.signUpIconWrapper}>{rightIcon}</View>
-      ) : null}
+      <Text
+        className="text-lg font-black text-background-dark"
+        style={textStyle}
+      >
+        {label}
+      </Text>
+      {rightIcon ? <View className="ml-2">{rightIcon}</View> : null}
     </TouchableOpacity>
   );
 }

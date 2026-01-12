@@ -12,7 +12,6 @@ import {
   useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import { itemDetailStyles as styles } from "../styles/itemDetailStyles";
 
 const DEFAULT_AVATAR = "https://via.placeholder.com/150";
 
@@ -169,25 +168,19 @@ export default function ItemDetailScreen() {
   }, [reporterName]);
 
   return (
-    <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
-    >
+    <View className={`flex-1 ${isDark ? "bg-[#0b1610]" : "bg-slate-50"}`}>
+      {/* Header */}
       <View
-        style={[
-          styles.header,
-          isDark ? styles.headerSurfaceDark : styles.headerSurfaceLight,
-        ]}
+        className={`flex-row items-center justify-between px-4 pt-14 pb-4 ${
+          isDark ? "bg-[#12251a]" : "bg-white"
+        }`}
       >
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => router.back()}
-          style={[
-            styles.headerButton,
-            isDark ? styles.headerButtonDark : styles.headerButtonLight,
-          ]}
+          className={`w-10 h-10 rounded-full items-center justify-center ${
+            isDark ? "bg-[#1e3a2f]" : "bg-slate-100"
+          }`}
         >
           <MaterialIcons
             name="arrow-back"
@@ -197,10 +190,9 @@ export default function ItemDetailScreen() {
         </TouchableOpacity>
 
         <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.headerTitleDark : styles.headerTitleLight,
-          ]}
+          className={`text-base font-bold tracking-wider ${
+            isDark ? "text-slate-50" : "text-slate-900"
+          }`}
         >
           DETAILS
         </Text>
@@ -208,10 +200,9 @@ export default function ItemDetailScreen() {
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={handleShare}
-          style={[
-            styles.headerButton,
-            isDark ? styles.headerButtonDark : styles.headerButtonLight,
-          ]}
+          className={`w-10 h-10 rounded-full items-center justify-center ${
+            isDark ? "bg-[#1e3a2f]" : "bg-slate-100"
+          }`}
         >
           <MaterialIcons
             name="ios-share"
@@ -222,27 +213,22 @@ export default function ItemDetailScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Image Section */}
-        <View style={styles.imageCarousel}>
+        <View className="relative w-full h-72">
           {item.image ? (
             <Image
               source={{ uri: item.image }}
-              style={styles.itemImage}
+              className="w-full h-full"
               resizeMode="cover"
             />
           ) : (
             <View
-              style={[
-                styles.itemImage,
-                {
-                  backgroundColor: isDark ? "#1e3a2f" : "#e2e8f0",
-                  alignItems: "center",
-                  justifyContent: "center",
-                },
-              ]}
+              className={`w-full h-full items-center justify-center ${
+                isDark ? "bg-[#1e3a2f]" : "bg-slate-200"
+              }`}
             >
               <MaterialIcons
                 name="image"
@@ -251,18 +237,17 @@ export default function ItemDetailScreen() {
               />
             </View>
           )}
+          {/* Status Badge */}
           <View
-            style={[
-              styles.statusBadge,
-              isFound ? styles.statusBadgeFound : styles.statusBadgeLost,
-            ]}
+            className={`absolute bottom-4 left-4 flex-row items-center px-3 py-1.5 rounded-full ${
+              isFound ? "bg-[#2bee79]" : "bg-[#f43f5e]"
+            }`}
           >
-            <View style={styles.statusDot} />
+            <View className="w-2 h-2 rounded-full bg-white mr-2" />
             <Text
-              style={[
-                styles.statusText,
-                isFound ? styles.statusTextFound : null,
-              ]}
+              className={`text-xs font-bold ${
+                isFound ? "text-[#102217]" : "text-white"
+              }`}
             >
               {item.status.toUpperCase()}
             </Text>
@@ -270,30 +255,30 @@ export default function ItemDetailScreen() {
         </View>
 
         {/* Details Section */}
-        <View style={styles.detailsContainer}>
+        <View className="px-5 pt-5">
           {/* Title and Reward */}
-          <View style={styles.titleRow}>
+          <View className="flex-row items-start justify-between mb-3">
             <Text
-              style={[
-                styles.itemTitle,
-                isDark ? styles.itemTitleDark : styles.itemTitleLight,
-              ]}
+              className={`flex-1 text-2xl font-bold mr-3 ${
+                isDark ? "text-slate-50" : "text-slate-900"
+              }`}
             >
               {item.title}
             </Text>
             {item.reward ? (
-              <View style={styles.rewardBadge}>
-                <Text style={styles.rewardText}>₱{item.reward} Reward</Text>
+              <View className="bg-amber-500/20 px-3 py-1.5 rounded-full">
+                <Text className="text-amber-500 text-sm font-semibold">
+                  ₱{item.reward} Reward
+                </Text>
               </View>
             ) : null}
           </View>
 
           {/* Category Tag */}
           <View
-            style={[
-              styles.categoryTag,
-              isDark ? styles.categoryTagDark : styles.categoryTagLight,
-            ]}
+            className={`flex-row items-center self-start px-3 py-1.5 rounded-full mb-4 ${
+              isDark ? "bg-[#1e3a2f]" : "bg-slate-100"
+            }`}
           >
             <MaterialIcons
               name="category"
@@ -301,10 +286,9 @@ export default function ItemDetailScreen() {
               color={isDark ? "#92c9a8" : "#64748b"}
             />
             <Text
-              style={[
-                styles.categoryText,
-                isDark ? styles.categoryTextDark : styles.categoryTextLight,
-              ]}
+              className={`ml-1.5 text-sm ${
+                isDark ? "text-[#92c9a8]" : "text-slate-500"
+              }`}
             >
               {CATEGORY_LABELS[item.category] || item.category}
             </Text>
@@ -312,31 +296,29 @@ export default function ItemDetailScreen() {
 
           {/* User Card */}
           <View
-            style={[
-              styles.userCard,
-              isDark ? styles.userCardDark : styles.userCardLight,
-            ]}
+            className={`flex-row items-center justify-between p-4 rounded-2xl mb-5 ${
+              isDark ? "bg-[#12251a]" : "bg-white"
+            }`}
           >
-            <View style={styles.userInfo}>
-              <View style={styles.avatar}>
+            <View className="flex-row items-center">
+              <View className="w-12 h-12 rounded-full overflow-hidden mr-3">
                 {item.avatar ? (
                   <Image
                     source={{ uri: item.avatar }}
-                    style={styles.avatarImage}
+                    className="w-full h-full"
                   />
                 ) : (
                   <Image
                     source={{ uri: DEFAULT_AVATAR }}
-                    style={styles.avatarImage}
+                    className="w-full h-full"
                   />
                 )}
               </View>
               <View>
                 <Text
-                  style={[
-                    styles.userName,
-                    isDark ? styles.userNameDark : styles.userNameLight,
-                  ]}
+                  className={`text-base font-semibold ${
+                    isDark ? "text-slate-50" : "text-slate-900"
+                  }`}
                 >
                   {reporterName || "Anonymous"}
                 </Text>
@@ -344,7 +326,7 @@ export default function ItemDetailScreen() {
             </View>
             <TouchableOpacity
               activeOpacity={0.85}
-              style={styles.messageButton}
+              className="w-11 h-11 rounded-full bg-[#2bee79] items-center justify-center"
               onPress={handleContact}
             >
               <MaterialIcons name="chat-bubble" size={22} color="#102217" />
@@ -352,22 +334,18 @@ export default function ItemDetailScreen() {
           </View>
 
           {/* Description */}
-          <View style={styles.section}>
+          <View className="mb-5">
             <Text
-              style={[
-                styles.sectionTitle,
-                isDark ? styles.sectionTitleDark : styles.sectionTitleLight,
-              ]}
+              className={`text-sm font-semibold mb-2 ${
+                isDark ? "text-slate-400" : "text-slate-500"
+              }`}
             >
               Description
             </Text>
             <Text
-              style={[
-                styles.descriptionText,
-                isDark
-                  ? styles.descriptionTextDark
-                  : styles.descriptionTextLight,
-              ]}
+              className={`text-base leading-6 ${
+                isDark ? "text-slate-300" : "text-slate-600"
+              }`}
             >
               {item.description || "No description provided."}
             </Text>
@@ -375,35 +353,29 @@ export default function ItemDetailScreen() {
 
           {/* Date/Time Card */}
           <View
-            style={[
-              styles.infoCard,
-              isDark ? styles.infoCardDark : styles.infoCardLight,
-            ]}
+            className={`flex-row items-center p-4 rounded-2xl mb-3 ${
+              isDark ? "bg-[#12251a]" : "bg-white"
+            }`}
           >
             <View
-              style={[
-                styles.infoIconWrapper,
-                isFound
-                  ? styles.infoIconWrapperFound
-                  : styles.infoIconWrapperLost,
-              ]}
+              className={`w-11 h-11 rounded-full items-center justify-center mr-3 ${
+                isFound ? "bg-[#2bee79]/20" : "bg-[#f43f5e]/20"
+              }`}
             >
               <MaterialIcons name="schedule" size={22} color={primaryColor} />
             </View>
-            <View style={styles.infoContent}>
+            <View className="flex-1">
               <Text
-                style={[
-                  styles.infoLabel,
-                  isDark ? styles.infoLabelDark : styles.infoLabelLight,
-                ]}
+                className={`text-xs font-medium mb-0.5 ${
+                  isDark ? "text-slate-400" : "text-slate-500"
+                }`}
               >
                 {isFound ? "Found At" : "Last Seen"}
               </Text>
               <Text
-                style={[
-                  styles.infoValue,
-                  isDark ? styles.infoValueDark : styles.infoValueLight,
-                ]}
+                className={`text-sm font-medium ${
+                  isDark ? "text-slate-100" : "text-slate-800"
+                }`}
               >
                 {formatDateTime(item.dateTime) || item.location}
               </Text>
@@ -412,18 +384,14 @@ export default function ItemDetailScreen() {
 
           {/* Location Card */}
           <View
-            style={[
-              styles.infoCard,
-              isDark ? styles.infoCardDark : styles.infoCardLight,
-            ]}
+            className={`flex-row items-center p-4 rounded-2xl mb-3 ${
+              isDark ? "bg-[#12251a]" : "bg-white"
+            }`}
           >
             <View
-              style={[
-                styles.infoIconWrapper,
-                isFound
-                  ? styles.infoIconWrapperFound
-                  : styles.infoIconWrapperLost,
-              ]}
+              className={`w-11 h-11 rounded-full items-center justify-center mr-3 ${
+                isFound ? "bg-[#2bee79]/20" : "bg-[#f43f5e]/20"
+              }`}
             >
               <MaterialIcons
                 name="location-on"
@@ -431,20 +399,18 @@ export default function ItemDetailScreen() {
                 color={primaryColor}
               />
             </View>
-            <View style={styles.infoContent}>
+            <View className="flex-1">
               <Text
-                style={[
-                  styles.infoLabel,
-                  isDark ? styles.infoLabelDark : styles.infoLabelLight,
-                ]}
+                className={`text-xs font-medium mb-0.5 ${
+                  isDark ? "text-slate-400" : "text-slate-500"
+                }`}
               >
                 Location
               </Text>
               <Text
-                style={[
-                  styles.infoValue,
-                  isDark ? styles.infoValueDark : styles.infoValueLight,
-                ]}
+                className={`text-sm font-medium ${
+                  isDark ? "text-slate-100" : "text-slate-800"
+                }`}
               >
                 {item.location}
               </Text>
@@ -454,24 +420,21 @@ export default function ItemDetailScreen() {
           {/* Notes Section */}
           {item.notes ? (
             <View
-              style={[
-                styles.notesSection,
-                isDark ? styles.notesSectionDark : styles.notesSectionLight,
-              ]}
+              className={`p-4 rounded-2xl mt-2 ${
+                isDark ? "bg-[#12251a]" : "bg-slate-100"
+              }`}
             >
               <Text
-                style={[
-                  styles.notesLabel,
-                  isDark ? styles.notesLabelDark : styles.notesLabelLight,
-                ]}
+                className={`text-sm font-semibold mb-2 ${
+                  isDark ? "text-slate-400" : "text-slate-500"
+                }`}
               >
                 Additional Notes
               </Text>
               <Text
-                style={[
-                  styles.notesText,
-                  isDark ? styles.notesTextDark : styles.notesTextLight,
-                ]}
+                className={`text-sm leading-5 ${
+                  isDark ? "text-slate-300" : "text-slate-600"
+                }`}
               >
                 {item.notes}
               </Text>
@@ -482,15 +445,16 @@ export default function ItemDetailScreen() {
 
       {/* Footer */}
       <View
-        style={[styles.footer, isDark ? styles.footerDark : styles.footerLight]}
+        className={`absolute bottom-0 left-0 right-0 px-5 pt-4 pb-8 border-t ${
+          isDark ? "bg-[#0b1610] border-[#1e3a2f]" : "bg-white border-slate-200"
+        }`}
       >
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handleContact}
-          style={[
-            styles.contactButton,
-            isFound ? styles.contactButtonFound : styles.contactButtonLost,
-          ]}
+          className={`flex-row items-center justify-center py-4 rounded-full ${
+            isFound ? "bg-[#2bee79]" : "bg-[#f43f5e]"
+          }`}
         >
           <MaterialIcons
             name="chat-bubble-outline"
@@ -498,12 +462,9 @@ export default function ItemDetailScreen() {
             color={isFound ? "#102217" : "#ffffff"}
           />
           <Text
-            style={[
-              styles.contactButtonText,
-              isFound
-                ? styles.contactButtonTextFound
-                : styles.contactButtonTextLost,
-            ]}
+            className={`ml-2 text-base font-bold ${
+              isFound ? "text-[#102217]" : "text-white"
+            }`}
           >
             {contactCtaText}
           </Text>

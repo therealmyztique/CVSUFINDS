@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useRouter, usePathname } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from "react-native";
+import { usePathname, useRouter } from "expo-router";
+import { Text, TouchableOpacity, View, useColorScheme } from "react-native";
 
 const PRIMARY_COLOR = "#2bee79";
 const MUTED_COLOR = "#94a3b8";
@@ -27,16 +27,17 @@ export default function BottomNav() {
 
   return (
     <View
-      style={[
-        styles.bottomNav,
-        isDark ? styles.bottomNavDark : styles.bottomNavLight,
-      ]}
+      className={`absolute left-0 right-0 bottom-0 pt-3 pb-6 border-t ${
+        isDark
+          ? "bg-background-dark/[0.98] border-text-dark/10"
+          : "bg-white/[0.98] border-muted-dark/25"
+      }`}
     >
-      <View style={styles.navItems}>
+      <View className="flex-row justify-around items-center px-6">
         {navItems.map((item) => (
           <TouchableOpacity
             key={item.path}
-            style={styles.navButton}
+            className="items-center justify-center w-20 gap-1"
             activeOpacity={0.85}
             onPress={() => handlePress(item.path)}
           >
@@ -46,14 +47,13 @@ export default function BottomNav() {
               color={isActive(item.path) ? PRIMARY_COLOR : MUTED_COLOR}
             />
             <Text
-              style={[
-                styles.navLabel,
+              className={`text-[10px] font-semibold ${
                 isActive(item.path)
-                  ? styles.navLabelActive
+                  ? "text-primary"
                   : isDark
-                  ? styles.navLabelInactiveDark
-                  : styles.navLabelInactiveLight,
-              ]}
+                  ? "text-muted-dark"
+                  : "text-muted-light"
+              }`}
             >
               {item.label}
             </Text>
@@ -63,48 +63,3 @@ export default function BottomNav() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  bottomNav: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingTop: 12,
-    paddingBottom: 24,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  bottomNavLight: {
-    backgroundColor: "rgba(255,255,255,0.98)",
-    borderTopColor: "rgba(148,163,184,0.25)",
-  },
-  bottomNavDark: {
-    backgroundColor: "rgba(11,22,16,0.98)",
-    borderTopColor: "rgba(248,250,252,0.08)",
-  },
-  navItems: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingHorizontal: 24,
-  },
-  navButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: 80,
-    gap: 4,
-  },
-  navLabel: {
-    fontSize: 10,
-    fontWeight: "600",
-  },
-  navLabelActive: {
-    color: "#2bee79",
-  },
-  navLabelInactiveLight: {
-    color: "#64748b",
-  },
-  navLabelInactiveDark: {
-    color: "#94a3b8",
-  },
-});

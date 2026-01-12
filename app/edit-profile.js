@@ -1,3 +1,5 @@
+import "../global.css";
+
 import { MaterialIcons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
@@ -8,7 +10,6 @@ import {
   Alert,
   Image,
   Platform,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -18,7 +19,6 @@ import {
 } from "react-native";
 
 import { supabase } from "../lib/supabaseClient";
-import { editProfileStyles as styles } from "../styles/editProfileStyles";
 
 const DEFAULT_AVATAR = "https://via.placeholder.com/150";
 
@@ -348,24 +348,17 @@ export default function EditProfileScreen() {
   ]);
 
   return (
-    <SafeAreaView
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
-    >
+    <View className={`flex-1 ${isDark ? "bg-[#0b1610]" : "bg-white"}`}>
       <View
-        style={[
-          styles.header,
-          isDark ? styles.containerDark : styles.containerLight,
-        ]}
+        className={`flex-row items-center justify-between px-4 pt-14 pb-4 ${
+          isDark ? "bg-[#0b1610]" : "bg-white"
+        }`}
       >
         <TouchableOpacity
           activeOpacity={0.85}
-          style={[
-            styles.backButton,
-            isDark ? styles.backButtonDark : styles.backButtonLight,
-          ]}
+          className={`w-10 h-10 rounded-full items-center justify-center ${
+            isDark ? "bg-[#12251a]" : "bg-slate-100"
+          }`}
           onPress={() => router.back()}
         >
           <MaterialIcons
@@ -376,31 +369,29 @@ export default function EditProfileScreen() {
         </TouchableOpacity>
 
         <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.headerTitleDark : styles.headerTitleLight,
-          ]}
+          className={`text-lg font-semibold ${
+            isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+          }`}
         >
           Edit Profile
         </Text>
 
-        <View style={styles.headerSpacer} />
+        <View className="w-10" />
       </View>
 
       <ScrollView
-        style={styles.contentScroll}
-        contentContainerStyle={styles.content}
+        className="flex-1"
+        contentContainerStyle={{ padding: 16 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {loading ? (
-          <View style={styles.loadingState}>
+          <View className="flex-1 items-center justify-center py-12">
             <ActivityIndicator size="large" color="#2bee79" />
             <Text
-              style={[
-                styles.message,
-                isDark ? styles.helperDark : styles.helperLight,
-              ]}
+              className={`text-sm mt-3 ${
+                isDark ? "text-[#92c9a8]" : "text-slate-500"
+              }`}
             >
               Loading profile details…
             </Text>
@@ -408,58 +399,40 @@ export default function EditProfileScreen() {
         ) : (
           <>
             {errorMessage ? (
-              <Text style={[styles.message, styles.messageError]}>
+              <Text className="text-sm text-red-500 mb-4 text-center">
                 {errorMessage}
               </Text>
             ) : null}
 
             {infoMessage ? (
-              <Text style={[styles.message, styles.messageInfo]}>
+              <Text className="text-sm text-[#2bee79] mb-4 text-center">
                 {infoMessage}
               </Text>
             ) : null}
 
-            <View style={{ alignItems: "center", marginBottom: 24 }}>
+            <View className="items-center mb-6">
               <TouchableOpacity
                 activeOpacity={0.85}
                 onPress={handlePickAvatar}
                 disabled={uploadingAvatar}
-                style={{
-                  position: "relative",
-                }}
+                className="relative"
               >
                 <View
-                  style={{
-                    width: 120,
-                    height: 120,
-                    borderRadius: 60,
-                    borderWidth: 3,
-                    borderColor: "#2bee79",
-                    overflow: "hidden",
-                    backgroundColor: isDark ? "#193324" : "#e2e8f0",
-                  }}
+                  className={`w-[120px] h-[120px] rounded-full border-[3px] border-[#2bee79] overflow-hidden ${
+                    isDark ? "bg-[#193324]" : "bg-slate-200"
+                  }`}
                 >
                   <Image
                     source={{
                       uri: avatarAsset?.uri || avatarUrl || DEFAULT_AVATAR,
                     }}
-                    style={{ width: "100%", height: "100%" }}
+                    className="w-full h-full"
                   />
                 </View>
                 <View
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    backgroundColor: "#2bee79",
-                    width: 36,
-                    height: 36,
-                    borderRadius: 18,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderWidth: 3,
-                    borderColor: isDark ? "#102217" : "#f6f8f7",
-                  }}
+                  className={`absolute bottom-0 right-0 bg-[#2bee79] w-9 h-9 rounded-full items-center justify-center border-[3px] ${
+                    isDark ? "border-[#102217]" : "border-[#f6f8f7]"
+                  }`}
                 >
                   {uploadingAvatar ? (
                     <ActivityIndicator size="small" color="#102217" />
@@ -473,30 +446,28 @@ export default function EditProfileScreen() {
                 </View>
               </TouchableOpacity>
               <Text
-                style={[
-                  styles.helper,
-                  isDark ? styles.helperDark : styles.helperLight,
-                  { marginTop: 8 },
-                ]}
+                className={`text-xs mt-2 ${
+                  isDark ? "text-[#92c9a8]" : "text-slate-500"
+                }`}
               >
                 Tap to change profile photo
               </Text>
             </View>
 
-            <View style={styles.inputGroup}>
+            <View className="mb-4">
               <Text
-                style={[
-                  styles.label,
-                  isDark ? styles.labelDark : styles.labelLight,
-                ]}
+                className={`text-sm font-medium mb-1.5 ${
+                  isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+                }`}
               >
                 First Name
               </Text>
               <TextInput
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                ]}
+                className={`h-12 px-4 rounded-xl text-base ${
+                  isDark
+                    ? "bg-[#12251a] text-[#f8fafc]"
+                    : "bg-slate-100 text-[#0f172a]"
+                }`}
                 placeholder="Enter your first name"
                 placeholderTextColor={placeholderColor}
                 value={firstName}
@@ -505,20 +476,20 @@ export default function EditProfileScreen() {
               />
             </View>
 
-            <View style={styles.inputGroup}>
+            <View className="mb-4">
               <Text
-                style={[
-                  styles.label,
-                  isDark ? styles.labelDark : styles.labelLight,
-                ]}
+                className={`text-sm font-medium mb-1.5 ${
+                  isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+                }`}
               >
                 Last Name
               </Text>
               <TextInput
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                ]}
+                className={`h-12 px-4 rounded-xl text-base ${
+                  isDark
+                    ? "bg-[#12251a] text-[#f8fafc]"
+                    : "bg-slate-100 text-[#0f172a]"
+                }`}
                 placeholder="Enter your last name"
                 placeholderTextColor={placeholderColor}
                 value={lastName}
@@ -527,79 +498,75 @@ export default function EditProfileScreen() {
               />
             </View>
 
-            <View style={styles.inputGroup}>
+            <View className="mb-4">
               <Text
-                style={[
-                  styles.label,
-                  isDark ? styles.labelDark : styles.labelLight,
-                ]}
+                className={`text-sm font-medium mb-1.5 ${
+                  isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+                }`}
               >
                 University Email
               </Text>
               <TextInput
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                  styles.inputDisabled,
-                  isDark ? styles.inputDisabledDark : styles.inputDisabledLight,
-                ]}
+                className={`h-12 px-4 rounded-xl text-base opacity-60 ${
+                  isDark
+                    ? "bg-[#1a3326] text-[#92c9a8]"
+                    : "bg-slate-200 text-slate-500"
+                }`}
                 editable={false}
                 selectTextOnFocus={false}
                 value={email}
               />
               <Text
-                style={[
-                  styles.helper,
-                  isDark ? styles.helperDark : styles.helperLight,
-                ]}
+                className={`text-xs mt-1.5 ${
+                  isDark ? "text-[#92c9a8]" : "text-slate-500"
+                }`}
               >
                 This address comes from your university account.
               </Text>
             </View>
 
-            <View style={styles.inputGroup}>
+            <View className="mb-4">
               <Text
-                style={[
-                  styles.label,
-                  isDark ? styles.labelDark : styles.labelLight,
-                ]}
+                className={`text-sm font-medium mb-1.5 ${
+                  isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+                }`}
               >
                 Course
               </Text>
               <TextInput
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                ]}
+                className={`h-12 px-4 rounded-xl text-base ${
+                  isDark
+                    ? "bg-[#12251a] text-[#f8fafc]"
+                    : "bg-slate-100 text-[#0f172a]"
+                }`}
                 placeholder="Enter your course"
                 placeholderTextColor={placeholderColor}
                 value={course}
                 onChangeText={setCourse}
               />
               <Text
-                style={[
-                  styles.helper,
-                  isDark ? styles.helperDark : styles.helperLight,
-                ]}
+                className={`text-xs mt-1.5 ${
+                  isDark ? "text-[#92c9a8]" : "text-slate-500"
+                }`}
               >
                 Example: BS Computer Science
               </Text>
             </View>
 
-            <View style={styles.inputGroup}>
+            <View className="mb-4">
               <Text
-                style={[
-                  styles.label,
-                  isDark ? styles.labelDark : styles.labelLight,
-                ]}
+                className={`text-sm font-medium mb-1.5 ${
+                  isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+                }`}
               >
                 Phone Number
               </Text>
               <TextInput
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                ]}
+                className={`h-12 px-4 rounded-xl text-base ${
+                  isDark
+                    ? "bg-[#12251a] text-[#f8fafc]"
+                    : "bg-slate-100 text-[#0f172a]"
+                }`}
                 placeholder="Add your contact number"
                 placeholderTextColor={placeholderColor}
                 keyboardType="phone-pad"
@@ -611,29 +578,28 @@ export default function EditProfileScreen() {
                 maxLength={11}
               />
               <Text
-                style={[
-                  styles.helper,
-                  isDark ? styles.helperDark : styles.helperLight,
-                ]}
+                className={`text-xs mt-1.5 ${
+                  isDark ? "text-[#92c9a8]" : "text-slate-500"
+                }`}
               >
                 Enter exactly 11 digits (e.g., 09123456789).
               </Text>
             </View>
 
-            <View style={styles.inputGroup}>
+            <View className="mb-4">
               <Text
-                style={[
-                  styles.label,
-                  isDark ? styles.labelDark : styles.labelLight,
-                ]}
+                className={`text-sm font-medium mb-1.5 ${
+                  isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+                }`}
               >
                 Facebook Name or Link
               </Text>
               <TextInput
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                ]}
+                className={`h-12 px-4 rounded-xl text-base ${
+                  isDark
+                    ? "bg-[#12251a] text-[#f8fafc]"
+                    : "bg-slate-100 text-[#0f172a]"
+                }`}
                 placeholder="Add your Facebook details"
                 placeholderTextColor={placeholderColor}
                 value={facebookName}
@@ -641,10 +607,9 @@ export default function EditProfileScreen() {
                 autoCapitalize="none"
               />
               <Text
-                style={[
-                  styles.helper,
-                  isDark ? styles.helperDark : styles.helperLight,
-                ]}
+                className={`text-xs mt-1.5 ${
+                  isDark ? "text-[#92c9a8]" : "text-slate-500"
+                }`}
               >
                 Provide a profile link or name classmates can search.
               </Text>
@@ -652,10 +617,9 @@ export default function EditProfileScreen() {
 
             <TouchableOpacity
               activeOpacity={0.85}
-              style={[
-                styles.button,
-                saving || !profileId ? styles.buttonDisabled : null,
-              ]}
+              className={`h-14 rounded-xl flex-row items-center justify-center mt-4 ${
+                saving || !profileId ? "bg-[#2bee79]/50" : "bg-[#2bee79]"
+              }`}
               onPress={handleSave}
               disabled={saving || !profileId}
             >
@@ -664,13 +628,13 @@ export default function EditProfileScreen() {
               ) : (
                 <MaterialIcons name="save" size={22} color="#102217" />
               )}
-              <Text style={styles.buttonText}>
+              <Text className="text-base font-semibold text-[#102217] ml-2">
                 {saving ? "Saving..." : "Save Changes"}
               </Text>
             </TouchableOpacity>
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

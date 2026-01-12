@@ -1,11 +1,10 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View, useColorScheme } from "react-native";
-import { supabase } from "../lib/supabaseClient";
 import AppLogo from "../components/AppLogo";
 import LoginButton from "../components/LogInButton";
 import SignUpButton from "../components/SignUpButton";
-import { welcomeStyles } from "../styles/welcomeStyles";
+import { supabase } from "../lib/supabaseClient";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -17,7 +16,9 @@ export default function WelcomeScreen() {
     const checkAuth = async () => {
       try {
         // Check if the user is already authenticated using Supabase
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (session) {
           // If authenticated, navigate to the home screen
           router.replace("/home");
@@ -36,11 +37,9 @@ export default function WelcomeScreen() {
   if (checking) {
     return (
       <View
-        style={[
-          welcomeStyles.container,
-          isDark ? welcomeStyles.containerDark : welcomeStyles.containerLight,
-          { justifyContent: "center", alignItems: "center" },
-        ]}
+        className={`flex-1 justify-center items-center ${
+          isDark ? "bg-background-dark" : "bg-slate-50"
+        }`}
       >
         <ActivityIndicator size="large" color="#2bee79" />
       </View>
@@ -49,27 +48,24 @@ export default function WelcomeScreen() {
 
   return (
     <View
-      style={[
-        welcomeStyles.container,
-        isDark ? welcomeStyles.containerDark : welcomeStyles.containerLight,
-      ]}
+      className={`flex-1 justify-between ${
+        isDark ? "bg-background-dark" : "bg-slate-50"
+      }`}
     >
       {/* Main content */}
-      <View style={welcomeStyles.mainContent}>
+      <View className="flex-1 justify-center items-center px-6">
         <AppLogo />
         <Text
-          style={[
-            welcomeStyles.title,
-            isDark ? welcomeStyles.titleDark : welcomeStyles.titleLight,
-          ]}
+          className={`text-[40px] font-black ${
+            isDark ? "text-white" : "text-text-light"
+          }`}
         >
           CvSU Finds
         </Text>
         <Text
-          style={[
-            welcomeStyles.subtitle,
-            isDark ? welcomeStyles.subtitleDark : welcomeStyles.subtitleLight,
-          ]}
+          className={`text-base text-center max-w-[260px] ${
+            isDark ? "text-neutral-400" : "text-slate-600"
+          }`}
         >
           Snap a photo. Find your item.
         </Text>
@@ -77,20 +73,14 @@ export default function WelcomeScreen() {
 
       {/* Action buttons */}
       <View
-        style={[
-          welcomeStyles.actions,
-          isDark ? welcomeStyles.actionsDark : welcomeStyles.actionsLight,
-        ]}
+        className={`px-6 pb-8 ${isDark ? "bg-transparent" : "bg-slate-100"}`}
       >
         <SignUpButton onPress={() => router.push("/signup")} />
         <LoginButton onPress={() => router.push("/login")} />
         <Text
-          style={[
-            welcomeStyles.footerText,
-            isDark
-              ? welcomeStyles.footerTextDark
-              : welcomeStyles.footerTextLight,
-          ]}
+          className={`mt-6 mb-5 text-[9px] text-center ${
+            isDark ? "text-muted-dark" : "text-muted-light"
+          }`}
         >
           By continuing, you agree to our Terms of Service and Privacy Policy
         </Text>

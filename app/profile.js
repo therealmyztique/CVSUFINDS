@@ -17,7 +17,6 @@ import {
 import AppHeader from "../components/AppHeader";
 import BottomNav from "../components/BottomNav";
 import { supabase } from "../lib/supabaseClient";
-import { profileStyles as styles } from "../styles/profileStyles";
 
 const AVATAR_URI =
   "https://lh3.googleusercontent.com/d/15hdjPNF0qwo2q3wmfRp2NZNQiIqHZ1ai";
@@ -218,7 +217,7 @@ export default function ProfileScreen() {
         id: "facebook",
         label: "Facebook",
         value: facebook,
-        icon: "public",
+        icon: "facebook",
         actionIcon: "open-in-new",
       },
     ].map((item) => ({
@@ -230,27 +229,22 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
+      className={`flex-1 ${isDark ? "bg-[#0b1610]" : "bg-slate-50"}`}
     >
       <AppHeader />
 
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.content}
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
         {loadingProfile ? (
-          <View style={{ paddingVertical: 48, alignItems: "center", gap: 12 }}>
+          <View className="py-12 items-center gap-3">
             <ActivityIndicator size="large" color="#2bee79" />
             <Text
-              style={[
-                styles.subcaption,
-                isDark ? styles.subcaptionDark : styles.subcaptionLight,
-                { color: isDark ? "#94a3b8" : "#64748b" },
-              ]}
+              className={`text-sm ${
+                isDark ? "text-muted-dark" : "text-muted-light"
+              }`}
             >
               Loading profile…
             </Text>
@@ -259,11 +253,8 @@ export default function ProfileScreen() {
           <>
             {profileError ? (
               <View
+                className="mb-5 p-3.5 rounded-2xl border"
                 style={{
-                  marginBottom: 20,
-                  padding: 14,
-                  borderRadius: 16,
-                  borderWidth: 1,
                   borderColor: isDark
                     ? "rgba(248,113,113,0.35)"
                     : "rgba(248,113,113,0.4)",
@@ -273,90 +264,110 @@ export default function ProfileScreen() {
                 }}
               >
                 <Text
-                  style={{
-                    color: isDark ? "#fecaca" : "#b91c1c",
-                    fontWeight: "600",
-                    textAlign: "center",
-                  }}
+                  className="font-semibold text-center"
+                  style={{ color: isDark ? "#fecaca" : "#b91c1c" }}
                 >
                   {profileError}
                 </Text>
               </View>
             ) : null}
 
-            <View style={styles.avatarWrapper}>
-              <View style={styles.avatarRing}>
+            {/* Avatar Section */}
+            <View className="items-center mt-6 mb-4">
+              <View
+                className="rounded-full p-1"
+                style={{
+                  borderWidth: 3,
+                  borderColor: "#2bee79",
+                  shadowColor: "#2bee79",
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 12,
+                  elevation: 8,
+                }}
+              >
                 <Image
                   source={{
                     uri: profile?.avatar_url ? profile.avatar_url : AVATAR_URI,
                   }}
-                  style={styles.avatarImage}
+                  className="w-28 h-28 rounded-full"
+                  style={{ backgroundColor: "#1a3022" }}
                 />
               </View>
             </View>
 
-            <View style={styles.headingBlock}>
+            {/* Name & Info Block */}
+            <View className="items-center mb-5">
               <Text
-                style={[
-                  styles.nameText,
-                  isDark ? styles.nameTextDark : styles.nameTextLight,
-                ]}
+                className={`text-2xl font-bold text-center mb-1 ${
+                  isDark ? "text-text-dark" : "text-text-light"
+                }`}
               >
                 {fullName}
               </Text>
               <Text
-                style={[
-                  styles.subtitle,
-                  isDark ? styles.subtitleDark : styles.subtitleLight,
-                ]}
+                className={`text-base text-center mb-1 ${
+                  isDark ? "text-primary" : "text-[#16a34a]"
+                }`}
               >
                 {courseText}
               </Text>
               <Text
-                style={[
-                  styles.subcaption,
-                  isDark ? styles.subcaptionDark : styles.subcaptionLight,
-                ]}
+                className={`text-sm text-center ${
+                  isDark ? "text-muted-dark" : "text-muted-light"
+                }`}
               >
                 {academicDetails}
               </Text>
             </View>
 
+            {/* Edit Profile Button */}
             <TouchableOpacity
               activeOpacity={0.9}
-              style={styles.editButton}
+              className="flex-row items-center justify-center bg-primary py-3.5 px-6 rounded-xl mb-6 self-center"
               onPress={() => router.push("/edit-profile")}
             >
               <MaterialIcons name="edit" size={20} color="#102217" />
-              <Text style={styles.editLabel}>Edit Profile</Text>
+              <Text className="text-[#102217] font-bold text-base ml-2">
+                Edit Profile
+              </Text>
             </TouchableOpacity>
 
-            <View style={styles.sectionHeading}>
-              <View style={styles.headingDivider} />
+            {/* Section Heading */}
+            <View className="flex-row items-center mb-4">
+              <View className="w-1 h-5 bg-primary rounded-full mr-3" />
               <Text
-                style={[
-                  styles.headingText,
-                  isDark ? styles.headingTextDark : styles.headingTextLight,
-                ]}
+                className={`text-lg font-semibold ${
+                  isDark ? "text-text-dark" : "text-text-light"
+                }`}
               >
                 Contact Information
               </Text>
             </View>
 
-            <View style={styles.contactList}>
+            {/* Contact Items */}
+            <View className="gap-3 mb-6">
               {contactItems.map((item) => (
                 <View
                   key={item.id}
-                  style={[
-                    styles.contactItem,
-                    isDark ? styles.contactItemDark : styles.contactItemLight,
-                  ]}
+                  className={`flex-row items-center p-4 rounded-2xl ${
+                    isDark ? "bg-surface-dark-alt" : "bg-white"
+                  }`}
+                  style={
+                    !isDark && {
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.05,
+                      shadowRadius: 8,
+                      elevation: 2,
+                    }
+                  }
                 >
+                  {/* Icon Container */}
                   <View
-                    style={[
-                      styles.iconPill,
-                      isDark ? styles.iconPillDark : null,
-                    ]}
+                    className={`w-12 h-12 rounded-xl items-center justify-center mr-3 ${
+                      isDark ? "bg-[#102217]" : "bg-slate-100"
+                    }`}
                   >
                     <MaterialIcons
                       name={item.icon}
@@ -365,36 +376,30 @@ export default function ProfileScreen() {
                     />
                   </View>
 
-                  <View style={styles.contactMeta}>
+                  {/* Contact Info */}
+                  <View className="flex-1">
                     <Text
-                      style={[
-                        styles.contactLabel,
-                        isDark
-                          ? styles.contactLabelDark
-                          : styles.contactLabelLight,
-                      ]}
+                      className={`text-xs font-medium mb-0.5 ${
+                        isDark ? "text-muted-dark" : "text-muted-light"
+                      }`}
                     >
                       {item.label}
                     </Text>
                     <Text
                       numberOfLines={1}
-                      style={[
-                        styles.contactValue,
-                        isDark
-                          ? styles.contactValueDark
-                          : styles.contactValueLight,
-                        item.isEmpty ? { opacity: 0.6 } : null,
-                      ]}
+                      className={`text-base font-medium ${
+                        isDark ? "text-text-dark" : "text-text-light"
+                      }`}
+                      style={item.isEmpty ? { opacity: 0.6 } : null}
                     >
                       {item.displayValue}
                     </Text>
                   </View>
 
+                  {/* Action Button */}
                   <TouchableOpacity
-                    style={[
-                      styles.contactAction,
-                      item.isEmpty ? { opacity: 0.4 } : null,
-                    ]}
+                    className="w-10 h-10 items-center justify-center rounded-lg"
+                    style={item.isEmpty ? { opacity: 0.4 } : null}
                     activeOpacity={item.isEmpty ? 1 : 0.8}
                     disabled={item.isEmpty}
                   >
@@ -408,12 +413,13 @@ export default function ProfileScreen() {
               ))}
             </View>
 
+            {/* Logout Button */}
             <TouchableOpacity
               activeOpacity={0.85}
-              style={[
-                styles.logoutButton,
-                signingOut ? styles.logoutButtonDisabled : null,
-              ]}
+              className={`flex-row items-center justify-center py-4 px-6 rounded-xl mt-2 ${
+                signingOut ? "bg-red-400" : "bg-red-500"
+              }`}
+              style={signingOut ? { opacity: 0.7 } : null}
               onPress={async () => {
                 if (signingOut) {
                   return;
@@ -439,7 +445,7 @@ export default function ProfileScreen() {
               ) : (
                 <MaterialIcons name="logout" size={20} color="#ffffff" />
               )}
-              <Text style={styles.logoutButtonText}>
+              <Text className="text-white font-bold text-base ml-2">
                 {signingOut ? "Signing out..." : "Logout"}
               </Text>
             </TouchableOpacity>

@@ -1,13 +1,12 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ActivityIndicator,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -23,7 +22,10 @@ export default function AuthCallbackScreen() {
 
   const normalizedParams = useMemo(() => {
     return Object.fromEntries(
-      Object.entries(params).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value])
+      Object.entries(params).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value[0] : value,
+      ])
     );
   }, [params]);
 
@@ -32,7 +34,8 @@ export default function AuthCallbackScreen() {
 
     const handleAuthCallback = async () => {
       try {
-        const { code, access_token, refresh_token, token, type, email } = normalizedParams;
+        const { code, access_token, refresh_token, token, type, email } =
+          normalizedParams;
 
         if (typeof code === "string") {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -41,7 +44,10 @@ export default function AuthCallbackScreen() {
           return;
         }
 
-        if (typeof access_token === "string" && typeof refresh_token === "string") {
+        if (
+          typeof access_token === "string" &&
+          typeof refresh_token === "string"
+        ) {
           const { error } = await supabase.auth.setSession({
             access_token,
             refresh_token,
@@ -51,7 +57,11 @@ export default function AuthCallbackScreen() {
           return;
         }
 
-        if (typeof token === "string" && typeof type === "string" && typeof email === "string") {
+        if (
+          typeof token === "string" &&
+          typeof type === "string" &&
+          typeof email === "string"
+        ) {
           const { error } = await supabase.auth.verifyOtp({
             email,
             token,
@@ -62,21 +72,31 @@ export default function AuthCallbackScreen() {
           if (!isMounted) return;
           setStatus({
             state: "success",
-            message: "Email confirmed! You can now log in with your credentials.",
+            message: "Email confirmed! Redirecting to login...",
           });
+
+          // Auto-redirect to login after showing success message
+          setTimeout(() => {
+            if (isMounted) {
+              router.replace("/login");
+            }
+          }, 2000);
           return;
         }
 
         if (!isMounted) return;
         setStatus({
           state: "error",
-          message: "We could not process that verification link. Please try logging in manually.",
+          message:
+            "We could not process that verification link. Please try logging in manually.",
         });
       } catch (error) {
         if (!isMounted) return;
         setStatus({
           state: "error",
-          message: error?.message ?? "Something went wrong while handling the verification link.",
+          message:
+            error?.message ??
+            "Something went wrong while handling the verification link.",
         });
       }
     };
@@ -90,63 +110,67 @@ export default function AuthCallbackScreen() {
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
+      className={`flex-1 justify-center px-6 ${
+        isDark ? "bg-[#102217]" : "bg-[#f6f8f7]"
+      }`}
     >
       <View
-        style={[
-          styles.card,
-          isDark ? styles.cardDark : styles.cardLight,
-        ]}
+        className={`rounded-3xl py-8 px-6 shadow-lg ${
+          isDark ? "bg-[#1a3022]" : "bg-white"
+        }`}
       >
         {status.state === "loading" ? (
           <>
             <ActivityIndicator size="large" color="#2bee79" />
             <Text
-              style={[
-                styles.message,
-                isDark ? styles.messageDark : styles.messageLight,
-              ]}
+              className={`text-[15px] leading-[22px] text-center mt-[18px] mb-6 ${
+                isDark ? "text-[#cbd5f5]" : "text-[#475569]"
+              }`}
             >
               {status.message}
             </Text>
           </>
+        ) : status.state === "success" ? (
+          <>
+            <Text
+              className={`text-2xl font-extrabold text-center mb-4 ${
+                isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+              }`}
+            >
+              Email Verified ✓
+            </Text>
+            <Text
+              className={`text-[15px] leading-[22px] text-center mt-[18px] mb-6 ${
+                isDark ? "text-[#cbd5f5]" : "text-[#475569]"
+              }`}
+            >
+              {status.message}
+            </Text>
+            <ActivityIndicator size="small" color="#2bee79" />
+          </>
         ) : (
           <>
             <Text
-              style={[
-                styles.title,
-                isDark ? styles.titleDark : styles.titleLight,
-              ]}
+              className={`text-2xl font-extrabold text-center mb-4 ${
+                isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+              }`}
             >
-              {status.state === "success" ? "Email Verified" : "Link Error"}
+              Link Error
             </Text>
             <Text
-              style={[
-                styles.message,
-                isDark ? styles.messageDark : styles.messageLight,
-              ]}
+              className={`text-[15px] leading-[22px] text-center mt-[18px] mb-6 ${
+                isDark ? "text-[#cbd5f5]" : "text-[#475569]"
+              }`}
             >
               {status.message}
             </Text>
             <TouchableOpacity
               activeOpacity={0.85}
-              style={[styles.button, status.state === "success" ? styles.buttonPrimary : styles.buttonSecondary]}
-              onPress={() =>
-                router.replace(status.state === "success" ? "/login" : "/signup")
-              }
+              className="h-[52px] rounded-full justify-center items-center bg-[#334155]"
+              onPress={() => router.replace("/signup")}
             >
-              <Text
-                style={[
-                  styles.buttonLabel,
-                  status.state === "success"
-                    ? styles.buttonLabelDarkOnLight
-                    : styles.buttonLabelLightOnDark,
-                ]}
-              >
-                {status.state === "success" ? "Go to Login" : "Back to Sign Up"}
+              <Text className="text-base font-bold text-[#f8fafc]">
+                Back to Sign Up
               </Text>
             </TouchableOpacity>
           </>
@@ -155,80 +179,3 @@ export default function AuthCallbackScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 24,
-  },
-  containerLight: {
-    backgroundColor: "#f6f8f7",
-  },
-  containerDark: {
-    backgroundColor: "#102217",
-  },
-  card: {
-    borderRadius: 24,
-    paddingVertical: 32,
-    paddingHorizontal: 24,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 10,
-  },
-  cardLight: {
-    backgroundColor: "#ffffff",
-  },
-  cardDark: {
-    backgroundColor: "#1a3022",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "800",
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  titleLight: {
-    color: "#0f172a",
-  },
-  titleDark: {
-    color: "#f8fafc",
-  },
-  message: {
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: "center",
-    marginTop: 18,
-    marginBottom: 24,
-  },
-  messageLight: {
-    color: "#475569",
-  },
-  messageDark: {
-    color: "#cbd5f5",
-  },
-  button: {
-    height: 52,
-    borderRadius: 999,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  buttonPrimary: {
-    backgroundColor: "#2bee79",
-  },
-  buttonSecondary: {
-    backgroundColor: "#334155",
-  },
-  buttonLabel: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  buttonLabelDarkOnLight: {
-    color: "#102217",
-  },
-  buttonLabelLightOnDark: {
-    color: "#f8fafc",
-  },
-});
