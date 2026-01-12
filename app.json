@@ -4,7 +4,7 @@
     "slug": "cvsufinds",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/CvSUFindsLogo.png",
     "scheme": "cvsufinds",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

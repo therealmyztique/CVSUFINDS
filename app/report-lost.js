@@ -5,11 +5,14 @@ import DateTimePicker, {
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Animated,
+  Easing,
   ImageBackground,
+  Modal,
   Platform,
   ScrollView,
   Text,
@@ -18,8 +21,12 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import {
+  findMatchesForLostItem,
+  generateImageEmbedding,
+} from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
-import { reportLostStyles as styles } from "./styles/reportLostStyles";
+import { reportLostStyles as styles } from "../styles/reportLostStyles";
 
 const CATEGORY_OPTIONS = [
   { label: "Electronics", value: "electronics" },
@@ -115,6 +122,16 @@ const createImageBlob = async (asset, contentType) => {
   return base64Data;
 };
 
+const insertLostReport = async (payload) =>
+  supabase
+    .from("lost_reports")
+    .insert({
+      ...payload,
+      status: "active",
+    })
+    .select("id")
+    .single();
+
 export default function ReportLostScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
@@ -133,6 +150,84 @@ export default function ReportLostScreen() {
   const [showIOSPicker, setShowIOSPicker] = useState(false);
   const [imageAsset, setImageAsset] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  // Matches state
+  const [matchedItems, setMatchedItems] = useState([]);
+  const [searchingMatches, setSearchingMatches] = useState(false);
+  const [searchProgress, setSearchProgress] = useState(0);
+  const [showNoMatchModal, setShowNoMatchModal] = useState(false);
+
+  // Animation refs
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Pulse animation for the search icon
+  useEffect(() => {
+    if (searchingMatches) {
+      // Pulse animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 800,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 800,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      // Rotate animation
+      Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 3000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+    } else {
+      pulseAnim.setValue(1);
+      rotateAnim.setValue(0);
+    }
+  }, [searchingMatches]);
+
+  // Progress animation
+  useEffect(() => {
+    if (searchingMatches) {
+      setSearchProgress(0);
+      progressAnim.setValue(0);
+
+      // Animate progress bar
+      Animated.timing(progressAnim, {
+        toValue: 100,
+        duration: 4000,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: false,
+      }).start();
+
+      // Update progress state for display
+      const interval = setInterval(() => {
+        setSearchProgress((prev) => {
+          if (prev >= 95) return prev;
+          return prev + Math.random() * 15;
+        });
+      }, 300);
+
+      return () => clearInterval(interval);
+    }
+  }, [searchingMatches]);
+
+  const rotateInterpolate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
 
   const placeholderColor = isDark ? "#92c9a8" : "#94a3b8";
 
@@ -323,9 +418,8 @@ export default function ReportLostScreen() {
         throw new Error("Unable to retrieve the uploaded image URL.");
       }
 
-      const { error: insertError } = await supabase
-        .from("lost_reports")
-        .insert({
+      const { data: insertedReport, error: insertError } =
+        await insertLostReport({
           reporter_id: user.id,
           title: itemName.trim(),
           category,
@@ -344,7 +438,119 @@ export default function ReportLostScreen() {
         throw new Error(`Database insert failed: ${insertError.message}`);
       }
 
-      Alert.alert("Success", "Lost item report submitted.");
+      // Generate CLIP ViT-B-32 image embedding and search for matches
+      if (insertedReport?.id) {
+        setSearchingMatches(true);
+        try {
+          const embeddingResult = await generateImageEmbedding(
+            imageUrl,
+            insertedReport.id,
+            "lost"
+          );
+
+          if (embeddingResult.success) {
+            // Wait a moment for the embedding to be stored, then search for matches
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            const matchResult = await findMatchesForLostItem(
+              insertedReport.id,
+              0.5, // 50% similarity threshold
+              10
+            );
+
+            if (matchResult.success && matchResult.matches?.length > 0) {
+              setSearchingMatches(false);
+              // Navigate to match results page
+              const sourceItem = {
+                title: itemName.trim(),
+                image_url: imageUrl,
+                category,
+                contact_preference: contactPref,
+                contact_value: contactInfo.trim(),
+              };
+              // Reset form
+              setItemName("");
+              setCategory("");
+              setDescription("");
+              setLastSeen("");
+              setDateTime(null);
+              setReward("");
+              setNotes("");
+              setContactInfo("");
+              setShowCategoryList(false);
+              setImageAsset(null);
+              setUploading(false);
+              // Navigate to match results page
+              router.push({
+                pathname: "/match-results",
+                params: {
+                  matches: JSON.stringify(matchResult.matches),
+                  sourceItem: JSON.stringify(sourceItem),
+                  reportType: "lost",
+                },
+              });
+              return; // Exit early to navigate to results page
+            } else {
+              setSearchingMatches(false);
+              setShowNoMatchModal(true);
+              // Reset form
+              setItemName("");
+              setCategory("");
+              setDescription("");
+              setLastSeen("");
+              setDateTime(null);
+              setReward("");
+              setNotes("");
+              setContactInfo("");
+              setShowCategoryList(false);
+              setImageAsset(null);
+              setUploading(false);
+              return; // Exit early to show no match modal
+            }
+          } else {
+            console.warn(
+              "Image embedding generation failed:",
+              embeddingResult.error
+            );
+            // Still show no match modal even if embedding failed
+            setSearchingMatches(false);
+            setShowNoMatchModal(true);
+            setItemName("");
+            setCategory("");
+            setDescription("");
+            setLastSeen("");
+            setDateTime(null);
+            setReward("");
+            setNotes("");
+            setContactInfo("");
+            setShowCategoryList(false);
+            setImageAsset(null);
+            setUploading(false);
+            return;
+          }
+        } catch (err) {
+          console.warn("Image embedding/matching error:", err);
+          // Show no match modal on error
+          setSearchingMatches(false);
+          setShowNoMatchModal(true);
+          setItemName("");
+          setCategory("");
+          setDescription("");
+          setLastSeen("");
+          setDateTime(null);
+          setReward("");
+          setNotes("");
+          setContactInfo("");
+          setShowCategoryList(false);
+          setImageAsset(null);
+          setUploading(false);
+          return;
+        }
+      }
+
+      // If we get here without showing a modal, show the no match modal
+      setSearchingMatches(false);
+      setShowNoMatchModal(true);
       setItemName("");
       setCategory("");
       setDescription("");
@@ -362,10 +568,17 @@ export default function ReportLostScreen() {
           ? error.message
           : "Something went wrong while submitting.";
       Alert.alert("Submission failed", message);
-    } finally {
       setUploading(false);
       router.back();
+      return;
     }
+    setUploading(false);
+  };
+
+  // Handle closing the no match modal
+  const handleCloseNoMatchModal = () => {
+    setShowNoMatchModal(false);
+    router.back();
   };
 
   return (
@@ -863,6 +1076,288 @@ export default function ReportLostScreen() {
           </View>
         </View>
       ) : null}
+
+      {/* Searching Matches Modal - Beautiful Design */}
+      <Modal
+        visible={searchingMatches}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(16, 34, 23, 0.95)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
+          }}
+        >
+          {/* Animated Search Icon */}
+          <View style={{ marginBottom: 32 }}>
+            <Animated.View
+              style={{
+                transform: [{ scale: pulseAnim }],
+              }}
+            >
+              <View
+                style={{
+                  width: 100,
+                  height: 100,
+                  borderRadius: 50,
+                  backgroundColor: "rgba(34, 197, 94, 0.15)",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    width: 70,
+                    height: 70,
+                    borderRadius: 35,
+                    backgroundColor: "rgba(34, 197, 94, 0.25)",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Animated.View
+                    style={{
+                      transform: [{ rotate: rotateInterpolate }],
+                    }}
+                  >
+                    <MaterialIcons
+                      name="find-replace"
+                      size={36}
+                      color="#22c55e"
+                    />
+                  </Animated.View>
+                </View>
+              </View>
+            </Animated.View>
+          </View>
+
+          {/* Title */}
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "700",
+              color: "#ffffff",
+              marginBottom: 12,
+              textAlign: "center",
+            }}
+          >
+            Finding a match...
+          </Text>
+
+          {/* Subtitle */}
+          <Text
+            style={{
+              fontSize: 15,
+              color: "#92c9a8",
+              textAlign: "center",
+              marginBottom: 40,
+              lineHeight: 22,
+            }}
+          >
+            The system is finding a match for the{"\n"}lost item
+          </Text>
+
+          {/* Progress Section */}
+          <View style={{ width: "100%", maxWidth: 280 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <Text style={{ fontSize: 14, color: "#92c9a8" }}>
+                Scanning database...
+              </Text>
+              <Text
+                style={{ fontSize: 14, color: "#22c55e", fontWeight: "600" }}
+              >
+                {Math.min(Math.round(searchProgress), 100)}%
+              </Text>
+            </View>
+
+            {/* Progress Bar */}
+            <View
+              style={{
+                height: 6,
+                backgroundColor: "rgba(34, 197, 94, 0.2)",
+                borderRadius: 3,
+                overflow: "hidden",
+              }}
+            >
+              <Animated.View
+                style={{
+                  height: "100%",
+                  backgroundColor: "#22c55e",
+                  borderRadius: 3,
+                  width: progressAnim.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: ["0%", "100%"],
+                  }),
+                }}
+              />
+            </View>
+
+            {/* Status Text */}
+            <Text
+              style={{
+                fontSize: 13,
+                color: "#6b7c72",
+                textAlign: "center",
+                marginTop: 16,
+              }}
+            >
+              Analyzing image features...
+            </Text>
+          </View>
+
+          {/* Cancel Button */}
+          <TouchableOpacity
+            onPress={() => {
+              setSearchingMatches(false);
+              router.back();
+            }}
+            style={{
+              marginTop: 48,
+              backgroundColor: "#22c55e",
+              paddingVertical: 14,
+              paddingHorizontal: 48,
+              borderRadius: 25,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#ffffff",
+              }}
+            >
+              Cancel
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* No Match Found Modal */}
+      <Modal
+        visible={showNoMatchModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(16, 34, 23, 0.95)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
+          }}
+        >
+          {/* Icon */}
+          <View
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              backgroundColor: "rgba(234, 179, 8, 0.15)",
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: 24,
+            }}
+          >
+            <View
+              style={{
+                width: 70,
+                height: 70,
+                borderRadius: 35,
+                backgroundColor: "rgba(234, 179, 8, 0.25)",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <MaterialIcons name="search-off" size={36} color="#eab308" />
+            </View>
+          </View>
+
+          {/* Title */}
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "700",
+              color: "#ffffff",
+              marginBottom: 12,
+              textAlign: "center",
+            }}
+          >
+            No matches found
+          </Text>
+
+          {/* Subtitle */}
+          <Text
+            style={{
+              fontSize: 15,
+              color: "#92c9a8",
+              textAlign: "center",
+              marginBottom: 16,
+              lineHeight: 22,
+              paddingHorizontal: 20,
+            }}
+          >
+            We couldn't find any matching found items in our database right now.
+          </Text>
+
+          {/* Info Box */}
+          <View
+            style={{
+              backgroundColor: "rgba(34, 197, 94, 0.1)",
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 32,
+              width: "100%",
+              maxWidth: 300,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#92c9a8",
+                textAlign: "center",
+                lineHeight: 20,
+              }}
+            >
+              ✨ Don't worry! Your report has been saved. You'll be notified if
+              someone finds a matching item.
+            </Text>
+          </View>
+
+          {/* Button */}
+          <TouchableOpacity
+            onPress={handleCloseNoMatchModal}
+            style={{
+              backgroundColor: "#22c55e",
+              paddingVertical: 14,
+              paddingHorizontal: 48,
+              borderRadius: 25,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#ffffff",
+              }}
+            >
+              Go to Home
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }

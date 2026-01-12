@@ -14,8 +14,10 @@ import {
   useColorScheme,
 } from "react-native";
 
+import AppHeader from "../components/AppHeader";
+import BottomNav from "../components/BottomNav";
 import { supabase } from "../lib/supabaseClient";
-import { profileStyles as styles } from "./styles/profileStyles";
+import { profileStyles as styles } from "../styles/profileStyles";
 
 const AVATAR_URI =
   "https://lh3.googleusercontent.com/d/15hdjPNF0qwo2q3wmfRp2NZNQiIqHZ1ai";
@@ -233,23 +235,7 @@ export default function ProfileScreen() {
         isDark ? styles.containerDark : styles.containerLight,
       ]}
     >
-      <View
-        style={[
-          styles.header,
-          isDark ? styles.headerSurfaceDark : styles.headerSurfaceLight,
-        ]}
-      >
-        <View style={styles.headerSpacer} />
-        <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.headerTitleDark : styles.headerTitleLight,
-          ]}
-        >
-          Profile
-        </Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <AppHeader />
 
       <ScrollView
         style={styles.scroll}
@@ -301,7 +287,9 @@ export default function ProfileScreen() {
             <View style={styles.avatarWrapper}>
               <View style={styles.avatarRing}>
                 <Image
-                  source={{ uri: profile?.avatar_url || AVATAR_URI }}
+                  source={{
+                    uri: profile?.avatar_url ? profile.avatar_url : AVATAR_URI,
+                  }}
                   style={styles.avatarImage}
                 />
               </View>
@@ -398,7 +386,6 @@ export default function ProfileScreen() {
                         item.isEmpty ? { opacity: 0.6 } : null,
                       ]}
                     >
-                      co
                       {item.displayValue}
                     </Text>
                   </View>
@@ -460,65 +447,7 @@ export default function ProfileScreen() {
         )}
       </ScrollView>
 
-      <View
-        style={[
-          styles.bottomNav,
-          isDark ? styles.bottomNavDark : styles.bottomNavLight,
-        ]}
-      >
-        <View style={styles.navItems}>
-          <TouchableOpacity
-            style={styles.navButton}
-            activeOpacity={0.85}
-            onPress={() => router.replace("/home")}
-          >
-            <MaterialIcons
-              name="home"
-              size={26}
-              color={isDark ? "#94a3b8" : "#94a3b8"}
-            />
-            <Text
-              style={[
-                styles.navLabel,
-                isDark
-                  ? styles.navLabelInactiveDark
-                  : styles.navLabelInactiveLight,
-              ]}
-            >
-              Home
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.navButton}
-            activeOpacity={0.85}
-            onPress={() => router.push("/resolved-items")}
-          >
-            <MaterialIcons
-              name="task-alt"
-              size={26}
-              color={isDark ? "#94a3b8" : "#94a3b8"}
-            />
-            <Text
-              style={[
-                styles.navLabel,
-                isDark
-                  ? styles.navLabelInactiveDark
-                  : styles.navLabelInactiveLight,
-              ]}
-            >
-              Resolved Items
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.navButton} activeOpacity={0.85}>
-            <MaterialIcons name="person" size={26} color="#2bee79" />
-            <Text style={[styles.navLabel, styles.navLabelActive]}>
-              Profile
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <BottomNav />
     </SafeAreaView>
   );
 }

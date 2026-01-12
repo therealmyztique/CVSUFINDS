@@ -18,7 +18,7 @@ import {
 } from "react-native";
 
 import { supabase } from "../lib/supabaseClient";
-import { editProfileStyles as styles } from "./styles/editProfileStyles";
+import { editProfileStyles as styles } from "../styles/editProfileStyles";
 
 const DEFAULT_AVATAR = "https://via.placeholder.com/150";
 
@@ -275,12 +275,12 @@ export default function EditProfileScreen() {
       return;
     }
 
-    const trimmedFirstName = firstName.trim();
-    const trimmedLastName = lastName.trim();
-    const trimmedCourse = course.trim();
-    const trimmedPhone = phoneNumber.trim();
-    const trimmedFacebook = facebookName.trim();
-    const trimmedEmail = email.trim();
+    const trimmedFirstName = String(firstName || "").trim();
+    const trimmedLastName = String(lastName || "").trim();
+    const trimmedCourse = String(course || "").trim();
+    const trimmedPhone = String(phoneNumber || "").trim();
+    const trimmedFacebook = String(facebookName || "").trim();
+    const trimmedEmail = String(email || "").trim();
 
     if (trimmedPhone && !/^\d{11}$/.test(trimmedPhone)) {
       setErrorMessage("Phone number must be exactly 11 digits.");
@@ -603,9 +603,9 @@ export default function EditProfileScreen() {
                 placeholder="Add your contact number"
                 placeholderTextColor={placeholderColor}
                 keyboardType="phone-pad"
-                value={phoneNumber}
+                value={String(phoneNumber || "")}
                 onChangeText={(value) => {
-                  const digitsOnly = value.replace(/\D/g, "");
+                  const digitsOnly = String(value || "").replace(/\D/g, "");
                   setPhoneNumber(digitsOnly);
                 }}
                 maxLength={11}

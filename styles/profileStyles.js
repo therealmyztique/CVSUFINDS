@@ -2,8 +2,8 @@ import { StyleSheet } from "react-native";
 
 const PRIMARY = "#2bee79";
 const PRIMARY_MUTED = "rgba(43,238,121,0.12)";
-const LIGHT_BACKGROUND = "#f6f8f7";
-const DARK_BACKGROUND = "#102217";
+const LIGHT_BACKGROUND = "#f0f5f2";
+const DARK_BACKGROUND = "#0b1610";
 const LIGHT_SURFACE = "#ffffff";
 const DARK_SURFACE = "#162e21";
 const LIGHT_TEXT = "#0f172a";

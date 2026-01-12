@@ -91,6 +91,12 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: PRIMARY,
   },
+  bellButtonOverlay: {
+    position: "absolute",
+    top: 38,
+    left: 16,
+    zIndex: 10,
+  },
   heroSection: {
     paddingHorizontal: 20,
     paddingTop: 24,
@@ -128,9 +134,9 @@ export const homeStyles = StyleSheet.create({
     width: 128,
   },
   actionCircle: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: 95,
+    height: 95,
+    borderRadius: 47,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: PRIMARY,

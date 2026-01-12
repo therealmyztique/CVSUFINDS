@@ -11,8 +11,8 @@ import {
   useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import AppLogo from "./components/AppLogo";
-import { loginStyles as styles } from "./styles/loginStyles";
+import AppLogo from "../components/AppLogo";
+import { loginStyles as styles } from "../styles/loginStyles";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -69,7 +69,6 @@ export default function LoginScreen() {
     }
   }
 
-  console.log();
   return (
     <View
       style={[
@@ -173,7 +172,6 @@ export default function LoginScreen() {
           </View>
         </View>
 
-        {/* Forgot password */}
         <View style={styles.rememberForgotRow}>
           <TouchableOpacity
             style={styles.rememberMe}
@@ -193,10 +191,6 @@ export default function LoginScreen() {
             >
               Remember Me
             </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.forgot}>
-            <Text style={styles.forgotText}>Forgot Password?</Text>
           </TouchableOpacity>
         </View>
 

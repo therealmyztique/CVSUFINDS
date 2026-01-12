@@ -1,25 +1,24 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker, {
-  DateTimePickerAndroid,
+    DateTimePickerAndroid,
 } from "@react-native-community/datetimepicker";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  ImageBackground,
-  Modal,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  useColorScheme,
+    ActivityIndicator,
+    Alert,
+    ImageBackground,
+    Modal,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    useColorScheme,
 } from "react-native";
-import { generateImageEmbedding } from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
 import { reportFoundStyles as styles } from "../styles/reportFoundStyles";
 
@@ -41,13 +40,6 @@ const CONTACT_OPTIONS = [
 const PLACEHOLDER_IMAGE = {
   uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAc16CvC4n81XeD46Lz0Nn91VBSzi1iAGav_sX1J1cY5qx6vCzp-gQSvsgeGoh6QVuvdreij16XcQlGYECGDTT_E5ltQOSKlrW6Hf8048YY6vpIJaigV4xKlP0Mzv111XfQlOtpONEWBUKVHmsnCv6AdU956DFtiQ318YmtV1xI5SlQH0Si2EhJAWh5jskJotoIjZSJ42ILEcIWpNoQ13Vysfsc193CaE3M6IvY2PBE2xvGnK7nmRfEPrjCIUQpcC16CYR8KrmSk61k",
 };
-
-const LIGHT_SURFACE_COLOR = "#ffffff";
-const DARK_SURFACE_COLOR = "#193324";
-const LIGHT_BORDER_COLOR = "#e2e8f0";
-const DARK_BORDER_COLOR = "#326747";
-const LIGHT_TEXT_COLOR = "#0f172a";
-const DARK_TEXT_COLOR = "#f8fafc";
 
 const BASE64_ALPHABET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -107,7 +99,6 @@ const createImageBlob = async (asset, contentType) => {
     return response.blob();
   }
 
-  // For React Native, return the base64 string - we'll handle it differently in upload
   const base64Data =
     asset.base64 ||
     (await FileSystem.readAsStringAsync(asset.uri, {
@@ -117,20 +108,17 @@ const createImageBlob = async (asset, contentType) => {
   return base64Data;
 };
 
-const insertFoundReport = async (payload) =>
-  supabase
-    .from("found_reports")
-    .insert({
-      ...payload,
-      status: "active",
-    })
-    .select("id")
-    .single();
-
-export default function ReportFoundScreen() {
+export default function EditItemScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+
+  // Parse item data from params - memoize to prevent infinite re-renders
+  const itemData = useMemo(() => {
+    return params.item ? JSON.parse(params.item) : null;
+  }, [params.item]);
+  const itemType = params.type || "found"; // "lost" or "found"
 
   const [itemName, setItemName] = useState("");
   const [category, setCategory] = useState("");
@@ -144,12 +132,38 @@ export default function ReportFoundScreen() {
   const [dateTime, setDateTime] = useState(null);
   const [showIOSPicker, setShowIOSPicker] = useState(false);
   const [imageAsset, setImageAsset] = useState(null);
-  const [uploading, setUploading] = useState(false);
-
-  // Success modal state
+  const [existingImageUrl, setExistingImageUrl] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const placeholderColor = isDark ? "#92c9a8" : "#94a3b8";
+
+  // Initialize form with existing data - only run once
+  useEffect(() => {
+    if (itemData && !initialized) {
+      setItemName(itemData.title || "");
+      setCategory(itemData.category || "");
+      setDescription(itemData.description || "");
+      setLocation(itemType === "lost" ? itemData.last_seen || "" : itemData.location_found || "");
+      setReward(itemData.reward || "");
+      setNotes(itemData.notes || "");
+      setContactPref(itemData.contact_preference || "facebook");
+      setContactInfo(itemData.contact_value || "");
+      setExistingImageUrl(itemData.image_url || null);
+      
+      // Parse date
+      const dateField = itemType === "lost" ? itemData.lost_at : itemData.found_at;
+      if (dateField) {
+        try {
+          setDateTime(new Date(dateField));
+        } catch (e) {
+          console.error("Error parsing date:", e);
+        }
+      }
+      setInitialized(true);
+    }
+  }, [itemData, itemType, initialized]);
 
   const formattedDateTime = useMemo(() => {
     if (!dateTime) {
@@ -210,7 +224,7 @@ export default function ReportFoundScreen() {
       if (!permissionResult.granted) {
         Alert.alert(
           "Permission needed",
-          "Please allow access to your photos to upload a found item image."
+          "Please allow access to your photos to upload an item image."
         );
         return;
       }
@@ -227,6 +241,7 @@ export default function ReportFoundScreen() {
       }
 
       setImageAsset(pickerResult.assets[0]);
+      setExistingImageUrl(null); // Clear existing image when new one is selected
     } catch (error) {
       const message =
         error instanceof Error
@@ -236,10 +251,8 @@ export default function ReportFoundScreen() {
     }
   };
 
-  const handleSubmit = async () => {
-    if (uploading) {
-      return;
-    }
+  const handleSave = async () => {
+    if (saving) return;
 
     if (
       !itemName.trim() ||
@@ -250,165 +263,133 @@ export default function ReportFoundScreen() {
     ) {
       Alert.alert(
         "Missing details",
-        "Please fill in all required fields before submitting."
+        "Please fill in all required fields before saving."
       );
       return;
     }
 
-    if (!imageAsset?.uri) {
-      Alert.alert("Image required", "Please upload a photo of the found item.");
+    if (!imageAsset?.uri && !existingImageUrl) {
+      Alert.alert("Image required", "Please upload a photo of the item.");
       return;
     }
 
-    setUploading(true);
+    setSaving(true);
 
     try {
-      // Get the authenticated user
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      let imageUrl = existingImageUrl;
 
-      if (userError) {
-        console.error("Auth error:", userError);
-        Alert.alert(
-          "Authentication error",
-          userError.message || "Please log in to submit a report."
-        );
-        setUploading(false);
-        return;
-      }
+      // Upload new image if selected
+      if (imageAsset?.uri) {
+        const fileExtension =
+          imageAsset.uri.split(".").pop()?.toLowerCase() || "jpg";
+        const contentType =
+          imageAsset.mimeType ||
+          `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
+        const storagePath = `reports/${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2)}.${fileExtension}`;
 
-      if (!user) {
-        Alert.alert(
-          "Authentication required",
-          "Please log in to submit a report."
-        );
-        setUploading(false);
-        return;
-      }
+        let uploadError;
 
-      const fileExtension =
-        imageAsset.uri.split(".").pop()?.toLowerCase() || "jpg";
-      const contentType =
-        imageAsset.mimeType ||
-        `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
-      const storagePath = `reports/${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2)}.${fileExtension}`;
+        if (Platform.OS === "web") {
+          const imageBlob = await createImageBlob(imageAsset, contentType);
+          const result = await supabase.storage
+            .from("item-images")
+            .upload(storagePath, imageBlob, {
+              contentType,
+              cacheControl: "3600",
+              upsert: false,
+            });
+          uploadError = result.error;
+        } else {
+          const base64Data = await createImageBlob(imageAsset, contentType);
+          const byteArray = decodeBase64ToUint8Array(base64Data);
 
-      let uploadError;
+          const result = await supabase.storage
+            .from("item-images")
+            .upload(storagePath, byteArray, {
+              contentType,
+              cacheControl: "3600",
+              upsert: false,
+            });
+          uploadError = result.error;
+        }
 
-      if (Platform.OS === "web") {
-        const imageBlob = await createImageBlob(imageAsset, contentType);
-        const result = await supabase.storage
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          throw new Error(`Image upload failed: ${uploadError.message}`);
+        }
+
+        const { data: publicUrlData } = supabase.storage
           .from("item-images")
-          .upload(storagePath, imageBlob, {
-            contentType,
-            cacheControl: "3600",
-            upsert: false,
-          });
-        uploadError = result.error;
-      } else {
-        // For React Native, use base64 decode approach
-        const base64Data = await createImageBlob(imageAsset, contentType);
-        const byteArray = decodeBase64ToUint8Array(base64Data);
+          .getPublicUrl(storagePath);
 
-        const result = await supabase.storage
-          .from("item-images")
-          .upload(storagePath, byteArray, {
-            contentType,
-            cacheControl: "3600",
-            upsert: false,
-          });
-        uploadError = result.error;
-      }
-
-      if (uploadError) {
-        console.error("Upload error:", uploadError);
-        throw new Error(`Image upload failed: ${uploadError.message}`);
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from("item-images")
-        .getPublicUrl(storagePath);
-
-      const imageUrl = publicUrlData?.publicUrl;
-      if (!imageUrl) {
-        throw new Error("Unable to retrieve the uploaded image URL.");
-      }
-
-      const { data: insertedReport, error: insertError } =
-        await insertFoundReport({
-          reporter_id: user.id,
-          title: itemName.trim(),
-          category,
-          description: description.trim() || null,
-          location_found: location.trim(),
-          reward: reward.trim() || null,
-          notes: notes.trim() || null,
-          contact_preference: contactPref,
-          contact_value: contactInfo.trim(),
-          found_at: dateTime ? dateTime.toISOString() : null,
-          image_url: imageUrl,
-        });
-
-      if (insertError) {
-        console.error("Insert error:", insertError);
-        throw new Error(`Database insert failed: ${insertError.message}`);
-      }
-
-      // Generate CLIP image embedding for matching
-      if (insertedReport?.id) {
-        try {
-          const embeddingResult = await generateImageEmbedding(
-            imageUrl,
-            insertedReport.id,
-            "found"
-          );
-          if (embeddingResult.success) {
-            // Embedding generated successfully
-          } else {
-            console.warn(
-              "Failed to generate embedding:",
-              embeddingResult.error
-            );
-          }
-        } catch (embError) {
-          console.warn("Embedding generation error:", embError);
-          // Don't fail the report submission if embedding fails
+        imageUrl = publicUrlData?.publicUrl;
+        if (!imageUrl) {
+          throw new Error("Unable to retrieve the uploaded image URL.");
         }
       }
 
-      // Report successfully submitted - show success modal
+      // Update the appropriate table
+      const tableName = itemType === "lost" ? "lost_reports" : "found_reports";
+      const dateField = itemType === "lost" ? "lost_at" : "found_at";
+      const locationField = itemType === "lost" ? "last_seen" : "location_found";
+
+      const updatePayload = {
+        title: itemName.trim(),
+        category,
+        description: description.trim() || null,
+        [locationField]: location.trim(),
+        reward: reward.trim() || null,
+        notes: notes.trim() || null,
+        contact_preference: contactPref,
+        contact_value: contactInfo.trim(),
+        [dateField]: dateTime ? dateTime.toISOString() : null,
+        image_url: imageUrl,
+      };
+
+      const { error: updateError } = await supabase
+        .from(tableName)
+        .update(updatePayload)
+        .eq("id", itemData.id);
+
+      if (updateError) {
+        console.error("Update error:", updateError);
+        throw new Error(`Failed to update item: ${updateError.message}`);
+      }
+
       setShowSuccessModal(true);
-      // Reset form
-      setItemName("");
-      setCategory("");
-      setDescription("");
-      setLocation("");
-      setDateTime(null);
-      setReward("");
-      setNotes("");
-      setContactInfo("");
-      setShowCategoryList(false);
-      setImageAsset(null);
     } catch (error) {
-      console.error("Submission error:", error);
+      console.error("Save error:", error);
       const message =
         error instanceof Error
           ? error.message
-          : "Something went wrong while submitting.";
-      Alert.alert("Submission failed", message);
+          : "Something went wrong while saving.";
+      Alert.alert("Save failed", message);
     }
-    setUploading(false);
+
+    setSaving(false);
   };
 
-  // Handle closing the success modal
-  const handleCloseSuccessModal = () => {
-    setShowSuccessModal(false);
-    router.replace("/home");
+  const handleCancel = () => {
+    router.back();
   };
+
+  if (!itemData) {
+    return (
+      <View
+        style={[
+          styles.container,
+          isDark ? styles.containerDark : styles.containerLight,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <Text style={{ color: isDark ? "#fff" : "#000" }}>
+          No item data provided
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -425,7 +406,7 @@ export default function ReportFoundScreen() {
       >
         <TouchableOpacity
           activeOpacity={0.85}
-          onPress={() => router.back()}
+          onPress={handleCancel}
           style={[
             styles.backButton,
             isDark ? styles.backButtonDark : styles.backButtonLight,
@@ -444,7 +425,7 @@ export default function ReportFoundScreen() {
             isDark ? styles.headerTitleDark : styles.headerTitleLight,
           ]}
         >
-          Report Found Item
+          Edit Item Details
         </Text>
 
         <View style={{ width: 44 }} />
@@ -454,28 +435,15 @@ export default function ReportFoundScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View>
-          <Text
-            style={[
-              styles.heroHeading,
-              isDark ? styles.heroHeadingDark : styles.heroHeadingLight,
-            ]}
-          >
-            Found something?
-          </Text>
-          <Text
-            style={[
-              styles.heroBody,
-              isDark ? styles.heroBodyDark : styles.heroBodyLight,
-            ]}
-          >
-            Upload a photo to help our AI match it with lost reports.
-          </Text>
-        </View>
-
         <TouchableOpacity activeOpacity={0.9} onPress={handlePickImage}>
           <ImageBackground
-            source={imageAsset ? { uri: imageAsset.uri } : PLACEHOLDER_IMAGE}
+            source={
+              imageAsset
+                ? { uri: imageAsset.uri }
+                : existingImageUrl
+                ? { uri: existingImageUrl }
+                : PLACEHOLDER_IMAGE
+            }
             style={[
               styles.uploadCard,
               isDark ? styles.uploadCardDark : styles.uploadCardLight,
@@ -485,18 +453,22 @@ export default function ReportFoundScreen() {
             <View
               style={[
                 styles.uploadOverlay,
-                imageAsset ? { backgroundColor: "rgba(0,0,0,0.25)" } : null,
+                imageAsset || existingImageUrl
+                  ? { backgroundColor: "rgba(0,0,0,0.25)" }
+                  : null,
               ]}
             >
               <View style={styles.uploadIconWrapper}>
                 <MaterialIcons
-                  name={imageAsset ? "photo-camera" : "add-a-photo"}
+                  name={imageAsset || existingImageUrl ? "photo-camera" : "add-a-photo"}
                   size={32}
                   color="#2bee79"
                 />
               </View>
               <Text style={styles.uploadText}>
-                {imageAsset ? "Tap to change photo" : "Tap to Upload Photo"}
+                {imageAsset || existingImageUrl
+                  ? "Tap to change photo"
+                  : "Tap to Upload Photo"}
               </Text>
             </View>
           </ImageBackground>
@@ -578,12 +550,12 @@ export default function ReportFoundScreen() {
                   },
                   isDark
                     ? {
-                        backgroundColor: DARK_SURFACE_COLOR,
-                        borderColor: DARK_BORDER_COLOR,
+                        backgroundColor: "#193324",
+                        borderColor: "#326747",
                       }
                     : {
-                        backgroundColor: LIGHT_SURFACE_COLOR,
-                        borderColor: LIGHT_BORDER_COLOR,
+                        backgroundColor: "#ffffff",
+                        borderColor: "#e2e8f0",
                       },
                 ]}
               >
@@ -610,8 +582,8 @@ export default function ReportFoundScreen() {
                           color: isSelected
                             ? "#cafff0ff"
                             : isDark
-                            ? DARK_TEXT_COLOR
-                            : LIGHT_TEXT_COLOR,
+                            ? "#f8fafc"
+                            : "#0f172a",
                           fontWeight: isSelected ? "900" : "500",
                         }}
                       >
@@ -654,7 +626,7 @@ export default function ReportFoundScreen() {
               isDark ? styles.labelDark : styles.labelLight,
             ]}
           >
-            Location Found
+            {itemType === "lost" ? "Last Seen Location" : "Location Found"}
           </Text>
           <View style={{ position: "relative" }}>
             <TextInput
@@ -684,7 +656,7 @@ export default function ReportFoundScreen() {
               isDark ? styles.labelDark : styles.labelLight,
             ]}
           >
-            Date & Time Found
+            {itemType === "lost" ? "Date & Time Lost" : "Date & Time Found"}
           </Text>
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -835,27 +807,149 @@ export default function ReportFoundScreen() {
             onChangeText={setContactInfo}
           />
         </View>
+
+        <View style={{ height: 100 }} />
       </ScrollView>
 
       <View
         style={[styles.footer, isDark ? styles.footerDark : styles.footerLight]}
       >
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={handleSubmit}
-          disabled={uploading}
-          style={[styles.submitButton, uploading ? { opacity: 0.6 } : null]}
-        >
-          <Text style={styles.submitText}>
-            {uploading ? "Submitting..." : "Submit Report"}
-          </Text>
-          {uploading ? (
-            <ActivityIndicator size="small" color="#102217" />
-          ) : (
-            <MaterialIcons name="check" size={20} color="#102217" />
-          )}
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handleCancel}
+            style={{
+              flex: 1,
+              paddingVertical: 14,
+              borderRadius: 28,
+              backgroundColor: isDark ? "#1A2C23" : "#e2e8f0",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: isDark ? "#ffffff" : "#0f172a",
+              }}
+            >
+              Cancel
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handleSave}
+            disabled={saving}
+            style={[
+              styles.submitButton,
+              { flex: 2 },
+              saving ? { opacity: 0.6 } : null,
+            ]}
+          >
+            <Text style={styles.submitText}>
+              {saving ? "Saving..." : "Save Changes"}
+            </Text>
+            {saving ? (
+              <ActivityIndicator size="small" color="#102217" />
+            ) : (
+              <MaterialIcons name="check" size={20} color="#102217" />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {/* Success Modal */}
+      <Modal
+        visible={showSuccessModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(16, 34, 23, 0.95)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
+          }}
+        >
+          <View
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              backgroundColor: "rgba(43, 238, 121, 0.15)",
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: 24,
+            }}
+          >
+            <View
+              style={{
+                width: 70,
+                height: 70,
+                borderRadius: 35,
+                backgroundColor: "rgba(43, 238, 121, 0.25)",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <MaterialIcons name="check-circle" size={36} color="#2bee79" />
+            </View>
+          </View>
+
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "700",
+              color: "#ffffff",
+              marginBottom: 12,
+              textAlign: "center",
+            }}
+          >
+            Item Updated!
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 15,
+              color: "#92c9a8",
+              textAlign: "center",
+              marginBottom: 32,
+              lineHeight: 22,
+              paddingHorizontal: 20,
+            }}
+          >
+            Your item details have been successfully updated.
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => {
+              setShowSuccessModal(false);
+              router.replace("/my-reports");
+            }}
+            style={{
+              backgroundColor: "#2bee79",
+              paddingVertical: 14,
+              paddingHorizontal: 48,
+              borderRadius: 25,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#102217",
+              }}
+            >
+              Done
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
 
       {Platform.OS === "ios" && showIOSPicker ? (
         <View
@@ -905,122 +999,6 @@ export default function ReportFoundScreen() {
           </View>
         </View>
       ) : null}
-
-      {/* Success Modal */}
-      <Modal
-        visible={showSuccessModal}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(16, 34, 23, 0.95)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 24,
-          }}
-        >
-          {/* Icon */}
-          <View
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: "rgba(43, 238, 121, 0.15)",
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 24,
-            }}
-          >
-            <View
-              style={{
-                width: 70,
-                height: 70,
-                borderRadius: 35,
-                backgroundColor: "rgba(43, 238, 121, 0.25)",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <MaterialIcons name="check-circle" size={36} color="#2bee79" />
-            </View>
-          </View>
-
-          {/* Title */}
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "700",
-              color: "#ffffff",
-              marginBottom: 12,
-              textAlign: "center",
-            }}
-          >
-            Item Posted!
-          </Text>
-
-          {/* Subtitle */}
-          <Text
-            style={{
-              fontSize: 15,
-              color: "#92c9a8",
-              textAlign: "center",
-              marginBottom: 16,
-              lineHeight: 22,
-              paddingHorizontal: 20,
-            }}
-          >
-            Your found item has been successfully posted.
-          </Text>
-
-          {/* Info Box */}
-          <View
-            style={{
-              backgroundColor: "rgba(43, 238, 121, 0.1)",
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 32,
-              width: "100%",
-              maxWidth: 300,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#92c9a8",
-                textAlign: "center",
-                lineHeight: 20,
-              }}
-            >
-              🔔 You'll be notified when someone claims this item as theirs.
-              Thank you for helping!
-            </Text>
-          </View>
-
-          {/* Button */}
-          <TouchableOpacity
-            onPress={handleCloseSuccessModal}
-            style={{
-              backgroundColor: "#2bee79",
-              paddingVertical: 14,
-              paddingHorizontal: 48,
-              borderRadius: 25,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#102217",
-              }}
-            >
-              Go to Home
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
     </View>
   );
 }

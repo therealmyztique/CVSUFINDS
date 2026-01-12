@@ -1,6 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -9,9 +10,12 @@ import {
   View,
   useColorScheme,
 } from "react-native";
-import FoundItems from "./components/FoundItems";
-import LostItems from "./components/LostItems";
-import { homeStyles as styles } from "./styles/homeStyles";
+import AppHeader from "../components/AppHeader";
+import BottomNav from "../components/BottomNav";
+import FoundItems from "../components/FoundItems";
+import LostItems from "../components/LostItems";
+import { supabase } from "../lib/supabaseClient";
+import { homeStyles as styles } from "../styles/homeStyles";
 
 const FILTERS = ["All", "Lost", "Found"];
 
@@ -50,9 +54,79 @@ export default function HomeScreen() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [foundReports, setFoundReports] = useState([]);
   const [lostReports, setLostReports] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [userId, setUserId] = useState(null);
 
   const baseTextColor = isDark ? DARK_TEXT_COLOR : LIGHT_TEXT_COLOR;
   const mutedTextColor = isDark ? MUTED_DARK_COLOR : MUTED_LIGHT_COLOR;
+
+  // Fetch current user and check auth
+  useEffect(() => {
+    const fetchUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      } else {
+        // No user session, redirect to welcome screen
+        router.replace("/");
+      }
+    };
+    fetchUser();
+  }, [router]);
+
+  // Fetch unread notification count
+  const fetchUnreadCount = useCallback(async () => {
+    if (!userId) return;
+
+    try {
+      const { count, error } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("is_read", false);
+
+      if (error) throw error;
+      setUnreadCount(count || 0);
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+    }
+  }, [userId]);
+
+  // Fetch unread count on focus
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) {
+        fetchUnreadCount();
+      }
+    }, [userId, fetchUnreadCount])
+  );
+
+  // Subscribe to real-time notification updates
+  useEffect(() => {
+    if (!userId) return;
+
+    const subscription = supabase
+      .channel("notifications-home")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [userId, fetchUnreadCount]);
 
   // Helper to calculate time ago
   const getTimeAgo = (dateString) => {
@@ -87,6 +161,7 @@ export default function HomeScreen() {
       contactPreference: report.contact_preference,
       contactValue: report.contact_value,
       reporterId: report.reporter_id,
+      createdAt: report.created_at,
     }));
   }, [foundReports]);
 
@@ -109,13 +184,14 @@ export default function HomeScreen() {
       contactPreference: report.contact_preference,
       contactValue: report.contact_value,
       reporterId: report.reporter_id,
+      createdAt: report.created_at,
     }));
   }, [lostReports]);
 
   // Combine found and lost posts
   const transformedPosts = useMemo(() => {
     return [...transformedFoundPosts, ...transformedLostPosts].sort(
-      (a, b) => new Date(b.timeAgo) - new Date(a.timeAgo)
+      (a, b) => new Date(b.createdAt ?? 0) - new Date(a.createdAt ?? 0)
     );
   }, [transformedFoundPosts, transformedLostPosts]);
 
@@ -136,12 +212,10 @@ export default function HomeScreen() {
 
   const handleFoundDataLoaded = useCallback((data) => {
     setFoundReports(data);
-    console.log("Found reports loaded:", data);
   }, []);
 
   const handleLostDataLoaded = useCallback((data) => {
     setLostReports(data);
-    console.log("Lost reports loaded:", data);
   }, []);
 
   return (
@@ -156,41 +230,22 @@ export default function HomeScreen() {
       {/* LostItems component fetches data and passes it via callback */}
       <LostItems onDataLoaded={handleLostDataLoaded} filter={activeFilter} />
 
-      <View
+      {/* Header */}
+      <AppHeader />
+
+      {/* Notification Button Overlay */}
+      <TouchableOpacity
+        activeOpacity={0.85}
         style={[
-          styles.header,
-          isDark ? styles.headerSurfaceDark : styles.headerSurfaceLight,
-          styles.headerShadow,
-          isDark ? styles.headerShadowDark : null,
+          styles.bellButton,
+          isDark ? styles.bellButtonDark : styles.bellButtonLight,
+          styles.bellButtonOverlay,
         ]}
+        onPress={() => router.push("/notifications")}
       >
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={[
-            styles.bellButton,
-            isDark ? styles.bellButtonDark : styles.bellButtonLight,
-          ]}
-        >
-          <MaterialIcons name="notifications" size={26} color={baseTextColor} />
-          <View style={styles.bellBadge} />
-        </TouchableOpacity>
-
-        <View style={styles.headerTitle}>
-          <Text
-            style={[
-              styles.headerTitleText,
-              isDark ? styles.headerTitleDark : styles.headerTitleLight,
-            ]}
-          >
-            CvSU
-          </Text>
-          <Text style={[styles.headerTitleText, styles.headerTitleAccent]}>
-            Finds
-          </Text>
-        </View>
-
-        <View style={{ width: 48 }} />
-      </View>
+        <MaterialIcons name="notifications" size={26} color={baseTextColor} />
+        {unreadCount > 0 && <View style={styles.bellBadge} />}
+      </TouchableOpacity>
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -358,10 +413,28 @@ export default function HomeScreen() {
                 }
               >
                 <View style={styles.postImageWrapper}>
-                  <Image
-                    source={{ uri: post.image }}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  {post.image ? (
+                    <Image
+                      source={{ uri: post.image }}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  ) : (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: isDark ? "#1e3a2f" : "#e2e8f0",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <MaterialIcons
+                        name="image"
+                        size={48}
+                        color={isDark ? "#4ade80" : "#94a3b8"}
+                      />
+                    </View>
+                  )}
                   <View
                     style={[
                       styles.statusPill,
@@ -411,10 +484,18 @@ export default function HomeScreen() {
                 <View style={styles.postFooter}>
                   <View style={styles.userInfo}>
                     <View style={styles.avatar}>
-                      <Image
-                        source={{ uri: post.avatar }}
-                        style={{ width: "100%", height: "100%" }}
-                      />
+                      {post.avatar ? (
+                        <Image
+                          source={{ uri: post.avatar }}
+                          style={{ width: "100%", height: "100%" }}
+                        />
+                      ) : (
+                        <MaterialIcons
+                          name="person"
+                          size={20}
+                          color={isDark ? "#4ade80" : "#94a3b8"}
+                        />
+                      )}
                     </View>
                     <Text
                       style={[
@@ -440,55 +521,7 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      <View
-        style={[
-          styles.bottomNav,
-          isDark ? styles.bottomNavDark : styles.bottomNavLight,
-        ]}
-      >
-        <View style={styles.navItems}>
-          <TouchableOpacity style={styles.navButton} activeOpacity={0.85}>
-            <MaterialIcons name="home" size={26} color={PRIMARY_COLOR} />
-            <Text style={[styles.navLabel, styles.navLabelActive]}>Home</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.navButton}
-            activeOpacity={0.85}
-            onPress={() => router.push("/resolved-items")}
-          >
-            <MaterialIcons
-              name="task-alt"
-              size={26}
-              color={isDark ? "#94a3b8" : "#94a3b8"}
-            />
-            <Text
-              style={[
-                styles.navLabel,
-                isDark
-                  ? styles.navLabelInactiveDark
-                  : styles.navLabelInactiveLight,
-              ]}
-            >
-              Resolved Items
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.navButton}
-            activeOpacity={0.85}
-            onPress={() => router.push("/profile")}
-          >
-            <MaterialIcons name="person" size={26} color={mutedTextColor} />
-            <Text
-              style={[
-                styles.navLabel,
-                isDark ? styles.navLabelInactiveDark : styles.navLabelInactive,
-              ]}
-            >
-              Profile
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <BottomNav />
     </View>
   );
 }
