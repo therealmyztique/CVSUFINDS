@@ -13,8 +13,8 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import "../global.css";
 import { supabase } from "../lib/supabaseClient";
-import { notificationStyles as styles } from "../styles/notificationStyles";
 
 const PRIMARY_COLOR = "#2bee79";
 
@@ -244,71 +244,59 @@ export default function NotificationsScreen() {
     return (
       <TouchableOpacity
         key={notification.id}
-        style={[
-          styles.notificationItem,
-          isDark ? styles.notificationItemDark : styles.notificationItemLight,
-          !notification.is_read && styles.notificationUnread,
-          !notification.is_read &&
-            (isDark
-              ? styles.notificationUnreadDark
-              : styles.notificationUnreadLight),
-        ]}
+        className={`flex-row items-start p-4 rounded-2xl mb-3 ${
+          isDark ? "bg-surface-dark" : "bg-white"
+        } ${
+          !notification.is_read
+            ? `border-l-[3px] border-l-primary ${
+                isDark ? "bg-[#0f2318]" : "bg-[#f0fdf4]"
+              }`
+            : ""
+        }`}
         onPress={() => handleNotificationPress(notification)}
         activeOpacity={0.7}
       >
         {/* Icon */}
         <View
-          style={[
-            styles.notificationIcon,
-            { backgroundColor: `${iconColor}20` },
-          ]}
+          className="w-12 h-12 rounded-full items-center justify-center mr-3"
+          style={{ backgroundColor: `${iconColor}20` }}
         >
           <MaterialIcons name={iconName} size={24} color={iconColor} />
         </View>
 
         {/* Content */}
-        <View style={styles.notificationContent}>
+        <View className="flex-1 mr-2">
           <Text
-            style={[
-              styles.notificationTitle,
-              isDark
-                ? styles.notificationTitleDark
-                : styles.notificationTitleLight,
-              !notification.is_read && styles.notificationTitleUnread,
-            ]}
+            className={`text-[15px] mb-1 ${
+              isDark ? "text-text-dark" : "text-text-light"
+            } ${!notification.is_read ? "font-bold" : "font-semibold"}`}
             numberOfLines={1}
           >
             {notification.title}
           </Text>
           <Text
-            style={[
-              styles.notificationMessage,
-              isDark
-                ? styles.notificationMessageDark
-                : styles.notificationMessageLight,
-            ]}
+            className={`text-sm leading-5 mb-1.5 ${
+              isDark ? "text-muted-dark" : "text-muted-light"
+            }`}
             numberOfLines={2}
           >
             {notification.message}
           </Text>
           <Text
-            style={[
-              styles.notificationTime,
-              isDark
-                ? styles.notificationTimeDark
-                : styles.notificationTimeLight,
-            ]}
+            className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}
           >
             {formatDate(notification.created_at)}
           </Text>
         </View>
 
         {/* Unread indicator */}
-        {!notification.is_read && <View style={styles.unreadDot} />}
+        {!notification.is_read && (
+          <View className="w-2.5 h-2.5 rounded-full bg-primary mt-1 mr-1" />
+        )}
 
         {/* Delete button */}
         <TouchableOpacity
-          style={styles.deleteButton}
+          className="p-1"
           onPress={() => deleteNotification(notification.id)}
         >
           <MaterialIcons
@@ -325,20 +313,18 @@ export default function NotificationsScreen() {
 
   return (
     <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
+      className={`flex-1 ${isDark ? "bg-background-dark" : "bg-[#f3f4f8]"}`}
     >
       {/* Header */}
       <View
-        style={[styles.header, isDark ? styles.headerDark : styles.headerLight]}
+        className={`flex-row items-center justify-between pt-14 pb-4 px-4 border-b border-slate-400/15 ${
+          isDark ? "bg-surface-dark" : "bg-white"
+        }`}
       >
         <TouchableOpacity
-          style={[
-            styles.backButton,
-            isDark ? styles.backButtonDark : styles.backButtonLight,
-          ]}
+          className={`w-10 h-10 rounded-full items-center justify-center ${
+            isDark ? "bg-[#1e3a2f]" : "bg-slate-100"
+          }`}
           onPress={() => router.back()}
         >
           <MaterialIcons
@@ -349,46 +335,43 @@ export default function NotificationsScreen() {
         </TouchableOpacity>
 
         <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.headerTitleDark : styles.headerTitleLight,
-          ]}
+          className={`text-xl font-bold flex-1 text-center ${
+            isDark ? "text-text-dark" : "text-text-light"
+          }`}
         >
           Notifications
         </Text>
 
         {notifications.length > 0 && (
           <TouchableOpacity
-            style={styles.clearButton}
+            className="py-2 px-3"
             onPress={clearAllNotifications}
           >
-            <Text style={styles.clearButtonText}>Clear All</Text>
+            <Text className="text-sm font-semibold text-red-500">
+              Clear All
+            </Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* Content */}
       {loading ? (
-        <View style={styles.loadingContainer}>
+        <View className="flex-1 items-center justify-center pt-[60px]">
           <ActivityIndicator size="large" color={PRIMARY_COLOR} />
           <Text
-            style={[
-              styles.loadingText,
-              isDark ? styles.loadingTextDark : styles.loadingTextLight,
-            ]}
+            className={`mt-3 text-sm ${
+              isDark ? "text-muted-dark" : "text-muted-light"
+            }`}
           >
             Loading notifications...
           </Text>
         </View>
       ) : notifications.length === 0 ? (
-        <View style={styles.emptyState}>
+        <View className="flex-1 items-center justify-center px-10">
           <View
-            style={[
-              styles.emptyIconContainer,
-              isDark
-                ? styles.emptyIconContainerDark
-                : styles.emptyIconContainerLight,
-            ]}
+            className={`w-[100px] h-[100px] rounded-full items-center justify-center mb-5 ${
+              isDark ? "bg-[#1e3a2f]" : "bg-slate-200"
+            }`}
           >
             <MaterialIcons
               name="notifications-none"
@@ -397,25 +380,23 @@ export default function NotificationsScreen() {
             />
           </View>
           <Text
-            style={[
-              styles.emptyTitle,
-              isDark ? styles.emptyTitleDark : styles.emptyTitleLight,
-            ]}
+            className={`text-xl font-bold mb-2 ${
+              isDark ? "text-text-dark" : "text-text-light"
+            }`}
           >
             No notifications yet
           </Text>
           <Text
-            style={[
-              styles.emptySubtitle,
-              isDark ? styles.emptySubtitleDark : styles.emptySubtitleLight,
-            ]}
+            className={`text-sm text-center leading-5 ${
+              isDark ? "text-muted-dark" : "text-muted-light"
+            }`}
           >
             We'll notify you when there's something new about your reports
           </Text>
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerClassName="p-4"
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -427,14 +408,11 @@ export default function NotificationsScreen() {
           }
         >
           {unreadCount > 0 && (
-            <View style={styles.unreadHeader}>
+            <View className="mb-3">
               <Text
-                style={[
-                  styles.unreadHeaderText,
-                  isDark
-                    ? styles.unreadHeaderTextDark
-                    : styles.unreadHeaderTextLight,
-                ]}
+                className={`text-sm font-semibold ${
+                  isDark ? "text-muted-dark" : "text-muted-light"
+                }`}
               >
                 {unreadCount} unread notification{unreadCount > 1 ? "s" : ""}
               </Text>
@@ -443,7 +421,7 @@ export default function NotificationsScreen() {
 
           {notifications.map(renderNotificationItem)}
 
-          <View style={{ height: 40 }} />
+          <View className="h-10" />
         </ScrollView>
       )}
 
@@ -455,21 +433,20 @@ export default function NotificationsScreen() {
         onRequestClose={handleCloseModal}
       >
         <TouchableOpacity
-          style={styles.modalOverlay}
+          className="flex-1 bg-black/60 justify-center items-center p-5"
           activeOpacity={1}
           onPress={handleCloseModal}
         >
           <TouchableOpacity
             activeOpacity={1}
-            style={[
-              styles.modalContent,
-              isDark ? styles.modalContentDark : styles.modalContentLight,
-            ]}
+            className={`w-full max-w-[400px] rounded-[20px] p-6 items-center relative ${
+              isDark ? "bg-surface-dark" : "bg-white"
+            }`}
             onPress={(e) => e.stopPropagation()}
           >
             {/* Close button */}
             <TouchableOpacity
-              style={styles.modalCloseButton}
+              className="absolute top-3 right-3 p-1 z-10"
               onPress={handleCloseModal}
             >
               <MaterialIcons
@@ -482,15 +459,12 @@ export default function NotificationsScreen() {
             {/* Modal Header Icon */}
             {selectedNotification && (
               <View
-                style={[
-                  styles.modalIconContainer,
-                  {
-                    backgroundColor: `${
-                      NOTIFICATION_COLORS[selectedNotification.type] ||
-                      "#64748b"
-                    }20`,
-                  },
-                ]}
+                className="w-16 h-16 rounded-full items-center justify-center mb-4"
+                style={{
+                  backgroundColor: `${
+                    NOTIFICATION_COLORS[selectedNotification.type] || "#64748b"
+                  }20`,
+                }}
               >
                 <MaterialIcons
                   name={
@@ -507,30 +481,27 @@ export default function NotificationsScreen() {
 
             {/* Title */}
             <Text
-              style={[
-                styles.modalTitle,
-                isDark ? styles.modalTitleDark : styles.modalTitleLight,
-              ]}
+              className={`text-lg font-bold text-center mb-3 ${
+                isDark ? "text-text-dark" : "text-text-light"
+              }`}
             >
               {selectedNotification?.title || "Notification"}
             </Text>
 
             {/* Message/Details */}
             <Text
-              style={[
-                styles.modalMessage,
-                isDark ? styles.modalMessageDark : styles.modalMessageLight,
-              ]}
+              className={`text-[15px] leading-[22px] text-center mb-3 ${
+                isDark ? "text-muted-dark" : "text-muted-light"
+              }`}
             >
               {selectedNotification?.message || "No details available."}
             </Text>
 
             {/* Time */}
             <Text
-              style={[
-                styles.modalTime,
-                isDark ? styles.modalTimeDark : styles.modalTimeLight,
-              ]}
+              className={`text-[13px] mb-5 ${
+                isDark ? "text-gray-500" : "text-gray-400"
+              }`}
             >
               {selectedNotification
                 ? formatDate(selectedNotification.created_at)
@@ -538,14 +509,16 @@ export default function NotificationsScreen() {
             </Text>
 
             {/* Action Buttons */}
-            <View style={styles.modalButtonsContainer}>
+            <View className="flex-row gap-3 w-full justify-center">
               {selectedNotification?.contact_value && (
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.messageUserButton]}
+                  className="flex-row items-center justify-center py-3 px-5 rounded-xl gap-2 flex-1 max-w-[160px] bg-primary"
                   onPress={handleMessageUser}
                 >
                   <MaterialIcons name="chat" size={18} color="#ffffff" />
-                  <Text style={styles.messageUserButtonText}>Contact User</Text>
+                  <Text className="text-white text-sm font-semibold">
+                    Contact User
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>

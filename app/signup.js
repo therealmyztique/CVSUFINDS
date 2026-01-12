@@ -1,5 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import DateTimePicker, {
+  DateTimePickerAndroid,
+} from "@react-native-community/datetimepicker";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
@@ -14,16 +16,14 @@ import {
   useColorScheme,
 } from "react-native";
 
-import { supabase } from "../lib/supabaseClient";
 import AppLogo from "../components/AppLogo";
 import SignUpButton from "../components/SignUpButton";
-import { signupStyles as styles } from "../styles/signupStyles";
+import { supabase } from "../lib/supabaseClient";
 
 export default function SignUpScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -42,26 +42,23 @@ export default function SignUpScreen() {
   const [infoMessage, setInfoMessage] = useState("");
 
   const emailValue = email.trim().toLowerCase();
-  const emailIsEdu = emailValue.endsWith(".edu") || emailValue.endsWith(".edu.ph");
+  const emailIsEdu =
+    emailValue.endsWith(".edu") || emailValue.endsWith(".edu.ph");
   const trimmedFirstName = firstName.trim();
   const trimmedLastName = lastName.trim();
   const trimmedStudentNumber = studentNumber.trim();
   const hasPasswordMinimum = password.length >= 8;
   const passwordsMatch = password === confirmPassword;
-  const hasRequiredFields =
-    Boolean(
-      trimmedFirstName &&
-        trimmedLastName &&
-        emailValue &&
-        password &&
-        confirmPassword
-    );
+  const hasRequiredFields = Boolean(
+    trimmedFirstName &&
+      trimmedLastName &&
+      emailValue &&
+      password &&
+      confirmPassword
+  );
 
   const canSubmit =
-    termsAccepted &&
-    hasRequiredFields &&
-    hasPasswordMinimum &&
-    passwordsMatch;
+    termsAccepted && hasRequiredFields && hasPasswordMinimum && passwordsMatch;
 
   const formatNameInput = (value) => {
     if (!value) {
@@ -149,7 +146,9 @@ export default function SignUpScreen() {
       if (error) {
         const normalizedMessage = error.message?.toLowerCase?.() ?? "";
         if (normalizedMessage.includes("already registered")) {
-          setErrorMessage("That email is already registered. Try logging in instead.");
+          setErrorMessage(
+            "That email is already registered. Try logging in instead."
+          );
         } else {
           setErrorMessage(error.message);
         }
@@ -166,13 +165,16 @@ export default function SignUpScreen() {
         });
 
         if (profileError && profileError.code !== "42P01") {
-          const normalizedProfileMessage = profileError.message?.toLowerCase?.() ?? "";
+          const normalizedProfileMessage =
+            profileError.message?.toLowerCase?.() ?? "";
 
           if (
             normalizedProfileMessage.includes("duplicate key") &&
             normalizedProfileMessage.includes("profiles_email_key")
           ) {
-            setErrorMessage("That email is already registered. Try logging in instead.");
+            setErrorMessage(
+              "That email is already registered. Try logging in instead."
+            );
           } else {
             setErrorMessage(profileError.message);
           }
@@ -185,7 +187,9 @@ export default function SignUpScreen() {
         return;
       }
 
-      setInfoMessage("Check your inbox and tap the verification link to activate your account.");
+      setInfoMessage(
+        "Check your inbox and tap the verification link to activate your account."
+      );
     } catch (signUpError) {
       setErrorMessage(signUpError.message ?? "Unable to sign up right now.");
     } finally {
@@ -205,7 +209,6 @@ export default function SignUpScreen() {
 
     signUpWithEmail();
   };
-
 
   const placeholderColor = "#94a3b8";
   const iconColor = (field) =>
@@ -260,66 +263,64 @@ export default function SignUpScreen() {
 
   return (
     <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
+      className={`flex-1 px-6 pt-16 pb-8 ${
+        isDark ? "bg-background-dark" : "bg-background-light"
+      }`}
     >
       <ScrollView
-        style={styles.contentScroll}
-        contentContainerStyle={styles.content}
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.logoContainer}>
+        <View className="items-center mb-6">
           <AppLogo />
         </View>
+
         {/* Headline */}
-        <View style={styles.headline}>
+        <View className="mb-8">
           <Text
-            style={[
-              styles.headlineTitle,
-              isDark ? styles.headlineTitleDark : styles.headlineTitleLight,
-            ]}
+            className={`text-[28px] font-bold text-center mb-2 ${
+              isDark ? "text-text-dark" : "text-text-light"
+            }`}
           >
-            Create your{" "}
-            <Text style={styles.headlineAccent}>account</Text>
+            Create your <Text className="text-primary">account</Text>
           </Text>
           <Text
-            style={[
-              styles.headlineSubtitle,
-              isDark ? styles.headlineSubtitleDark : styles.headlineSubtitleLight,
-            ]}
+            className={`text-[15px] text-center leading-[22px] ${
+              isDark ? "text-muted-dark" : "text-muted-light"
+            }`}
           >
-            Join the community to help reunite lost items with their owners across campus.
+            Join the community to help reunite lost items with their owners
+            across campus.
           </Text>
         </View>
 
         {/* Form */}
-        <View style={styles.form}>
-          <View style={styles.row}>
-            <View style={styles.rowItemLeft}>
-              <View style={styles.inputGroup}>
+        <View className="gap-4">
+          <View className="flex-row gap-3">
+            <View className="flex-1">
+              <View className="gap-2">
                 <Text
-                  style={[
-                    styles.label,
-                    isDark ? styles.labelDark : styles.labelLight,
-                  ]}
+                  className={`text-[13px] font-semibold ml-2 ${
+                    isDark ? "text-text-dark" : "text-text-light"
+                  }`}
                 >
                   First Name
                 </Text>
-                <View style={styles.inputWrapper}>
+                <View className="relative justify-center">
                   <MaterialIcons
                     name="person"
                     size={20}
-                    style={styles.inputIcon}
+                    style={{ position: "absolute", left: 18, zIndex: 1 }}
                     color={iconColor("firstName")}
                   />
                   <TextInput
-                    style={[
-                      styles.input,
-                      isDark ? styles.inputDark : styles.inputLight,
-                    ]}
+                    className={`h-14 rounded-full pl-[52px] pr-4 text-base ${
+                      isDark
+                        ? "bg-surface-dark-alt text-text-dark"
+                        : "bg-white text-text-light"
+                    }`}
                     placeholder="Jane"
                     placeholderTextColor={placeholderColor}
                     value={firstName}
@@ -333,28 +334,28 @@ export default function SignUpScreen() {
               </View>
             </View>
 
-            <View style={styles.rowItemRight}>
-              <View style={styles.inputGroup}>
+            <View className="flex-1">
+              <View className="gap-2">
                 <Text
-                  style={[
-                    styles.label,
-                    isDark ? styles.labelDark : styles.labelLight,
-                  ]}
+                  className={`text-[13px] font-semibold ml-2 ${
+                    isDark ? "text-text-dark" : "text-text-light"
+                  }`}
                 >
                   Last Name
                 </Text>
-                <View style={styles.inputWrapper}>
+                <View className="relative justify-center">
                   <MaterialIcons
                     name="person"
                     size={20}
-                    style={styles.inputIcon}
+                    style={{ position: "absolute", left: 18, zIndex: 1 }}
                     color={iconColor("lastName")}
                   />
                   <TextInput
-                    style={[
-                      styles.input,
-                      isDark ? styles.inputDark : styles.inputLight,
-                    ]}
+                    className={`h-14 rounded-full pl-[52px] pr-4 text-base ${
+                      isDark
+                        ? "bg-surface-dark-alt text-text-dark"
+                        : "bg-white text-text-light"
+                    }`}
                     placeholder="Doe"
                     placeholderTextColor={placeholderColor}
                     value={lastName}
@@ -369,27 +370,27 @@ export default function SignUpScreen() {
             </View>
           </View>
 
-          <View style={styles.inputGroup}>
+          <View className="gap-2">
             <Text
-              style={[
-                styles.label,
-                isDark ? styles.labelDark : styles.labelLight,
-              ]}
+              className={`text-[13px] font-semibold ml-2 ${
+                isDark ? "text-text-dark" : "text-text-light"
+              }`}
             >
               University Email
             </Text>
-            <View style={styles.inputWrapper}>
+            <View className="relative justify-center">
               <MaterialIcons
                 name="school"
                 size={20}
-                style={styles.inputIcon}
+                style={{ position: "absolute", left: 18, zIndex: 1 }}
                 color={iconColor("email")}
               />
               <TextInput
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                ]}
+                className={`h-14 rounded-full pl-[52px] pr-12 text-base ${
+                  isDark
+                    ? "bg-surface-dark-alt text-text-dark"
+                    : "bg-white text-text-light"
+                }`}
                 placeholder="first.last@cvsu.edu.ph"
                 placeholderTextColor={placeholderColor}
                 keyboardType="email-address"
@@ -401,35 +402,34 @@ export default function SignUpScreen() {
                 onBlur={() => setFocusedField(null)}
               />
               <View
-                style={[
-                  styles.indicator,
-                  emailIsEdu ? styles.indicatorVisible : null,
-                ]}
+                className={`absolute right-4 w-2.5 h-2.5 rounded-full ${
+                  emailIsEdu ? "bg-primary" : "bg-transparent"
+                }`}
               />
             </View>
           </View>
 
-          <View style={styles.inputGroup}>
+          <View className="gap-2">
             <Text
-              style={[
-                styles.label,
-                isDark ? styles.labelDark : styles.labelLight,
-              ]}
+              className={`text-[13px] font-semibold ml-2 ${
+                isDark ? "text-text-dark" : "text-text-light"
+              }`}
             >
               Student Number
             </Text>
-            <View style={styles.inputWrapper}>
+            <View className="relative justify-center">
               <MaterialIcons
                 name="badge"
                 size={20}
-                style={styles.inputIcon}
+                style={{ position: "absolute", left: 18, zIndex: 1 }}
                 color={iconColor("studentNumber")}
               />
               <TextInput
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                ]}
+                className={`h-14 rounded-full pl-[52px] pr-4 text-base ${
+                  isDark
+                    ? "bg-surface-dark-alt text-text-dark"
+                    : "bg-white text-text-light"
+                }`}
                 placeholder="202300000"
                 placeholderTextColor={placeholderColor}
                 keyboardType="number-pad"
@@ -441,27 +441,27 @@ export default function SignUpScreen() {
             </View>
           </View>
 
-          <View style={styles.inputGroup}>
+          <View className="gap-2">
             <Text
-              style={[
-                styles.label,
-                isDark ? styles.labelDark : styles.labelLight,
-              ]}
+              className={`text-[13px] font-semibold ml-2 ${
+                isDark ? "text-text-dark" : "text-text-light"
+              }`}
             >
               Password
             </Text>
-            <View style={styles.inputWrapper}>
+            <View className="relative justify-center">
               <MaterialIcons
                 name="lock"
                 size={20}
-                style={styles.inputIcon}
+                style={{ position: "absolute", left: 18, zIndex: 1 }}
                 color={iconColor("password")}
               />
               <TextInput
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                ]}
+                className={`h-14 rounded-full pl-[52px] pr-14 text-base ${
+                  isDark
+                    ? "bg-surface-dark-alt text-text-dark"
+                    : "bg-white text-text-light"
+                }`}
                 placeholder="Create a password"
                 placeholderTextColor={placeholderColor}
                 secureTextEntry={!showPassword}
@@ -472,7 +472,7 @@ export default function SignUpScreen() {
                 autoCapitalize="none"
               />
               <TouchableOpacity
-                style={styles.eyeButton}
+                className="absolute right-4 p-1"
                 onPress={() => setShowPassword((prev) => !prev)}
               >
                 <MaterialIcons
@@ -483,36 +483,35 @@ export default function SignUpScreen() {
               </TouchableOpacity>
             </View>
             <Text
-              style={[
-                styles.helperText,
-                isDark ? styles.helperTextDark : styles.helperTextLight,
-              ]}
+              className={`text-xs ml-2 ${
+                isDark ? "text-muted-dark" : "text-muted-light"
+              }`}
             >
               Minimum 8 characters.
             </Text>
           </View>
 
-          <View style={styles.inputGroup}>
+          <View className="gap-2">
             <Text
-              style={[
-                styles.label,
-                isDark ? styles.labelDark : styles.labelLight,
-              ]}
+              className={`text-[13px] font-semibold ml-2 ${
+                isDark ? "text-text-dark" : "text-text-light"
+              }`}
             >
               Confirm Password
             </Text>
-            <View style={styles.inputWrapper}>
+            <View className="relative justify-center">
               <MaterialIcons
                 name="lock-outline"
                 size={20}
-                style={styles.inputIcon}
+                style={{ position: "absolute", left: 18, zIndex: 1 }}
                 color={iconColor("confirmPassword")}
               />
               <TextInput
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                ]}
+                className={`h-14 rounded-full pl-[52px] pr-14 text-base ${
+                  isDark
+                    ? "bg-surface-dark-alt text-text-dark"
+                    : "bg-white text-text-light"
+                }`}
                 placeholder="Re-enter your password"
                 placeholderTextColor={placeholderColor}
                 secureTextEntry={!showConfirmPassword}
@@ -523,7 +522,7 @@ export default function SignUpScreen() {
                 autoCapitalize="none"
               />
               <TouchableOpacity
-                style={styles.eyeButton}
+                className="absolute right-4 p-1"
                 onPress={() => setShowConfirmPassword((prev) => !prev)}
               >
                 <MaterialIcons
@@ -535,51 +534,45 @@ export default function SignUpScreen() {
             </View>
             {confirmPassword.length > 0 && confirmPassword !== password ? (
               <Text
-                style={[
-                  styles.helperText,
-                  styles.helperTextError,
-                  isDark ? styles.helperTextErrorDark : styles.helperTextErrorLight,
-                ]}
+                className={`text-xs ml-2 ${
+                  isDark ? "text-error-dark" : "text-error-light"
+                }`}
               >
                 Passwords must match.
               </Text>
             ) : null}
           </View>
 
-          <View style={styles.inputGroup}>
+          <View className="gap-2">
             <Text
-              style={[
-                styles.label,
-                isDark ? styles.labelDark : styles.labelLight,
-              ]}
+              className={`text-[13px] font-semibold ml-2 ${
+                isDark ? "text-text-dark" : "text-text-light"
+              }`}
             >
               Birthday
             </Text>
-            <View style={styles.inputWrapper}>
+            <View className="relative justify-center">
               <MaterialIcons
                 name="cake"
                 size={20}
-                style={styles.inputIcon}
+                style={{ position: "absolute", left: 18, zIndex: 1 }}
                 color={iconColor("birthday")}
               />
               <TouchableOpacity
                 activeOpacity={0.85}
                 onPress={openDatePicker}
-                style={[
-                  styles.input,
-                  isDark ? styles.inputDark : styles.inputLight,
-                  styles.dateButton,
-                ]}
+                className={`h-14 rounded-full pl-[52px] pr-4 justify-center ${
+                  isDark ? "bg-surface-dark-alt" : "bg-white"
+                }`}
               >
                 <Text
-                  style={[
-                    styles.dateText,
+                  className={`text-base ${
                     birthdayDisplay
                       ? isDark
-                        ? styles.dateTextDark
-                        : styles.dateTextLight
-                      : styles.dateTextPlaceholder,
-                  ]}
+                        ? "text-text-dark"
+                        : "text-text-light"
+                      : "text-[#94a3b8]"
+                  }`}
                 >
                   {birthdayDisplay || "MM/DD/YYYY"}
                 </Text>
@@ -587,27 +580,38 @@ export default function SignUpScreen() {
             </View>
           </View>
 
-          <View style={styles.termsRow}>
+          <View className="flex-row items-start gap-3 mt-2">
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={() => setTermsAccepted((prev) => !prev)}
-              style={[
-                styles.checkbox,
-                isDark ? styles.checkboxDark : null,
-                termsAccepted ? styles.checkboxChecked : null,
-              ]}
+              className={`w-5 h-5 rounded border-2 items-center justify-center mt-0.5 ${
+                termsAccepted
+                  ? "bg-primary border-primary"
+                  : isDark
+                  ? "border-muted-dark"
+                  : "border-muted-light"
+              }`}
             >
-              {termsAccepted ? <View style={styles.checkboxMark} /> : null}
+              {termsAccepted ? (
+                <View className="w-2 h-2 rounded-sm bg-background-dark" />
+              ) : null}
             </TouchableOpacity>
             <Text
-              style={[
-                styles.termsText,
-                isDark ? styles.termsTextDark : styles.termsTextLight,
-              ]}
+              className={`flex-1 text-[13px] leading-[18px] ${
+                isDark ? "text-muted-dark" : "text-muted-light"
+              }`}
             >
               By signing up, you agree to our
-              <Text style={styles.termsLink}> Terms of Service</Text> and
-              <Text style={styles.termsLink}> Privacy Policy</Text>.
+              <Text className="text-primary font-semibold">
+                {" "}
+                Terms of Service
+              </Text>{" "}
+              and
+              <Text className="text-primary font-semibold">
+                {" "}
+                Privacy Policy
+              </Text>
+              .
             </Text>
           </View>
         </View>
@@ -615,15 +619,17 @@ export default function SignUpScreen() {
 
       {/* Sticky footer */}
       <View
-        style={[styles.footer, isDark ? styles.footerDark : styles.footerLight]}
+        className={`pt-4 pb-2 border-t ${
+          isDark
+            ? "bg-background-dark border-surface-dark-alt"
+            : "bg-background-light border-gray-200"
+        }`}
       >
         {errorMessage ? (
           <Text
-            style={[
-              styles.feedbackText,
-              styles.feedbackError,
-              isDark ? styles.feedbackErrorDark : styles.feedbackErrorLight,
-            ]}
+            className={`text-sm text-center mb-3 px-2 ${
+              isDark ? "text-error-dark" : "text-error-light"
+            }`}
           >
             {errorMessage}
           </Text>
@@ -631,11 +637,9 @@ export default function SignUpScreen() {
 
         {infoMessage ? (
           <Text
-            style={[
-              styles.feedbackText,
-              styles.feedbackInfo,
-              isDark ? styles.feedbackInfoDark : styles.feedbackInfoLight,
-            ]}
+            className={`text-sm text-center mb-3 px-2 ${
+              isDark ? "text-primary" : "text-primary"
+            }`}
           >
             {infoMessage}
           </Text>
@@ -643,43 +647,39 @@ export default function SignUpScreen() {
 
         <SignUpButton
           onPress={handleSignUpPress}
-          style={[
-            styles.signUpButton,
-            (loading || !canSubmit) ? styles.signUpButtonDisabled : null,
-          ]}
-          textStyle={styles.signUpButtonText}
+          className={`h-14 rounded-full bg-primary justify-center items-center ${
+            loading || !canSubmit ? "opacity-50" : ""
+          }`}
+          textClassName="text-background-dark text-base font-bold"
           label={loading ? "Creating account..." : "Sign Up"}
           rightIcon={
-            loading ? (
-              <ActivityIndicator size="small" color="#102217" />
-            ) : null
+            loading ? <ActivityIndicator size="small" color="#102217" /> : null
           }
           activeOpacity={loading || !canSubmit ? 1 : 0.9}
         />
 
         <Text
-          style={[
-            styles.footerPrompt,
-            isDark ? styles.footerPromptDark : styles.footerPromptLight,
-          ]}
+          className={`text-sm text-center mt-4 ${
+            isDark ? "text-muted-dark" : "text-muted-light"
+          }`}
         >
           Already have an account?
           <Text
-            style={styles.footerLink}
+            className="text-primary font-semibold"
             onPress={() => router.push("/login")}
           >
-            {" "}Log in
+            {" "}
+            Log in
           </Text>
         </Text>
       </View>
 
       {Platform.OS === "ios" && showIOSPicker ? (
-        <View style={styles.iosPickerBackdrop}>
+        <View className="absolute inset-0 bg-black/50 justify-end">
           <View
-            style={[
-              styles.iosPickerCard,
-              isDark ? styles.iosPickerCardDark : styles.iosPickerCardLight,
-            ]}
+            className={`rounded-t-3xl pt-4 pb-8 ${
+              isDark ? "bg-surface-dark-alt" : "bg-white"
+            }`}
           >
             <DateTimePicker
               mode="date"
@@ -689,10 +689,12 @@ export default function SignUpScreen() {
               themeVariant={isDark ? "dark" : "light"}
             />
             <TouchableOpacity
-              style={styles.iosPickerDone}
+              className="mx-6 h-12 rounded-full bg-primary justify-center items-center"
               onPress={closeIOSPicker}
             >
-              <Text style={styles.iosPickerDoneText}>Done</Text>
+              <Text className="text-background-dark text-base font-bold">
+                Done
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

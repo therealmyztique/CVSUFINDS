@@ -16,14 +16,13 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import AppHeader from "../components/AppHeader";
+import BottomNav from "../components/BottomNav";
 import {
   findMatchesForLostItem,
   generateImageEmbedding,
 } from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
-import AppHeader from "../components/AppHeader";
-import BottomNav from "../components/BottomNav";
-import { myReportsStyles as styles } from "../styles/myReportsStyles";
 
 const PRIMARY_COLOR = "#2bee79";
 const FILTERS = ["All", "Lost", "Found", "Resolved"];
@@ -491,16 +490,22 @@ export default function MyReportsScreen() {
     return (
       <TouchableOpacity
         key={`${item.type}-${item.id}`}
-        style={[
-          styles.reportCard,
-          isDark ? styles.reportCardDark : styles.reportCardLight,
-        ]}
+        className={`relative rounded-2xl mb-4 overflow-hidden ${
+          isDark ? "bg-surface-dark" : "bg-white"
+        }`}
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 3,
+        }}
         onPress={() => handleItemPress(item)}
         activeOpacity={0.7}
       >
         {/* Three dots menu button */}
         <TouchableOpacity
-          style={styles.menuButton}
+          className="absolute top-3 right-3 z-10 p-1"
           onPress={(e) => handleMenuPress(item, e)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -514,13 +519,19 @@ export default function MyReportsScreen() {
         {/* Dropdown Menu */}
         {isMenuOpen && (
           <View
-            style={[
-              styles.dropdownMenu,
-              isDark ? styles.dropdownMenuDark : styles.dropdownMenuLight,
-            ]}
+            className={`absolute top-10 right-3 rounded-xl z-20 py-2 min-w-[120px] ${
+              isDark ? "bg-[#1a3d2a]" : "bg-white"
+            }`}
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
           >
             <TouchableOpacity
-              style={styles.dropdownItem}
+              className="flex-row items-center px-4 py-3"
               onPress={() => handleEditPress(item)}
             >
               <MaterialIcons
@@ -529,40 +540,36 @@ export default function MyReportsScreen() {
                 color={isDark ? "#92c9a8" : "#64748b"}
               />
               <Text
-                style={[
-                  styles.dropdownItemText,
-                  isDark
-                    ? styles.dropdownItemTextDark
-                    : styles.dropdownItemTextLight,
-                ]}
+                className={`ml-3 text-sm font-medium ${
+                  isDark ? "text-muted-dark" : "text-muted-light"
+                }`}
               >
                 Edit
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.dropdownItem}
+              className="flex-row items-center px-4 py-3"
               onPress={() => handleDeletePress(item)}
             >
               <MaterialIcons name="delete" size={18} color="#ef4444" />
-              <Text style={[styles.dropdownItemText, { color: "#ef4444" }]}>
+              <Text className="ml-3 text-sm font-medium text-[#ef4444]">
                 Delete
               </Text>
             </TouchableOpacity>
           </View>
         )}
 
-        <View style={styles.cardContent}>
+        <View className="flex-row p-4">
           {/* Image or Icon */}
           <View
-            style={[
-              styles.cardImage,
-              isDark ? styles.cardImageDark : styles.cardImageLight,
-            ]}
+            className={`w-20 h-20 rounded-xl items-center justify-center overflow-hidden ${
+              isDark ? "bg-[#1a3d2a]" : "bg-gray-100"
+            }`}
           >
             {item.image_url ? (
               <Image
                 source={{ uri: item.image_url }}
-                style={styles.cardImageFull}
+                className="w-full h-full"
                 resizeMode="cover"
               />
             ) : (
@@ -575,35 +582,31 @@ export default function MyReportsScreen() {
           </View>
 
           {/* Details */}
-          <View style={styles.cardDetails}>
-            <View style={styles.cardHeader}>
-              <View style={styles.cardTitleRow}>
+          <View className="flex-1 ml-3 justify-center">
+            <View className="mb-1">
+              <View className="flex-row items-center flex-wrap gap-2">
                 {/* Status Badge */}
                 <View
-                  style={[
-                    styles.statusBadge,
+                  className={`px-2 py-1 rounded-full ${
                     isResolved
-                      ? styles.statusBadgeResolved
+                      ? "bg-[#dcfce7]"
                       : isLost
-                      ? styles.statusBadgeLost
-                      : styles.statusBadgeFound,
-                    isDark &&
-                      isLost &&
-                      !isResolved &&
-                      styles.statusBadgeLostDark,
-                  ]}
+                      ? isDark
+                        ? "bg-[#3d1f25]"
+                        : "bg-[#fff1f2]"
+                      : "bg-[#dcfce7]"
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.statusBadgeText,
+                    className={`text-xs font-semibold ${
                       isResolved
-                        ? styles.statusBadgeTextResolved
+                        ? "text-[#22c55e]"
                         : isLost
                         ? isDark
-                          ? styles.statusBadgeTextLostDark
-                          : styles.statusBadgeTextLost
-                        : styles.statusBadgeTextFound,
-                    ]}
+                          ? "text-[#fda4af]"
+                          : "text-[#f43f5e]"
+                        : "text-[#22c55e]"
+                    }`}
                   >
                     {isResolved ? "Resolved" : isLost ? "Lost" : "Found"}
                   </Text>
@@ -611,10 +614,9 @@ export default function MyReportsScreen() {
 
                 {/* Title */}
                 <Text
-                  style={[
-                    styles.cardTitle,
-                    isDark ? styles.cardTitleDark : styles.cardTitleLight,
-                  ]}
+                  className={`text-base font-semibold flex-1 ${
+                    isDark ? "text-text-dark" : "text-text-light"
+                  }`}
                   numberOfLines={1}
                 >
                   {item.title}
@@ -623,17 +625,16 @@ export default function MyReportsScreen() {
             </View>
 
             {/* Location */}
-            <View style={styles.cardMeta}>
+            <View className="flex-row items-center mt-1">
               <MaterialIcons
                 name="location-on"
                 size={14}
                 color={isDark ? "#92c9a8" : "#64748b"}
               />
               <Text
-                style={[
-                  styles.cardMetaText,
-                  isDark ? styles.cardMetaTextDark : styles.cardMetaTextLight,
-                ]}
+                className={`text-xs ml-1 flex-1 ${
+                  isDark ? "text-muted-dark" : "text-muted-light"
+                }`}
                 numberOfLines={1}
               >
                 {item.location || "Unknown location"}
@@ -641,17 +642,18 @@ export default function MyReportsScreen() {
             </View>
 
             {/* Date and Reward */}
-            <View style={styles.cardFooter}>
+            <View className="flex-row items-center justify-between mt-2">
               <Text
-                style={[
-                  styles.cardDate,
-                  isDark ? styles.cardDateDark : styles.cardDateLight,
-                ]}
+                className={`text-xs ${
+                  isDark ? "text-muted-dark" : "text-muted-light"
+                }`}
               >
                 {formatDate(item.date)}
               </Text>
               {item.reward && (
-                <Text style={styles.rewardText}>${item.reward} Reward</Text>
+                <Text className="text-xs font-semibold text-primary">
+                  ${item.reward} Reward
+                </Text>
               )}
             </View>
           </View>
@@ -676,29 +678,26 @@ export default function MyReportsScreen() {
         transparent={true}
         onRequestClose={handleCloseModal}
       >
-        <View style={styles.modalOverlay}>
+        <View className="flex-1 bg-black/50 justify-end">
           <View
-            style={[
-              styles.modalContainer,
-              isDark ? styles.modalContainerDark : styles.modalContainerLight,
-            ]}
+            className={`rounded-t-3xl max-h-[90%] ${
+              isDark ? "bg-surface-dark" : "bg-white"
+            }`}
           >
             {/* Modal Header with X button */}
-            <View style={styles.modalHeader}>
+            <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-200/10">
               <Text
-                style={[
-                  styles.modalTitle,
-                  isDark ? styles.modalTitleDark : styles.modalTitleLight,
-                ]}
+                className={`text-xl font-bold ${
+                  isDark ? "text-text-dark" : "text-text-light"
+                }`}
               >
                 Item Details
               </Text>
               <TouchableOpacity
                 onPress={handleCloseModal}
-                style={[
-                  styles.closeButton,
-                  isDark ? styles.closeButtonDark : styles.closeButtonLight,
-                ]}
+                className={`w-9 h-9 rounded-full items-center justify-center ${
+                  isDark ? "bg-[#1a3d2a]" : "bg-gray-100"
+                }`}
               >
                 <MaterialIcons
                   name="close"
@@ -708,22 +707,19 @@ export default function MyReportsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.modalContent}>
+            <ScrollView className="px-6">
               {/* Item Image */}
               {selectedItem.image_url ? (
                 <Image
                   source={{ uri: selectedItem.image_url }}
-                  style={styles.modalImage}
+                  className="w-full h-56 rounded-xl mt-4"
                   resizeMode="cover"
                 />
               ) : (
                 <View
-                  style={[
-                    styles.modalImagePlaceholder,
-                    isDark
-                      ? styles.modalImagePlaceholderDark
-                      : styles.modalImagePlaceholderLight,
-                  ]}
+                  className={`w-full h-56 rounded-xl mt-4 items-center justify-center ${
+                    isDark ? "bg-[#1a3d2a]" : "bg-gray-100"
+                  }`}
                 >
                   <MaterialIcons
                     name={CATEGORY_ICONS[selectedItem.category] || "category"}
@@ -734,24 +730,24 @@ export default function MyReportsScreen() {
               )}
 
               {/* Status Badge */}
-              <View style={{ marginTop: 16 }}>
+              <View className="mt-4">
                 <View
-                  style={[
-                    styles.statusBadge,
-                    isLost ? styles.statusBadgeLost : styles.statusBadgeFound,
-                    isDark && isLost && styles.statusBadgeLostDark,
-                    { alignSelf: "flex-start" },
-                  ]}
+                  className={`self-start px-3 py-1.5 rounded-full ${
+                    isLost
+                      ? isDark
+                        ? "bg-[#3d1f25]"
+                        : "bg-[#fff1f2]"
+                      : "bg-[#dcfce7]"
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.statusBadgeText,
+                    className={`text-sm font-semibold ${
                       isLost
                         ? isDark
-                          ? styles.statusBadgeTextLostDark
-                          : styles.statusBadgeTextLost
-                        : styles.statusBadgeTextFound,
-                    ]}
+                          ? "text-[#fda4af]"
+                          : "text-[#f43f5e]"
+                        : "text-[#22c55e]"
+                    }`}
                   >
                     {isLost ? "Lost" : "Found"}
                   </Text>
@@ -760,26 +756,24 @@ export default function MyReportsScreen() {
 
               {/* Title */}
               <Text
-                style={[
-                  styles.detailTitle,
-                  isDark ? styles.detailTitleDark : styles.detailTitleLight,
-                ]}
+                className={`text-2xl font-bold mt-3 ${
+                  isDark ? "text-text-dark" : "text-text-light"
+                }`}
               >
                 {selectedItem.title}
               </Text>
 
               {/* Category */}
-              <View style={styles.detailRow}>
+              <View className="flex-row items-center mt-3">
                 <MaterialIcons
                   name="category"
                   size={18}
                   color={isDark ? "#92c9a8" : "#64748b"}
                 />
                 <Text
-                  style={[
-                    styles.detailText,
-                    isDark ? styles.detailTextDark : styles.detailTextLight,
-                  ]}
+                  className={`ml-2 text-base ${
+                    isDark ? "text-muted-dark" : "text-muted-light"
+                  }`}
                 >
                   {categoryLabel}
                 </Text>
@@ -787,22 +781,18 @@ export default function MyReportsScreen() {
 
               {/* Description */}
               {selectedItem.description && (
-                <View style={styles.detailSection}>
+                <View className="mt-4">
                   <Text
-                    style={[
-                      styles.detailLabel,
-                      isDark ? styles.detailLabelDark : styles.detailLabelLight,
-                    ]}
+                    className={`text-sm font-semibold mb-1 ${
+                      isDark ? "text-muted-dark" : "text-muted-light"
+                    }`}
                   >
                     Description
                   </Text>
                   <Text
-                    style={[
-                      styles.detailDescription,
-                      isDark
-                        ? styles.detailDescriptionDark
-                        : styles.detailDescriptionLight,
-                    ]}
+                    className={`text-base leading-6 ${
+                      isDark ? "text-text-dark" : "text-text-light"
+                    }`}
                   >
                     {selectedItem.description}
                   </Text>
@@ -810,26 +800,24 @@ export default function MyReportsScreen() {
               )}
 
               {/* Location */}
-              <View style={styles.detailSection}>
+              <View className="mt-4">
                 <Text
-                  style={[
-                    styles.detailLabel,
-                    isDark ? styles.detailLabelDark : styles.detailLabelLight,
-                  ]}
+                  className={`text-sm font-semibold mb-1 ${
+                    isDark ? "text-muted-dark" : "text-muted-light"
+                  }`}
                 >
                   {isLost ? "Last Seen" : "Location Found"}
                 </Text>
-                <View style={styles.detailRow}>
+                <View className="flex-row items-center">
                   <MaterialIcons
                     name="location-on"
                     size={18}
                     color={PRIMARY_COLOR}
                   />
                   <Text
-                    style={[
-                      styles.detailText,
-                      isDark ? styles.detailTextDark : styles.detailTextLight,
-                    ]}
+                    className={`ml-2 text-base ${
+                      isDark ? "text-text-dark" : "text-text-light"
+                    }`}
                   >
                     {selectedItem.location || "Unknown location"}
                   </Text>
@@ -837,26 +825,24 @@ export default function MyReportsScreen() {
               </View>
 
               {/* Date */}
-              <View style={styles.detailSection}>
+              <View className="mt-4">
                 <Text
-                  style={[
-                    styles.detailLabel,
-                    isDark ? styles.detailLabelDark : styles.detailLabelLight,
-                  ]}
+                  className={`text-sm font-semibold mb-1 ${
+                    isDark ? "text-muted-dark" : "text-muted-light"
+                  }`}
                 >
                   {isLost ? "Date Lost" : "Date Found"}
                 </Text>
-                <View style={styles.detailRow}>
+                <View className="flex-row items-center">
                   <MaterialIcons
                     name="schedule"
                     size={18}
                     color={PRIMARY_COLOR}
                   />
                   <Text
-                    style={[
-                      styles.detailText,
-                      isDark ? styles.detailTextDark : styles.detailTextLight,
-                    ]}
+                    className={`ml-2 text-base ${
+                      isDark ? "text-text-dark" : "text-text-light"
+                    }`}
                   >
                     {formatFullDate(selectedItem.date)}
                   </Text>
@@ -865,16 +851,15 @@ export default function MyReportsScreen() {
 
               {/* Reward */}
               {selectedItem.reward && (
-                <View style={styles.detailSection}>
+                <View className="mt-4">
                   <Text
-                    style={[
-                      styles.detailLabel,
-                      isDark ? styles.detailLabelDark : styles.detailLabelLight,
-                    ]}
+                    className={`text-sm font-semibold mb-1 ${
+                      isDark ? "text-muted-dark" : "text-muted-light"
+                    }`}
                   >
                     Reward
                   </Text>
-                  <Text style={styles.rewardTextLarge}>
+                  <Text className="text-2xl font-bold text-primary">
                     ${selectedItem.reward}
                   </Text>
                 </View>
@@ -882,22 +867,18 @@ export default function MyReportsScreen() {
 
               {/* Notes */}
               {selectedItem.notes && (
-                <View style={styles.detailSection}>
+                <View className="mt-4">
                   <Text
-                    style={[
-                      styles.detailLabel,
-                      isDark ? styles.detailLabelDark : styles.detailLabelLight,
-                    ]}
+                    className={`text-sm font-semibold mb-1 ${
+                      isDark ? "text-muted-dark" : "text-muted-light"
+                    }`}
                   >
                     Additional Notes
                   </Text>
                   <Text
-                    style={[
-                      styles.detailDescription,
-                      isDark
-                        ? styles.detailDescriptionDark
-                        : styles.detailDescriptionLight,
-                    ]}
+                    className={`text-base leading-6 ${
+                      isDark ? "text-text-dark" : "text-text-light"
+                    }`}
                   >
                     {selectedItem.notes}
                   </Text>
@@ -907,12 +888,12 @@ export default function MyReportsScreen() {
               {/* Match Button for Lost Items */}
               {isLost && (
                 <TouchableOpacity
-                  style={styles.matchButton}
+                  className="flex-row items-center justify-center bg-primary py-4 rounded-xl mt-6"
                   onPress={handleMatchWithFound}
                   activeOpacity={0.8}
                 >
                   <MaterialIcons name="search" size={20} color="#102217" />
-                  <Text style={styles.matchButtonText}>
+                  <Text className="ml-2 text-base font-semibold text-[#102217]">
                     Match with found items
                   </Text>
                 </TouchableOpacity>
@@ -921,7 +902,7 @@ export default function MyReportsScreen() {
               {/* Mark as Resolved Button for Lost Items */}
               {isLost && selectedItem.status !== "resolved" && (
                 <TouchableOpacity
-                  style={styles.resolveButton}
+                  className="flex-row items-center justify-center bg-primary py-4 rounded-xl mt-3"
                   onPress={() => handleMarkAsResolved(selectedItem)}
                   activeOpacity={0.8}
                 >
@@ -930,35 +911,41 @@ export default function MyReportsScreen() {
                     size={20}
                     color="#0b1610"
                   />
-                  <Text style={styles.resolveButtonText}>Mark as Resolved</Text>
+                  <Text className="ml-2 text-base font-semibold text-[#0b1610]">
+                    Mark as Resolved
+                  </Text>
                 </TouchableOpacity>
               )}
 
               {/* Mark as Resolved Button for Found Items */}
               {!isLost && selectedItem.status !== "resolved" && (
                 <TouchableOpacity
-                  style={styles.resolveButton}
+                  className="flex-row items-center justify-center bg-primary py-4 rounded-xl mt-3"
                   onPress={() => handleMarkAsResolved(selectedItem)}
                   activeOpacity={0.8}
                 >
                   <MaterialIcons
                     name="check-circle"
                     size={20}
-                    color="#ffffff"
+                    color="#0b1610"
                   />
-                  <Text style={styles.resolveButtonText}>Mark as Resolved</Text>
+                  <Text className="ml-2 text-base font-semibold text-[#0b1610]">
+                    Mark as Resolved
+                  </Text>
                 </TouchableOpacity>
               )}
 
               {/* Already Resolved Indicator */}
               {selectedItem.status === "resolved" && (
-                <View style={styles.resolvedBadge}>
+                <View className="flex-row items-center justify-center bg-[#dcfce7] py-4 rounded-xl mt-6">
                   <MaterialIcons name="verified" size={20} color="#22c55e" />
-                  <Text style={styles.resolvedBadgeText}>Item Resolved</Text>
+                  <Text className="ml-2 text-base font-semibold text-[#22c55e]">
+                    Item Resolved
+                  </Text>
                 </View>
               )}
 
-              <View style={{ height: 24 }} />
+              <View className="h-6" />
             </ScrollView>
           </View>
         </View>
@@ -973,12 +960,12 @@ export default function MyReportsScreen() {
       animationType="fade"
       statusBarTranslucent
     >
-      <View style={styles.searchingOverlay}>
+      <View className="flex-1 bg-[rgba(16,34,23,0.98)] justify-center items-center px-6">
         {/* Animated Search Icon */}
-        <View style={{ marginBottom: 32 }}>
+        <View className="mb-8">
           <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-            <View style={styles.searchIconOuter}>
-              <View style={styles.searchIconInner}>
+            <View className="w-28 h-28 rounded-full bg-[rgba(43,238,121,0.1)] items-center justify-center">
+              <View className="w-20 h-20 rounded-full bg-[rgba(43,238,121,0.15)] items-center justify-center">
                 <Animated.View
                   style={{ transform: [{ rotate: rotateInterpolate }] }}
                 >
@@ -994,34 +981,34 @@ export default function MyReportsScreen() {
         </View>
 
         {/* Title */}
-        <Text style={styles.searchingTitle}>Finding a match...</Text>
+        <Text className="text-2xl font-bold text-white mb-2">
+          Finding a match...
+        </Text>
 
         {/* Subtitle */}
-        <Text style={styles.searchingSubtitle}>
+        <Text className="text-base text-[#92c9a8] text-center mb-8">
           The system is finding a match for the{"\n"}lost item
         </Text>
 
         {/* Progress Section */}
-        <View style={{ width: "100%", maxWidth: 280 }}>
-          <View style={styles.progressRow}>
-            <Text style={styles.progressLabel}>Scanning database...</Text>
-            <Text style={styles.progressPercent}>
+        <View className="w-full max-w-[280px]">
+          <View className="flex-row justify-between mb-2">
+            <Text className="text-sm text-[#92c9a8]">Scanning database...</Text>
+            <Text className="text-sm font-semibold text-primary">
               {Math.min(Math.round(searchProgress), 100)}%
             </Text>
           </View>
 
           {/* Progress Bar */}
-          <View style={styles.progressBarContainer}>
+          <View className="h-2 bg-[rgba(43,238,121,0.1)] rounded-full overflow-hidden">
             <Animated.View
-              style={[
-                styles.progressBar,
-                {
-                  width: progressAnim.interpolate({
-                    inputRange: [0, 100],
-                    outputRange: ["0%", "100%"],
-                  }),
-                },
-              ]}
+              className="h-full bg-primary rounded-full"
+              style={{
+                width: progressAnim.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: ["0%", "100%"],
+                }),
+              }}
             />
           </View>
         </View>
@@ -1037,77 +1024,59 @@ export default function MyReportsScreen() {
       statusBarTranslucent
       onRequestClose={handleCancelDelete}
     >
-      <View style={styles.deleteModalOverlay}>
+      <View className="flex-1 bg-black/60 justify-center items-center px-6">
         <View
-          style={[
-            styles.deleteModalContainer,
-            isDark
-              ? styles.deleteModalContainerDark
-              : styles.deleteModalContainerLight,
-          ]}
+          className={`w-full max-w-sm rounded-3xl p-6 items-center ${
+            isDark ? "bg-surface-dark" : "bg-white"
+          }`}
         >
           {/* Warning Icon */}
-          <View style={styles.deleteIconContainer}>
+          <View className="w-16 h-16 rounded-full bg-[rgba(239,68,68,0.1)] items-center justify-center mb-4">
             <MaterialIcons name="warning" size={32} color="#ef4444" />
           </View>
 
           {/* Title */}
           <Text
-            style={[
-              styles.deleteModalTitle,
-              isDark
-                ? styles.deleteModalTitleDark
-                : styles.deleteModalTitleLight,
-            ]}
+            className={`text-xl font-bold text-center mb-2 ${
+              isDark ? "text-text-dark" : "text-text-light"
+            }`}
           >
             Are you sure to delete this item?
           </Text>
 
           {/* Subtitle */}
           <Text
-            style={[
-              styles.deleteModalSubtitle,
-              isDark
-                ? styles.deleteModalSubtitleDark
-                : styles.deleteModalSubtitleLight,
-            ]}
+            className={`text-base text-center mb-6 ${
+              isDark ? "text-muted-dark" : "text-muted-light"
+            }`}
           >
             This action cannot be undone.
           </Text>
 
           {/* Buttons */}
-          <View style={styles.deleteModalButtons}>
+          <View className="flex-row w-full gap-3">
             <TouchableOpacity
-              style={[
-                styles.deleteModalButton,
-                styles.deleteModalCancelButton,
-                isDark
-                  ? styles.deleteModalCancelButtonDark
-                  : styles.deleteModalCancelButtonLight,
-              ]}
+              className={`flex-1 py-3.5 rounded-xl items-center ${
+                isDark ? "bg-[#1a3d2a]" : "bg-gray-100"
+              }`}
               onPress={handleCancelDelete}
             >
               <Text
-                style={[
-                  styles.deleteModalButtonText,
-                  isDark
-                    ? styles.deleteModalCancelTextDark
-                    : styles.deleteModalCancelTextLight,
-                ]}
+                className={`text-base font-semibold ${
+                  isDark ? "text-text-dark" : "text-text-light"
+                }`}
               >
                 Cancel
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[
-                styles.deleteModalButton,
-                styles.deleteModalConfirmButton,
-                deleting && { opacity: 0.6 },
-              ]}
+              className={`flex-1 py-3.5 rounded-xl items-center bg-[#ef4444] ${
+                deleting ? "opacity-60" : ""
+              }`}
               onPress={handleConfirmDelete}
               disabled={deleting}
             >
-              <Text style={styles.deleteModalConfirmText}>
+              <Text className="text-base font-semibold text-white">
                 {deleting ? "Deleting..." : "Yes"}
               </Text>
             </TouchableOpacity>
@@ -1124,83 +1093,26 @@ export default function MyReportsScreen() {
       animationType="fade"
       statusBarTranslucent
     >
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "rgba(16, 34, 23, 0.95)",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 24,
-        }}
-      >
-        <View
-          style={{
-            width: 100,
-            height: 100,
-            borderRadius: 50,
-            backgroundColor: "rgba(43, 238, 121, 0.15)",
-            justifyContent: "center",
-            alignItems: "center",
-            marginBottom: 24,
-          }}
-        >
-          <View
-            style={{
-              width: 70,
-              height: 70,
-              borderRadius: 35,
-              backgroundColor: "rgba(43, 238, 121, 0.25)",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
+      <View className="flex-1 bg-[rgba(16,34,23,0.95)] justify-center items-center p-6">
+        <View className="w-[100px] h-[100px] rounded-full bg-[rgba(43,238,121,0.15)] justify-center items-center mb-6">
+          <View className="w-[70px] h-[70px] rounded-[35px] bg-[rgba(43,238,121,0.25)] justify-center items-center">
             <MaterialIcons name="delete" size={36} color="#2bee79" />
           </View>
         </View>
 
-        <Text
-          style={{
-            fontSize: 24,
-            fontWeight: "700",
-            color: "#ffffff",
-            marginBottom: 12,
-            textAlign: "center",
-          }}
-        >
+        <Text className="text-2xl font-bold text-white mb-3 text-center">
           Item Deleted!
         </Text>
 
-        <Text
-          style={{
-            fontSize: 15,
-            color: "#92c9a8",
-            textAlign: "center",
-            marginBottom: 32,
-            lineHeight: 22,
-            paddingHorizontal: 20,
-          }}
-        >
+        <Text className="text-[15px] text-[#92c9a8] text-center mb-8 leading-[22px] px-5">
           Your item has been successfully deleted.
         </Text>
 
         <TouchableOpacity
           onPress={() => setShowDeleteSuccessModal(false)}
-          style={{
-            backgroundColor: "#2bee79",
-            paddingVertical: 14,
-            paddingHorizontal: 48,
-            borderRadius: 25,
-          }}
+          className="bg-primary py-3.5 px-12 rounded-[25px]"
         >
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-              color: "#102217",
-            }}
-          >
-            Done
-          </Text>
+          <Text className="text-base font-semibold text-[#102217]">Done</Text>
         </TouchableOpacity>
       </View>
     </Modal>
@@ -1213,83 +1125,26 @@ export default function MyReportsScreen() {
       animationType="fade"
       statusBarTranslucent
     >
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "rgba(16, 34, 23, 0.95)",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 24,
-        }}
-      >
-        <View
-          style={{
-            width: 100,
-            height: 100,
-            borderRadius: 50,
-            backgroundColor: "rgba(43, 238, 121, 0.15)",
-            justifyContent: "center",
-            alignItems: "center",
-            marginBottom: 24,
-          }}
-        >
-          <View
-            style={{
-              width: 70,
-              height: 70,
-              borderRadius: 35,
-              backgroundColor: "rgba(43, 238, 121, 0.25)",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
+      <View className="flex-1 bg-[rgba(16,34,23,0.95)] justify-center items-center p-6">
+        <View className="w-[100px] h-[100px] rounded-full bg-[rgba(43,238,121,0.15)] justify-center items-center mb-6">
+          <View className="w-[70px] h-[70px] rounded-[35px] bg-[rgba(43,238,121,0.25)] justify-center items-center">
             <MaterialIcons name="verified" size={36} color="#2bee79" />
           </View>
         </View>
 
-        <Text
-          style={{
-            fontSize: 24,
-            fontWeight: "700",
-            color: "#ffffff",
-            marginBottom: 12,
-            textAlign: "center",
-          }}
-        >
+        <Text className="text-2xl font-bold text-white mb-3 text-center">
           Item Resolved!
         </Text>
 
-        <Text
-          style={{
-            fontSize: 15,
-            color: "#92c9a8",
-            textAlign: "center",
-            marginBottom: 32,
-            lineHeight: 22,
-            paddingHorizontal: 20,
-          }}
-        >
+        <Text className="text-[15px] text-[#92c9a8] text-center mb-8 leading-[22px] px-5">
           The item has been marked as resolved. Thank you for helping!
         </Text>
 
         <TouchableOpacity
           onPress={() => setShowResolvedSuccessModal(false)}
-          style={{
-            backgroundColor: "#2bee79",
-            paddingVertical: 14,
-            paddingHorizontal: 48,
-            borderRadius: 25,
-          }}
+          className="bg-primary py-3.5 px-12 rounded-[25px]"
         >
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-              color: "#102217",
-            }}
-          >
-            Done
-          </Text>
+          <Text className="text-base font-semibold text-[#102217]">Done</Text>
         </TouchableOpacity>
       </View>
     </Modal>
@@ -1297,68 +1152,63 @@ export default function MyReportsScreen() {
 
   return (
     <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
+      className={`flex-1 ${
+        isDark ? "bg-background-dark" : "bg-background-light"
+      }`}
     >
       {/* Header */}
       <AppHeader />
 
       {/* Greeting */}
-      <View style={styles.greeting}>
+      <View className="px-5 pt-4 pb-2">
         <Text
-          style={[
-            styles.greetingTitle,
-            isDark ? styles.greetingTitleDark : styles.greetingTitleLight,
-          ]}
+          className={`text-2xl font-bold ${
+            isDark ? "text-text-dark" : "text-text-light"
+          }`}
         >
           My Reports
         </Text>
         <Text
-          style={[
-            styles.greetingSubtitle,
-            isDark ? styles.greetingSubtitleDark : styles.greetingSubtitleLight,
-          ]}
+          className={`text-sm mt-1 ${
+            isDark ? "text-muted-dark" : "text-muted-light"
+          }`}
         >
           Manage your lost and found reports
         </Text>
       </View>
 
       {/* Filters */}
-      <View style={styles.filtersContainer}>
+      <View className="py-3">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filtersScroll}
+          contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
         >
           {FILTERS.map((filter) => (
             <TouchableOpacity
               key={filter}
-              style={[
-                styles.filterButton,
+              className={`px-5 py-2.5 rounded-full ${
                 activeFilter === filter
                   ? isDark
-                    ? styles.filterButtonActiveDark
-                    : styles.filterButtonActive
+                    ? "bg-primary"
+                    : "bg-primary"
                   : isDark
-                  ? styles.filterButtonInactiveDark
-                  : styles.filterButtonInactive,
-              ]}
+                  ? "bg-surface-dark"
+                  : "bg-white border border-gray-200"
+              }`}
               onPress={() => setActiveFilter(filter)}
               activeOpacity={0.7}
             >
               <Text
-                style={[
-                  styles.filterText,
+                className={`text-sm font-medium ${
                   activeFilter === filter
                     ? isDark
-                      ? styles.filterTextActiveDark
-                      : styles.filterTextActive
+                      ? "text-[#0b1610]"
+                      : "text-[#0b1610]"
                     : isDark
-                    ? styles.filterTextInactiveDark
-                    : styles.filterTextInactive,
-                ]}
+                    ? "text-muted-dark"
+                    : "text-muted-light"
+                }`}
               >
                 {filter}
               </Text>
@@ -1369,8 +1219,8 @@ export default function MyReportsScreen() {
 
       {/* Reports List */}
       <ScrollView
-        style={styles.reportsList}
-        contentContainerStyle={styles.reportsContent}
+        className="flex-1 px-5"
+        contentContainerStyle={{ paddingTop: 8 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -1382,26 +1232,22 @@ export default function MyReportsScreen() {
         }
       >
         {loading ? (
-          <View style={styles.loadingContainer}>
+          <View className="flex-1 items-center justify-center py-20">
             <ActivityIndicator size="large" color={PRIMARY_COLOR} />
             <Text
-              style={[
-                styles.loadingText,
-                isDark ? styles.loadingTextDark : styles.loadingTextLight,
-              ]}
+              className={`mt-4 text-base ${
+                isDark ? "text-muted-dark" : "text-muted-light"
+              }`}
             >
               Loading your reports...
             </Text>
           </View>
         ) : filteredReports.length === 0 ? (
-          <View style={styles.emptyState}>
+          <View className="flex-1 items-center justify-center py-20">
             <View
-              style={[
-                styles.emptyIconContainer,
-                isDark
-                  ? styles.emptyIconContainerDark
-                  : styles.emptyIconContainerLight,
-              ]}
+              className={`w-24 h-24 rounded-full items-center justify-center mb-4 ${
+                isDark ? "bg-surface-dark" : "bg-gray-100"
+              }`}
             >
               <MaterialIcons
                 name="description"
@@ -1410,18 +1256,16 @@ export default function MyReportsScreen() {
               />
             </View>
             <Text
-              style={[
-                styles.emptyTitle,
-                isDark ? styles.emptyTitleDark : styles.emptyTitleLight,
-              ]}
+              className={`text-xl font-semibold mb-2 ${
+                isDark ? "text-text-dark" : "text-text-light"
+              }`}
             >
               No reports yet
             </Text>
             <Text
-              style={[
-                styles.emptySubtitle,
-                isDark ? styles.emptySubtitleDark : styles.emptySubtitleLight,
-              ]}
+              className={`text-sm text-center px-8 ${
+                isDark ? "text-muted-dark" : "text-muted-light"
+              }`}
             >
               {activeFilter === "All"
                 ? "All items you've reported as lost or found will appear here."
@@ -1431,7 +1275,7 @@ export default function MyReportsScreen() {
         ) : (
           filteredReports.map(renderReportCard)
         )}
-        <View style={{ height: 100 }} />
+        <View className="h-[100px]" />
       </ScrollView>
 
       {/* Bottom Navigation */}
@@ -1459,87 +1303,27 @@ export default function MyReportsScreen() {
         animationType="fade"
         statusBarTranslucent
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(16, 34, 23, 0.95)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 24,
-          }}
-        >
+        <View className="flex-1 bg-[rgba(16,34,23,0.95)] justify-center items-center p-6">
           {/* Icon */}
-          <View
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: "rgba(234, 179, 8, 0.15)",
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 24,
-            }}
-          >
-            <View
-              style={{
-                width: 70,
-                height: 70,
-                borderRadius: 35,
-                backgroundColor: "rgba(234, 179, 8, 0.25)",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+          <View className="w-[100px] h-[100px] rounded-full bg-[rgba(234,179,8,0.15)] justify-center items-center mb-6">
+            <View className="w-[70px] h-[70px] rounded-[35px] bg-[rgba(234,179,8,0.25)] justify-center items-center">
               <MaterialIcons name="search-off" size={36} color="#eab308" />
             </View>
           </View>
 
           {/* Title */}
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "700",
-              color: "#ffffff",
-              marginBottom: 12,
-              textAlign: "center",
-            }}
-          >
+          <Text className="text-2xl font-bold text-white mb-3 text-center">
             No matches found
           </Text>
 
           {/* Subtitle */}
-          <Text
-            style={{
-              fontSize: 15,
-              color: "#92c9a8",
-              textAlign: "center",
-              marginBottom: 16,
-              lineHeight: 22,
-              paddingHorizontal: 20,
-            }}
-          >
+          <Text className="text-[15px] text-[#92c9a8] text-center mb-4 leading-[22px] px-5">
             We couldn't find any matching found items in our database right now.
           </Text>
 
           {/* Info Box */}
-          <View
-            style={{
-              backgroundColor: "rgba(34, 197, 94, 0.1)",
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 32,
-              width: "100%",
-              maxWidth: 300,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#92c9a8",
-                textAlign: "center",
-                lineHeight: 20,
-              }}
-            >
+          <View className="bg-[rgba(34,197,94,0.1)] rounded-xl p-4 mb-8 w-full max-w-[300px]">
+            <Text className="text-sm text-[#92c9a8] text-center leading-5">
               ✨ Don't worry! Your report is saved. You'll be notified if
               someone finds a matching item.
             </Text>
@@ -1548,20 +1332,9 @@ export default function MyReportsScreen() {
           {/* Button */}
           <TouchableOpacity
             onPress={handleCloseNoMatchModal}
-            style={{
-              backgroundColor: "#22c55e",
-              paddingVertical: 14,
-              paddingHorizontal: 48,
-              borderRadius: 25,
-            }}
+            className="bg-[#22c55e] py-3.5 px-12 rounded-[25px]"
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#ffffff",
-              }}
-            >
+            <Text className="text-base font-semibold text-white">
               Go to Home
             </Text>
           </TouchableOpacity>

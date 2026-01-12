@@ -10,9 +10,8 @@ import {
   View,
   useColorScheme,
 } from "react-native";
-import { supabase } from "../lib/supabaseClient";
 import AppLogo from "../components/AppLogo";
-import { loginStyles as styles } from "../styles/loginStyles";
+import { supabase } from "../lib/supabaseClient";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -71,54 +70,54 @@ export default function LoginScreen() {
 
   return (
     <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
+      className={`flex-1 px-6 pt-16 pb-8 justify-between ${
+        isDark ? "bg-background-dark" : "bg-background-light"
+      }`}
     >
       {/* ---------- Header ---------- */}
-      <View style={styles.header}>
+      <View className="items-center mb-6">
         <AppLogo />
 
         <Text
-          style={[styles.title, isDark ? styles.titleDark : styles.titleLight]}
+          className={`text-3xl font-bold text-center ${
+            isDark ? "text-text-dark" : "text-text-light"
+          }`}
         >
           Welcome Back
         </Text>
         <Text
-          style={[
-            styles.subtitle,
-            isDark ? styles.subtitleDark : styles.subtitleLight,
-          ]}
+          className={`text-center text-sm leading-5 mt-3 max-w-[320px] ${
+            isDark ? "text-muted-dark" : "text-muted-light"
+          }`}
         >
           Log in to start matching lost items and reuniting them with owners.
         </Text>
       </View>
 
       {/* ---------- Form ---------- */}
-      <View style={styles.form}>
+      <View className="flex-1 gap-5">
         {/* Email */}
-        <View style={styles.inputGroup}>
+        <View className="gap-2">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-[13px] font-semibold ml-2 ${
+              isDark ? "text-text-dark" : "text-text-light"
+            }`}
           >
             Email
           </Text>
-          <View style={styles.inputWrapper}>
+          <View className="relative justify-center">
             <MaterialIcons
               name="person"
               size={22}
               color={iconColor("email")}
-              style={styles.inputIcon}
+              style={{ position: "absolute", left: 18, zIndex: 1 }}
             />
             <TextInput
-              style={[
-                styles.input,
-                isDark ? styles.inputDark : styles.inputLight,
-              ]}
+              className={`h-14 rounded-full pl-[52px] pr-[52px] text-base ${
+                isDark
+                  ? "bg-surface-dark-alt text-text-dark"
+                  : "bg-white text-text-light"
+              }`}
               placeholder="Enter your email"
               placeholderTextColor={placeholderColor}
               value={email}
@@ -130,27 +129,27 @@ export default function LoginScreen() {
         </View>
 
         {/* Password */}
-        <View style={styles.inputGroup}>
+        <View className="gap-2">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-[13px] font-semibold ml-2 ${
+              isDark ? "text-text-dark" : "text-text-light"
+            }`}
           >
             Password
           </Text>
-          <View style={styles.inputWrapper}>
+          <View className="relative justify-center">
             <MaterialIcons
               name="lock"
               size={22}
               color={iconColor("password")}
-              style={styles.inputIcon}
+              style={{ position: "absolute", left: 18, zIndex: 1 }}
             />
             <TextInput
-              style={[
-                styles.input,
-                isDark ? styles.inputDark : styles.inputLight,
-              ]}
+              className={`h-14 rounded-full pl-[52px] pr-[52px] text-base ${
+                isDark
+                  ? "bg-surface-dark-alt text-text-dark"
+                  : "bg-white text-text-light"
+              }`}
               placeholder="Enter your password"
               placeholderTextColor={placeholderColor}
               secureTextEntry={!showPassword}
@@ -160,7 +159,7 @@ export default function LoginScreen() {
               onBlur={() => setFocusedField(null)}
             />
             <TouchableOpacity
-              style={styles.eyeButton}
+              className="absolute right-4 h-full justify-center"
               onPress={() => setShowPassword(!showPassword)}
             >
               <MaterialIcons
@@ -172,9 +171,9 @@ export default function LoginScreen() {
           </View>
         </View>
 
-        <View style={styles.rememberForgotRow}>
+        <View className="flex-row justify-between items-center mb-2">
           <TouchableOpacity
-            style={styles.rememberMe}
+            className="flex-row items-center gap-1.5"
             onPress={() => setRememberMe(!rememberMe)}
             activeOpacity={0.7}
           >
@@ -184,10 +183,9 @@ export default function LoginScreen() {
               color={rememberMe ? "#2bee79" : placeholderColor}
             />
             <Text
-              style={[
-                styles.rememberMeText,
-                isDark ? styles.rememberMeTextDark : styles.rememberMeTextLight,
-              ]}
+              className={`text-sm font-medium ${
+                isDark ? "text-muted-dark" : "text-muted-light"
+              }`}
             >
               Remember Me
             </Text>
@@ -197,41 +195,43 @@ export default function LoginScreen() {
         {/* Login button */}
         {errorMessage ? (
           <Text
-            style={[
-              styles.errorText,
-              isDark ? styles.errorTextDark : styles.errorTextLight,
-            ]}
+            className={`text-center text-[13px] font-semibold mb-3 ${
+              isDark ? "text-error-dark" : "text-error-light"
+            }`}
           >
             {errorMessage}
           </Text>
         ) : null}
 
         <TouchableOpacity
-          style={[
-            styles.loginButton,
-            loading ? styles.loginButtonDisabled : null,
-          ]}
+          className={`h-14 rounded-full bg-primary flex-row justify-center items-center px-6 mt-3 shadow-lg shadow-primary ${
+            loading ? "opacity-65" : ""
+          }`}
           activeOpacity={loading ? 1 : 0.85}
           onPress={loginWithEmail}
         >
           {loading ? (
             <ActivityIndicator size="small" color="#102217" />
           ) : (
-            <Text style={styles.loginText}>Log In</Text>
+            <Text className="text-lg font-extrabold text-background-dark">
+              Log In
+            </Text>
           )}
         </TouchableOpacity>
       </View>
 
       {/* ---------- Footer ---------- */}
-      <View style={styles.footer}>
+      <View className="items-center mt-8">
         <Text
-          style={[
-            styles.footerText,
-            isDark ? styles.footerTextDark : styles.footerTextLight,
-          ]}
+          className={`text-sm ${
+            isDark ? "text-muted-dark" : "text-muted-light"
+          }`}
         >
-          Don’t have an account?
-          <Text style={styles.signUp} onPress={() => router.push("/signup")}>
+          Don't have an account?
+          <Text
+            className="text-primary font-bold"
+            onPress={() => router.push("/signup")}
+          >
             {" "}
             Sign Up
           </Text>

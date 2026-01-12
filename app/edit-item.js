@@ -1,26 +1,25 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker, {
-    DateTimePickerAndroid,
+  DateTimePickerAndroid,
 } from "@react-native-community/datetimepicker";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    ImageBackground,
-    Modal,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ActivityIndicator,
+  Alert,
+  ImageBackground,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import { reportFoundStyles as styles } from "../styles/reportFoundStyles";
 
 const CATEGORY_OPTIONS = [
   { label: "Electronics", value: "electronics" },
@@ -145,15 +144,20 @@ export default function EditItemScreen() {
       setItemName(itemData.title || "");
       setCategory(itemData.category || "");
       setDescription(itemData.description || "");
-      setLocation(itemType === "lost" ? itemData.last_seen || "" : itemData.location_found || "");
+      setLocation(
+        itemType === "lost"
+          ? itemData.last_seen || ""
+          : itemData.location_found || ""
+      );
       setReward(itemData.reward || "");
       setNotes(itemData.notes || "");
       setContactPref(itemData.contact_preference || "facebook");
       setContactInfo(itemData.contact_value || "");
       setExistingImageUrl(itemData.image_url || null);
-      
+
       // Parse date
-      const dateField = itemType === "lost" ? itemData.lost_at : itemData.found_at;
+      const dateField =
+        itemType === "lost" ? itemData.lost_at : itemData.found_at;
       if (dateField) {
         try {
           setDateTime(new Date(dateField));
@@ -333,7 +337,8 @@ export default function EditItemScreen() {
       // Update the appropriate table
       const tableName = itemType === "lost" ? "lost_reports" : "found_reports";
       const dateField = itemType === "lost" ? "lost_at" : "found_at";
-      const locationField = itemType === "lost" ? "last_seen" : "location_found";
+      const locationField =
+        itemType === "lost" ? "last_seen" : "location_found";
 
       const updatePayload = {
         title: itemName.trim(),
@@ -378,13 +383,11 @@ export default function EditItemScreen() {
   if (!itemData) {
     return (
       <View
-        style={[
-          styles.container,
-          isDark ? styles.containerDark : styles.containerLight,
-          { justifyContent: "center", alignItems: "center" },
-        ]}
+        className={`flex-1 justify-center items-center ${
+          isDark ? "bg-[#102217]" : "bg-[#f8fafc]"
+        }`}
       >
-        <Text style={{ color: isDark ? "#fff" : "#000" }}>
+        <Text className={isDark ? "text-white" : "text-black"}>
           No item data provided
         </Text>
       </View>
@@ -392,25 +395,18 @@ export default function EditItemScreen() {
   }
 
   return (
-    <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
-    >
+    <View className={`flex-1 ${isDark ? "bg-[#102217]" : "bg-[#f8fafc]"}`}>
       <View
-        style={[
-          styles.header,
-          isDark ? styles.headerSurfaceDark : styles.headerSurfaceLight,
-        ]}
+        className={`flex-row items-center justify-between px-5 pt-14 pb-4 ${
+          isDark ? "bg-[#193324]" : "bg-white"
+        }`}
       >
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={handleCancel}
-          style={[
-            styles.backButton,
-            isDark ? styles.backButtonDark : styles.backButtonLight,
-          ]}
+          className={`w-11 h-11 rounded-full items-center justify-center ${
+            isDark ? "bg-[#102217]" : "bg-[#f1f5f9]"
+          }`}
         >
           <MaterialIcons
             name="arrow-back"
@@ -420,19 +416,22 @@ export default function EditItemScreen() {
         </TouchableOpacity>
 
         <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.headerTitleDark : styles.headerTitleLight,
-          ]}
+          className={`text-lg font-bold ${
+            isDark ? "text-white" : "text-[#0f172a]"
+          }`}
         >
           Edit Item Details
         </Text>
 
-        <View style={{ width: 44 }} />
+        <View className="w-11" />
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: 120,
+        }}
         showsVerticalScrollIndicator={false}
       >
         <TouchableOpacity activeOpacity={0.9} onPress={handlePickImage}>
@@ -444,28 +443,28 @@ export default function EditItemScreen() {
                 ? { uri: existingImageUrl }
                 : PLACEHOLDER_IMAGE
             }
-            style={[
-              styles.uploadCard,
-              isDark ? styles.uploadCardDark : styles.uploadCardLight,
-            ]}
+            className={`w-full h-48 rounded-2xl overflow-hidden ${
+              isDark ? "border border-[#326747]" : "border border-[#e2e8f0]"
+            }`}
             imageStyle={{ opacity: 0.85 }}
           >
             <View
-              style={[
-                styles.uploadOverlay,
-                imageAsset || existingImageUrl
-                  ? { backgroundColor: "rgba(0,0,0,0.25)" }
-                  : null,
-              ]}
+              className={`flex-1 items-center justify-center ${
+                imageAsset || existingImageUrl ? "bg-black/25" : "bg-black/40"
+              }`}
             >
-              <View style={styles.uploadIconWrapper}>
+              <View className="w-16 h-16 rounded-full bg-white/90 items-center justify-center mb-3">
                 <MaterialIcons
-                  name={imageAsset || existingImageUrl ? "photo-camera" : "add-a-photo"}
+                  name={
+                    imageAsset || existingImageUrl
+                      ? "photo-camera"
+                      : "add-a-photo"
+                  }
                   size={32}
                   color="#2bee79"
                 />
               </View>
-              <Text style={styles.uploadText}>
+              <Text className="text-base font-semibold text-white">
                 {imageAsset || existingImageUrl
                   ? "Tap to change photo"
                   : "Tap to Upload Photo"}
@@ -474,20 +473,20 @@ export default function EditItemScreen() {
           </ImageBackground>
         </TouchableOpacity>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Item Name
           </Text>
           <TextInput
-            style={[
-              styles.textInput,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`h-14 px-4 rounded-2xl text-base ${
+              isDark
+                ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+            }`}
             placeholder="e.g. Blue Backpack"
             placeholderTextColor={placeholderColor}
             value={itemName}
@@ -495,37 +494,33 @@ export default function EditItemScreen() {
           />
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Item Category
           </Text>
-          <View style={styles.pickerContainer}>
+          <View className="relative">
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={() => setShowCategoryList((prev) => !prev)}
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-                styles.pickerTrigger,
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl flex-row items-center justify-between ${
+                isDark
+                  ? "bg-[#193324] border border-[#326747]"
+                  : "bg-white border border-[#e2e8f0]"
+              }`}
             >
               <Text
-                style={[
-                  styles.pickerTriggerText,
-                  {
-                    color: category
-                      ? isDark
-                        ? "#f8fafc"
-                        : "#0f172a"
-                      : placeholderColor,
-                  },
-                ]}
+                style={{
+                  color: category
+                    ? isDark
+                      ? "#f8fafc"
+                      : "#0f172a"
+                    : placeholderColor,
+                  fontSize: 16,
+                }}
               >
                 {category
                   ? CATEGORY_OPTIONS.find((option) => option.value === category)
@@ -536,28 +531,16 @@ export default function EditItemScreen() {
                 name={showCategoryList ? "expand-less" : "expand-more"}
                 size={24}
                 color={placeholderColor}
-                style={styles.trailingIcon}
+                style={{ position: "absolute", right: 12, top: 15 }}
               />
             </TouchableOpacity>
             {showCategoryList ? (
               <View
-                style={[
-                  {
-                    marginTop: 8,
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    overflow: "hidden",
-                  },
+                className={`mt-2 rounded-2xl border overflow-hidden ${
                   isDark
-                    ? {
-                        backgroundColor: "#193324",
-                        borderColor: "#326747",
-                      }
-                    : {
-                        backgroundColor: "#ffffff",
-                        borderColor: "#e2e8f0",
-                      },
-                ]}
+                    ? "bg-[#193324] border-[#326747]"
+                    : "bg-white border-[#e2e8f0]"
+                }`}
               >
                 {CATEGORY_OPTIONS.map((option) => {
                   const isSelected = option.value === category;
@@ -580,7 +563,7 @@ export default function EditItemScreen() {
                       <Text
                         style={{
                           color: isSelected
-                            ? "#cafff0ff"
+                            ? "#cafff0"
                             : isDark
                             ? "#f8fafc"
                             : "#0f172a",
@@ -597,21 +580,22 @@ export default function EditItemScreen() {
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Description
           </Text>
           <TextInput
             multiline
-            style={[
-              styles.textArea,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`min-h-[100px] p-4 rounded-2xl text-base ${
+              isDark
+                ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+            }`}
+            style={{ textAlignVertical: "top" }}
             placeholder="Describe the item (color, brand, distinguishing marks...)"
             placeholderTextColor={placeholderColor}
             value={description}
@@ -619,22 +603,21 @@ export default function EditItemScreen() {
           />
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             {itemType === "lost" ? "Last Seen Location" : "Location Found"}
           </Text>
-          <View style={{ position: "relative" }}>
+          <View className="relative">
             <TextInput
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl text-base ${
+                isDark
+                  ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                  : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+              }`}
               placeholder="e.g. DIT 5th Floor"
               placeholderTextColor={placeholderColor}
               value={location}
@@ -644,30 +627,28 @@ export default function EditItemScreen() {
               name="location-on"
               size={22}
               color={placeholderColor}
-              style={styles.trailingIcon}
+              style={{ position: "absolute", right: 12, top: 16 }}
             />
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             {itemType === "lost" ? "Date & Time Lost" : "Date & Time Found"}
           </Text>
-          <View style={{ position: "relative" }}>
+          <View className="relative">
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={openDateTimePicker}
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-                { justifyContent: "center" },
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl justify-center ${
+                isDark
+                  ? "bg-[#193324] border border-[#326747]"
+                  : "bg-white border border-[#e2e8f0]"
+              }`}
             >
               <Text
                 style={{
@@ -686,30 +667,35 @@ export default function EditItemScreen() {
               name="calendar-today"
               size={22}
               color={placeholderColor}
-              style={styles.trailingIcon}
+              style={{ position: "absolute", right: 12, top: 16 }}
             />
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Reward{" "}
-            <Text style={isDark ? styles.optionalDark : styles.optionalLight}>
+            <Text
+              className={
+                isDark
+                  ? "text-[#92c9a8] font-normal"
+                  : "text-[#94a3b8] font-normal"
+              }
+            >
               (Optional)
             </Text>
           </Text>
-          <View style={{ position: "relative" }}>
+          <View className="relative">
             <TextInput
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl text-base ${
+                isDark
+                  ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                  : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+              }`}
               placeholder="e.g. ₱100"
               placeholderTextColor={placeholderColor}
               value={reward}
@@ -719,30 +705,36 @@ export default function EditItemScreen() {
               name="payments"
               size={22}
               color={placeholderColor}
-              style={styles.trailingIcon}
+              style={{ position: "absolute", right: 12, top: 16 }}
             />
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Additional Notes{" "}
-            <Text style={isDark ? styles.optionalDark : styles.optionalLight}>
+            <Text
+              className={
+                isDark
+                  ? "text-[#92c9a8] font-normal"
+                  : "text-[#94a3b8] font-normal"
+              }
+            >
               (Optional)
             </Text>
           </Text>
           <TextInput
             multiline
-            style={[
-              styles.textArea,
-              styles.textAreaSmall,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`min-h-[80px] p-4 rounded-2xl text-base ${
+              isDark
+                ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+            }`}
+            style={{ textAlignVertical: "top" }}
             placeholder="Any other details?"
             placeholderTextColor={placeholderColor}
             value={notes}
@@ -750,16 +742,15 @@ export default function EditItemScreen() {
           />
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Contact Preference
           </Text>
-          <View style={styles.contactGrid}>
+          <View className="flex-row flex-wrap gap-2 mb-3">
             {CONTACT_OPTIONS.map((option) => {
               const isSelected = option.value === contactPref;
               return (
@@ -767,28 +758,24 @@ export default function EditItemScreen() {
                   key={option.value}
                   activeOpacity={0.85}
                   onPress={() => setContactPref(option.value)}
-                  style={[
-                    styles.contactOption,
-                    isDark
-                      ? styles.contactOptionDark
-                      : styles.contactOptionLight,
-                    isSelected ? styles.contactOptionActive : null,
-                    isSelected && isDark
-                      ? styles.contactOptionActiveDark
-                      : null,
-                  ]}
+                  className={`px-4 py-3 rounded-xl border ${
+                    isSelected
+                      ? "bg-primary/10 border-primary"
+                      : isDark
+                      ? "bg-[#193324] border-[#326747]"
+                      : "bg-white border-[#e2e8f0]"
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.contactLabel,
+                    className={`text-sm font-medium ${
                       isSelected
                         ? isDark
-                          ? styles.contactLabelActiveDark
-                          : styles.contactLabelActive
+                          ? "text-[#86efac]"
+                          : "text-primary"
                         : isDark
-                        ? styles.contactLabelDark
-                        : styles.contactLabelLight,
-                    ]}
+                        ? "text-[#f8fafc]"
+                        : "text-[#334155]"
+                    }`}
                   >
                     {option.label}
                   </Text>
@@ -797,10 +784,11 @@ export default function EditItemScreen() {
             })}
           </View>
           <TextInput
-            style={[
-              styles.textInput,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`h-14 px-4 rounded-2xl text-base ${
+              isDark
+                ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+            }`}
             placeholder="Enter link, email, or phone number"
             placeholderTextColor={placeholderColor}
             value={contactInfo}
@@ -808,31 +796,30 @@ export default function EditItemScreen() {
           />
         </View>
 
-        <View style={{ height: 100 }} />
+        <View className="h-24" />
       </ScrollView>
 
       <View
-        style={[styles.footer, isDark ? styles.footerDark : styles.footerLight]}
+        className={`absolute bottom-0 left-0 right-0 px-5 pt-4 pb-8 ${
+          isDark ? "bg-[#193324]" : "bg-white"
+        }`}
+        style={{
+          borderTopWidth: 1,
+          borderTopColor: isDark ? "#326747" : "#e2e8f0",
+        }}
       >
-        <View style={{ flexDirection: "row", gap: 12 }}>
+        <View className="flex-row gap-3">
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={handleCancel}
-            style={{
-              flex: 1,
-              paddingVertical: 14,
-              borderRadius: 28,
-              backgroundColor: isDark ? "#1A2C23" : "#e2e8f0",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            className={`flex-1 py-3.5 rounded-full items-center justify-center ${
+              isDark ? "bg-[#1A2C23]" : "bg-[#e2e8f0]"
+            }`}
           >
             <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: isDark ? "#ffffff" : "#0f172a",
-              }}
+              className={`text-base font-semibold ${
+                isDark ? "text-white" : "text-[#0f172a]"
+              }`}
             >
               Cancel
             </Text>
@@ -842,13 +829,11 @@ export default function EditItemScreen() {
             activeOpacity={0.9}
             onPress={handleSave}
             disabled={saving}
-            style={[
-              styles.submitButton,
-              { flex: 2 },
-              saving ? { opacity: 0.6 } : null,
-            ]}
+            className={`flex-[2] flex-row items-center justify-center h-14 rounded-full bg-primary ${
+              saving ? "opacity-60" : ""
+            }`}
           >
-            <Text style={styles.submitText}>
+            <Text className="text-base font-bold text-[#102217] mr-2">
               {saving ? "Saving..." : "Save Changes"}
             </Text>
             {saving ? (
@@ -867,62 +852,18 @@ export default function EditItemScreen() {
         animationType="fade"
         statusBarTranslucent
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(16, 34, 23, 0.95)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 24,
-          }}
-        >
-          <View
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: "rgba(43, 238, 121, 0.15)",
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 24,
-            }}
-          >
-            <View
-              style={{
-                width: 70,
-                height: 70,
-                borderRadius: 35,
-                backgroundColor: "rgba(43, 238, 121, 0.25)",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+        <View className="flex-1 bg-[#102217]/95 justify-center items-center p-6">
+          <View className="w-[100px] h-[100px] rounded-full bg-primary/15 justify-center items-center mb-6">
+            <View className="w-[70px] h-[70px] rounded-full bg-primary/25 justify-center items-center">
               <MaterialIcons name="check-circle" size={36} color="#2bee79" />
             </View>
           </View>
 
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "700",
-              color: "#ffffff",
-              marginBottom: 12,
-              textAlign: "center",
-            }}
-          >
+          <Text className="text-2xl font-bold text-white mb-3 text-center">
             Item Updated!
           </Text>
 
-          <Text
-            style={{
-              fontSize: 15,
-              color: "#92c9a8",
-              textAlign: "center",
-              marginBottom: 32,
-              lineHeight: 22,
-              paddingHorizontal: 20,
-            }}
-          >
+          <Text className="text-[15px] text-[#92c9a8] text-center mb-8 leading-[22px] px-5">
             Your item details have been successfully updated.
           </Text>
 
@@ -931,49 +872,19 @@ export default function EditItemScreen() {
               setShowSuccessModal(false);
               router.replace("/my-reports");
             }}
-            style={{
-              backgroundColor: "#2bee79",
-              paddingVertical: 14,
-              paddingHorizontal: 48,
-              borderRadius: 25,
-            }}
+            className="bg-primary py-3.5 px-12 rounded-full"
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#102217",
-              }}
-            >
-              Done
-            </Text>
+            <Text className="text-base font-semibold text-[#102217]">Done</Text>
           </TouchableOpacity>
         </View>
       </Modal>
 
       {Platform.OS === "ios" && showIOSPicker ? (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.4)",
-            alignItems: "center",
-            justifyContent: "flex-end",
-          }}
-        >
+        <View className="absolute inset-0 bg-black/40 items-center justify-end">
           <View
-            style={{
-              width: "100%",
-              backgroundColor: isDark ? "#193324" : "#ffffff",
-              paddingHorizontal: 16,
-              paddingTop: 12,
-              paddingBottom: 24,
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-            }}
+            className={`w-full px-4 pt-3 pb-6 rounded-t-3xl ${
+              isDark ? "bg-[#193324]" : "bg-white"
+            }`}
           >
             <DateTimePicker
               mode="datetime"
@@ -987,14 +898,10 @@ export default function EditItemScreen() {
               themeVariant={isDark ? "dark" : "light"}
             />
             <TouchableOpacity
-              style={{ alignSelf: "flex-end", marginTop: 12 }}
+              className="self-end mt-3"
               onPress={() => setShowIOSPicker(false)}
             >
-              <Text
-                style={{ color: "#2bee79", fontSize: 16, fontWeight: "600" }}
-              >
-                Done
-              </Text>
+              <Text className="text-primary text-base font-semibold">Done</Text>
             </TouchableOpacity>
           </View>
         </View>

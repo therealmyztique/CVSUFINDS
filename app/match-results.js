@@ -13,7 +13,6 @@ import {
   useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import { matchResultsStyles as styles } from "../styles/matchResultsStyles";
 
 const PRIMARY_COLOR = "#2bee79";
 
@@ -278,78 +277,78 @@ export default function MatchResultsScreen() {
     return (
       <View
         key={item.id || index}
-        style={[
-          styles.heroCard,
-          isDark ? styles.heroCardDark : styles.heroCardLight,
-        ]}
+        className={`rounded-3xl overflow-hidden mb-4 ${
+          isDark ? "bg-[#193324]" : "bg-white"
+        }`}
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 3,
+        }}
       >
-        <View style={styles.heroCardBadge}>
-          <Text style={styles.heroCardBadgeText}>Top Match</Text>
+        <View className="absolute top-3 left-3 z-10 bg-primary px-3 py-1.5 rounded-full">
+          <Text className="text-xs font-bold text-[#102217]">Top Match</Text>
         </View>
 
         <Image
           source={{
             uri: item.image_url || "https://via.placeholder.com/400x200",
           }}
-          style={styles.heroCardImage}
+          className="w-full h-48"
           resizeMode="cover"
         />
 
-        <View style={styles.heroCardContent}>
-          <View style={styles.heroMatchRow}>
+        <View className="p-4">
+          <View className="flex-row items-center mb-2">
             <MaterialIcons name="verified" size={24} color={PRIMARY_COLOR} />
-            <Text style={styles.heroMatchText}>{percentage}% Match</Text>
+            <Text className="ml-2 text-lg font-bold text-primary">
+              {percentage}% Match
+            </Text>
           </View>
 
           <Text
-            style={[
-              styles.heroCardTitle,
-              isDark ? styles.heroCardTitleDark : styles.heroCardTitleLight,
-            ]}
+            className={`text-xl font-bold mb-1 ${
+              isDark ? "text-white" : "text-[#0f172a]"
+            }`}
           >
             {item.title || location}
           </Text>
 
           <Text
-            style={[
-              styles.heroCardDescription,
-              isDark
-                ? styles.heroCardDescriptionDark
-                : styles.heroCardDescriptionLight,
-            ]}
+            className={`text-sm ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             {dateLabel} {formatDate(dateField)} at {location}
           </Text>
 
           {/* Posted by */}
-          <View
-            style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
-          >
+          <View className="flex-row items-center mt-2">
             <MaterialIcons
               name="person"
               size={16}
               color={isDark ? "#92c9a8" : "#64748b"}
             />
             <Text
-              style={[
-                styles.heroCardDescription,
-                isDark
-                  ? styles.heroCardDescriptionDark
-                  : styles.heroCardDescriptionLight,
-                { marginLeft: 4 },
-              ]}
+              className={`ml-1 text-sm ${
+                isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+              }`}
             >
               Posted by {posterName}
             </Text>
           </View>
 
           <TouchableOpacity
-            style={styles.heroCardButton}
+            className="flex-row items-center justify-center bg-primary py-3 rounded-xl mt-4"
             onPress={() => handleSelectItem(item)}
             activeOpacity={0.8}
           >
             <MaterialIcons name="visibility" size={20} color="#102217" />
-            <Text style={styles.heroCardButtonText}>View Details</Text>
+            <Text className="ml-2 text-base font-semibold text-[#102217]">
+              View Details
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -368,61 +367,61 @@ export default function MatchResultsScreen() {
     return (
       <View
         key={item.id || index}
-        style={[
-          styles.matchCard,
-          isDark ? styles.matchCardDark : styles.matchCardLight,
-          isLowConfidence && styles.matchCardLowConfidence,
-        ]}
+        className={`flex-row rounded-2xl p-3 mb-3 ${
+          isDark ? "bg-[#193324]" : "bg-white"
+        } ${isLowConfidence ? "opacity-70" : ""}`}
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 4,
+          elevation: 2,
+        }}
       >
-        <View style={styles.matchCardContent}>
-          <View style={styles.matchCardTextContainer}>
+        <View className="flex-1 pr-3">
+          <View className="mb-1">
             <Text
-              style={
+              className={`text-sm font-bold ${
                 confidence === "high"
-                  ? styles.matchPercentHigh
+                  ? "text-primary"
                   : confidence === "medium"
-                  ? styles.matchPercentMedium
-                  : [
-                      styles.matchPercentLow,
-                      isDark
-                        ? styles.matchPercentLowDark
-                        : styles.matchPercentLowLight,
-                    ]
-              }
+                  ? "text-[#eab308]"
+                  : isDark
+                  ? "text-[#92c9a8]"
+                  : "text-[#94a3b8]"
+              }`}
             >
               {percentage}% Match
             </Text>
-
-            <Text
-              style={[
-                styles.matchCardTitle,
-                isDark ? styles.matchCardTitleDark : styles.matchCardTitleLight,
-              ]}
-            >
-              {item.title || location}
-            </Text>
-
-            <Text
-              style={[
-                styles.matchCardMeta,
-                isDark ? styles.matchCardMetaDark : styles.matchCardMetaLight,
-              ]}
-            >
-              {formatDate(dateField)} • By {posterName}
-            </Text>
           </View>
 
+          <Text
+            className={`text-base font-semibold mb-1 ${
+              isDark ? "text-white" : "text-[#0f172a]"
+            }`}
+            numberOfLines={1}
+          >
+            {item.title || location}
+          </Text>
+
+          <Text
+            className={`text-xs ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
+          >
+            {formatDate(dateField)} • By {posterName}
+          </Text>
+
           <TouchableOpacity
-            style={[
-              styles.matchCardButton,
+            className={`flex-row items-center mt-2 px-3 py-2 rounded-lg ${
               isLowConfidence
                 ? isDark
-                  ? styles.matchCardButtonLowDark
-                  : styles.matchCardButtonLowLight
+                  ? "bg-[#326747]"
+                  : "bg-[#f1f5f9]"
                 : isDark
-                ? styles.matchCardButtonDark
-                : styles.matchCardButtonLight,
-            ]}
+                ? "bg-[#102217]"
+                : "bg-[#f1f5f9]"
+            }`}
             onPress={() => handleSelectItem(item)}
             activeOpacity={0.7}
           >
@@ -440,16 +439,15 @@ export default function MatchResultsScreen() {
               }
             />
             <Text
-              style={[
-                styles.matchCardButtonText,
+              className={`ml-1.5 text-sm font-medium ${
                 isLowConfidence
                   ? isDark
-                    ? styles.matchCardButtonTextLowDark
-                    : styles.matchCardButtonTextLowLight
+                    ? "text-white"
+                    : "text-[#64748b]"
                   : isDark
-                  ? styles.matchCardButtonTextDark
-                  : styles.matchCardButtonTextLight,
-              ]}
+                  ? "text-primary"
+                  : "text-[#0f172a]"
+              }`}
             >
               View Details
             </Text>
@@ -460,10 +458,9 @@ export default function MatchResultsScreen() {
           source={{
             uri: item.image_url || "https://via.placeholder.com/96x128",
           }}
-          style={[
-            styles.matchCardImage,
-            isLowConfidence && styles.matchCardImageLow,
-          ]}
+          className={`w-24 h-28 rounded-xl ${
+            isLowConfidence ? "opacity-60" : ""
+          }`}
           resizeMode="cover"
         />
       </View>
@@ -488,49 +485,30 @@ export default function MatchResultsScreen() {
         transparent={true}
         onRequestClose={handleCloseItemModal}
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            justifyContent: "flex-end",
-          }}
-        >
+        <View className="flex-1 bg-black/50 justify-end">
           <View
-            style={{
-              backgroundColor: isDark ? "#102217" : "#ffffff",
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              maxHeight: "90%",
-              paddingBottom: 34,
-            }}
+            className={`rounded-t-3xl max-h-[90%] pb-8 ${
+              isDark ? "bg-[#102217]" : "bg-white"
+            }`}
           >
             {/* Modal Header */}
             <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: 16,
-                borderBottomWidth: 1,
-                borderBottomColor: isDark ? "#326747" : "#e2e8f0",
-              }}
+              className={`flex-row justify-between items-center p-4 border-b ${
+                isDark ? "border-[#326747]" : "border-[#e2e8f0]"
+              }`}
             >
               <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "700",
-                  color: isDark ? "#ffffff" : "#0f172a",
-                }}
+                className={`text-lg font-bold ${
+                  isDark ? "text-white" : "text-[#0f172a]"
+                }`}
               >
                 Item Details
               </Text>
               <TouchableOpacity
                 onPress={handleCloseItemModal}
-                style={{
-                  padding: 8,
-                  borderRadius: 20,
-                  backgroundColor: isDark ? "#326747" : "#f1f5f9",
-                }}
+                className={`p-2 rounded-full ${
+                  isDark ? "bg-[#326747]" : "bg-[#f1f5f9]"
+                }`}
               >
                 <MaterialIcons
                   name="close"
@@ -540,7 +518,7 @@ export default function MatchResultsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={{ padding: 16 }}>
+            <ScrollView className="p-4">
               {/* Item Image */}
               <Image
                 source={{
@@ -548,42 +526,15 @@ export default function MatchResultsScreen() {
                     selectedItem.image_url ||
                     "https://via.placeholder.com/400x200",
                 }}
-                style={{
-                  width: "100%",
-                  height: 200,
-                  borderRadius: 16,
-                  marginBottom: 16,
-                }}
+                className="w-full h-48 rounded-2xl mb-4"
                 resizeMode="cover"
               />
 
               {/* Match Badge */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 12,
-                }}
-              >
-                <View
-                  style={{
-                    backgroundColor: PRIMARY_COLOR,
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 20,
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
+              <View className="flex-row items-center mb-3">
+                <View className="flex-row items-center bg-primary px-3 py-1.5 rounded-full">
                   <MaterialIcons name="verified" size={16} color="#102217" />
-                  <Text
-                    style={{
-                      marginLeft: 4,
-                      fontSize: 14,
-                      fontWeight: "700",
-                      color: "#102217",
-                    }}
-                  >
+                  <Text className="ml-1 text-sm font-bold text-[#102217]">
                     {percentage}% Match
                   </Text>
                 </View>
@@ -591,35 +542,24 @@ export default function MatchResultsScreen() {
 
               {/* Title */}
               <Text
-                style={{
-                  fontSize: 22,
-                  fontWeight: "700",
-                  color: isDark ? "#ffffff" : "#0f172a",
-                  marginBottom: 8,
-                }}
+                className={`text-[22px] font-bold mb-2 ${
+                  isDark ? "text-white" : "text-[#0f172a]"
+                }`}
               >
                 {selectedItem.title || "Unknown Item"}
               </Text>
 
               {/* Category */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 16,
-                }}
-              >
+              <View className="flex-row items-center mb-4">
                 <MaterialIcons
                   name="category"
                   size={18}
                   color={isDark ? "#92c9a8" : "#64748b"}
                 />
                 <Text
-                  style={{
-                    marginLeft: 6,
-                    fontSize: 14,
-                    color: isDark ? "#92c9a8" : "#64748b",
-                  }}
+                  className={`ml-1.5 text-sm ${
+                    isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+                  }`}
                 >
                   {CATEGORY_LABELS[selectedItem.category] ||
                     selectedItem.category ||
@@ -629,24 +569,18 @@ export default function MatchResultsScreen() {
 
               {/* Description */}
               {selectedItem.description && (
-                <View style={{ marginBottom: 16 }}>
+                <View className="mb-4">
                   <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: "600",
-                      color: isDark ? "#92c9a8" : "#64748b",
-                      marginBottom: 4,
-                      textTransform: "uppercase",
-                    }}
+                    className={`text-xs font-semibold uppercase mb-1 ${
+                      isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+                    }`}
                   >
                     Description
                   </Text>
                   <Text
-                    style={{
-                      fontSize: 15,
-                      lineHeight: 22,
-                      color: isDark ? "#f8fafc" : "#334155",
-                    }}
+                    className={`text-[15px] leading-[22px] ${
+                      isDark ? "text-[#f8fafc]" : "text-[#334155]"
+                    }`}
                   >
                     {selectedItem.description}
                   </Text>
@@ -654,30 +588,24 @@ export default function MatchResultsScreen() {
               )}
 
               {/* Location */}
-              <View style={{ marginBottom: 16 }}>
+              <View className="mb-4">
                 <Text
-                  style={{
-                    fontSize: 12,
-                    fontWeight: "600",
-                    color: isDark ? "#92c9a8" : "#64748b",
-                    marginBottom: 4,
-                    textTransform: "uppercase",
-                  }}
+                  className={`text-xs font-semibold uppercase mb-1 ${
+                    isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+                  }`}
                 >
                   {reportType === "lost" ? "Location Found" : "Last Seen"}
                 </Text>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View className="flex-row items-center">
                   <MaterialIcons
                     name="location-on"
                     size={18}
                     color={PRIMARY_COLOR}
                   />
                   <Text
-                    style={{
-                      marginLeft: 6,
-                      fontSize: 15,
-                      color: isDark ? "#f8fafc" : "#334155",
-                    }}
+                    className={`ml-1.5 text-[15px] ${
+                      isDark ? "text-[#f8fafc]" : "text-[#334155]"
+                    }`}
                   >
                     {location}
                   </Text>
@@ -685,30 +613,24 @@ export default function MatchResultsScreen() {
               </View>
 
               {/* Date */}
-              <View style={{ marginBottom: 16 }}>
+              <View className="mb-4">
                 <Text
-                  style={{
-                    fontSize: 12,
-                    fontWeight: "600",
-                    color: isDark ? "#92c9a8" : "#64748b",
-                    marginBottom: 4,
-                    textTransform: "uppercase",
-                  }}
+                  className={`text-xs font-semibold uppercase mb-1 ${
+                    isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+                  }`}
                 >
                   {reportType === "lost" ? "Date Found" : "Date Lost"}
                 </Text>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View className="flex-row items-center">
                   <MaterialIcons
                     name="schedule"
                     size={18}
                     color={PRIMARY_COLOR}
                   />
                   <Text
-                    style={{
-                      marginLeft: 6,
-                      fontSize: 15,
-                      color: isDark ? "#f8fafc" : "#334155",
-                    }}
+                    className={`ml-1.5 text-[15px] ${
+                      isDark ? "text-[#f8fafc]" : "text-[#334155]"
+                    }`}
                   >
                     {formatFullDate(dateField)}
                   </Text>
@@ -716,28 +638,19 @@ export default function MatchResultsScreen() {
               </View>
 
               {/* Posted By */}
-              <View style={{ marginBottom: 24 }}>
+              <View className="mb-6">
                 <Text
-                  style={{
-                    fontSize: 12,
-                    fontWeight: "600",
-                    color: isDark ? "#92c9a8" : "#64748b",
-                    marginBottom: 4,
-                    textTransform: "uppercase",
-                  }}
+                  className={`text-xs font-semibold uppercase mb-1 ${
+                    isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+                  }`}
                 >
                   Posted By
                 </Text>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View className="flex-row items-center">
                   <View
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 18,
-                      backgroundColor: isDark ? "#326747" : "#e2e8f0",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
+                    className={`w-9 h-9 rounded-full items-center justify-center ${
+                      isDark ? "bg-[#326747]" : "bg-[#e2e8f0]"
+                    }`}
                   >
                     <MaterialIcons
                       name="person"
@@ -746,12 +659,9 @@ export default function MatchResultsScreen() {
                     />
                   </View>
                   <Text
-                    style={{
-                      marginLeft: 10,
-                      fontSize: 15,
-                      fontWeight: "600",
-                      color: isDark ? "#f8fafc" : "#334155",
-                    }}
+                    className={`ml-2.5 text-[15px] font-semibold ${
+                      isDark ? "text-[#f8fafc]" : "text-[#334155]"
+                    }`}
                   >
                     {posterName}
                   </Text>
@@ -760,29 +670,17 @@ export default function MatchResultsScreen() {
             </ScrollView>
 
             {/* Action Buttons */}
-            <View
-              style={{
-                flexDirection: "row",
-                paddingHorizontal: 16,
-                gap: 12,
-              }}
-            >
+            <View className="flex-row px-4 gap-3">
               <TouchableOpacity
                 onPress={handleCloseItemModal}
-                style={{
-                  flex: 1,
-                  backgroundColor: isDark ? "#326747" : "#f1f5f9",
-                  paddingVertical: 14,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
+                className={`flex-1 py-3.5 rounded-xl items-center ${
+                  isDark ? "bg-[#326747]" : "bg-[#f1f5f9]"
+                }`}
               >
                 <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: "600",
-                    color: isDark ? "#ffffff" : "#64748b",
-                  }}
+                  className={`text-base font-semibold ${
+                    isDark ? "text-white" : "text-[#64748b]"
+                  }`}
                 >
                   Close
                 </Text>
@@ -791,17 +689,9 @@ export default function MatchResultsScreen() {
               <TouchableOpacity
                 onPress={handleClaimItem}
                 disabled={isClaiming}
-                style={{
-                  flex: 1,
-                  backgroundColor: PRIMARY_COLOR,
-                  paddingVertical: 14,
-                  borderRadius: 12,
-                  alignItems: "center",
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  gap: 8,
-                  opacity: isClaiming ? 0.7 : 1,
-                }}
+                className={`flex-1 flex-row items-center justify-center py-3.5 rounded-xl bg-primary ${
+                  isClaiming ? "opacity-70" : ""
+                }`}
               >
                 {isClaiming ? (
                   <ActivityIndicator size="small" color="#102217" />
@@ -812,13 +702,7 @@ export default function MatchResultsScreen() {
                       size={20}
                       color="#102217"
                     />
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: "600",
-                        color: "#102217",
-                      }}
-                    >
+                    <Text className="ml-2 text-base font-semibold text-[#102217]">
                       Claim This Item
                     </Text>
                   </>
@@ -843,37 +727,10 @@ export default function MatchResultsScreen() {
         animationType="fade"
         statusBarTranslucent
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(16, 34, 23, 0.95)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 24,
-          }}
-        >
+        <View className="flex-1 bg-[#102217]/95 justify-center items-center p-6">
           {/* Icon */}
-          <View
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: "rgba(43, 238, 121, 0.15)",
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 24,
-            }}
-          >
-            <View
-              style={{
-                width: 70,
-                height: 70,
-                borderRadius: 35,
-                backgroundColor: "rgba(43, 238, 121, 0.25)",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+          <View className="w-[100px] h-[100px] rounded-full bg-primary/15 justify-center items-center mb-6">
+            <View className="w-[70px] h-[70px] rounded-full bg-primary/25 justify-center items-center">
               <MaterialIcons
                 name="notifications-active"
                 size={36}
@@ -883,51 +740,18 @@ export default function MatchResultsScreen() {
           </View>
 
           {/* Title */}
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "700",
-              color: "#ffffff",
-              marginBottom: 12,
-              textAlign: "center",
-            }}
-          >
+          <Text className="text-2xl font-bold text-white mb-3 text-center">
             Claim Submitted!
           </Text>
 
           {/* Subtitle */}
-          <Text
-            style={{
-              fontSize: 15,
-              color: "#92c9a8",
-              textAlign: "center",
-              marginBottom: 16,
-              lineHeight: 22,
-              paddingHorizontal: 20,
-            }}
-          >
+          <Text className="text-[15px] text-[#92c9a8] text-center mb-4 leading-[22px] px-5">
             {posterName} has been notified about your claim.
           </Text>
 
           {/* Info Box */}
-          <View
-            style={{
-              backgroundColor: "rgba(43, 238, 121, 0.1)",
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 32,
-              width: "100%",
-              maxWidth: 300,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#92c9a8",
-                textAlign: "center",
-                lineHeight: 20,
-              }}
-            >
+          <View className="bg-primary/10 rounded-xl p-4 mb-8 w-full max-w-[300px]">
+            <Text className="text-sm text-[#92c9a8] text-center leading-5">
               📧 They will reach out to you soon to verify and arrange the
               handover. Please wait for their response.
             </Text>
@@ -936,20 +760,9 @@ export default function MatchResultsScreen() {
           {/* Button */}
           <TouchableOpacity
             onPress={handleClaimModalClose}
-            style={{
-              backgroundColor: "#2bee79",
-              paddingVertical: 14,
-              paddingHorizontal: 48,
-              borderRadius: 25,
-            }}
+            className="bg-primary py-3.5 px-12 rounded-full"
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#102217",
-              }}
-            >
+            <Text className="text-base font-semibold text-[#102217]">
               Back to Home
             </Text>
           </TouchableOpacity>
@@ -959,21 +772,17 @@ export default function MatchResultsScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
-    >
+    <View className={`flex-1 ${isDark ? "bg-[#102217]" : "bg-[#f8fafc]"}`}>
       {/* Header */}
       <View
-        style={[styles.header, isDark ? styles.headerDark : styles.headerLight]}
+        className={`flex-row items-center px-5 pt-14 pb-4 ${
+          isDark ? "bg-[#193324]" : "bg-white"
+        }`}
       >
         <TouchableOpacity
-          style={[
-            styles.backButton,
-            isDark ? styles.backButtonDark : styles.backButtonLight,
-          ]}
+          className={`w-11 h-11 rounded-full items-center justify-center ${
+            isDark ? "bg-[#102217]" : "bg-[#f1f5f9]"
+          }`}
           onPress={handleBack}
           activeOpacity={0.7}
         >
@@ -984,10 +793,9 @@ export default function MatchResultsScreen() {
           />
         </TouchableOpacity>
         <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.headerTitleDark : styles.headerTitleLight,
-          ]}
+          className={`ml-4 text-lg font-bold ${
+            isDark ? "text-white" : "text-[#0f172a]"
+          }`}
         >
           Potential Matches
         </Text>
@@ -997,71 +805,59 @@ export default function MatchResultsScreen() {
         {/* Reference Card - Source Item */}
         {sourceItem && (
           <View
-            style={[
-              styles.referenceCard,
-              isDark ? styles.referenceCardDark : styles.referenceCardLight,
-            ]}
+            className={`mx-5 mt-4 p-3 rounded-2xl flex-row items-center justify-between ${
+              isDark ? "bg-[#193324]" : "bg-white"
+            }`}
           >
-            <View style={styles.referenceCardContent}>
+            <View className="flex-row items-center flex-1">
               <Image
                 source={{
                   uri: sourceItem.image_url || "https://via.placeholder.com/48",
                 }}
-                style={[
-                  styles.referenceImage,
-                  isDark
-                    ? styles.referenceImageDark
-                    : styles.referenceImageLight,
-                ]}
+                className={`w-12 h-12 rounded-xl ${
+                  isDark ? "border border-[#326747]" : "border border-[#e2e8f0]"
+                }`}
               />
-              <View style={styles.referenceTextContainer}>
+              <View className="ml-3 flex-1">
                 <Text
-                  style={[
-                    styles.referenceLabel,
-                    isDark
-                      ? styles.referenceLabelDark
-                      : styles.referenceLabelLight,
-                  ]}
+                  className={`text-xs ${
+                    isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+                  }`}
                 >
                   Searching for
                 </Text>
                 <Text
-                  style={[
-                    styles.referenceTitle,
-                    isDark
-                      ? styles.referenceTitleDark
-                      : styles.referenceTitleLight,
-                  ]}
+                  className={`text-base font-semibold ${
+                    isDark ? "text-white" : "text-[#0f172a]"
+                  }`}
                   numberOfLines={1}
                 >
                   {sourceItem.title || "Your item"}
                 </Text>
               </View>
             </View>
-            <View style={styles.referenceIconButton}>
+            <View className="w-9 h-9 rounded-full bg-primary/10 items-center justify-center">
               <MaterialIcons name="image" size={18} color={PRIMARY_COLOR} />
             </View>
           </View>
         )}
 
         {/* Headline */}
-        <View style={styles.headlineContainer}>
+        <View className="px-5 mt-5 mb-4">
           <Text
-            style={[
-              styles.headlineText,
-              isDark ? styles.headlineTextDark : styles.headlineTextLight,
-            ]}
+            className={`text-2xl font-bold ${
+              isDark ? "text-white" : "text-[#0f172a]"
+            }`}
           >
             We found{" "}
-            <Text style={styles.headlineAccent}>
+            <Text className="text-primary">
               {matches.length} {matches.length === 1 ? "match" : "matches"}
             </Text>
           </Text>
           <Text
-            style={[
-              styles.headlineSubtext,
-              isDark ? styles.headlineSubtextDark : styles.headlineSubtextLight,
-            ]}
+            className={`mt-1 text-sm ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Review the results below to verify your item.
           </Text>
@@ -1069,7 +865,7 @@ export default function MatchResultsScreen() {
 
         {/* Results List */}
         {matches.length > 0 ? (
-          <View style={styles.resultsContainer}>
+          <View className="px-5 pb-28">
             {matches.map((item, index) => {
               // First item (highest match) gets hero treatment
               if (index === 0) {
@@ -1079,18 +875,17 @@ export default function MatchResultsScreen() {
             })}
           </View>
         ) : (
-          <View style={styles.emptyContainer}>
+          <View className="flex-1 items-center justify-center px-8 py-12">
             <MaterialIcons
               name="search-off"
               size={64}
               color={isDark ? "#92c9a8" : "#64748b"}
-              style={styles.emptyIcon}
+              className="mb-4"
             />
             <Text
-              style={[
-                styles.emptyText,
-                isDark ? styles.emptyTextDark : styles.emptyTextLight,
-              ]}
+              className={`text-center text-base ${
+                isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+              }`}
             >
               No matching items found. Check back later or adjust your search.
             </Text>
@@ -1100,23 +895,25 @@ export default function MatchResultsScreen() {
 
       {/* Footer */}
       <View
-        style={[styles.footer, isDark ? styles.footerDark : styles.footerLight]}
+        className={`absolute bottom-0 left-0 right-0 px-5 pt-4 pb-8 ${
+          isDark ? "bg-[#193324]" : "bg-white"
+        }`}
+        style={{
+          borderTopWidth: 1,
+          borderTopColor: isDark ? "#326747" : "#e2e8f0",
+        }}
       >
         <TouchableOpacity
-          style={[
-            styles.footerButton,
-            isDark ? styles.footerButtonDark : styles.footerButtonLight,
-          ]}
+          className={`py-4 rounded-xl items-center ${
+            isDark ? "bg-[#102217]" : "bg-[#f1f5f9]"
+          }`}
           onPress={handleNoMatch}
           activeOpacity={0.7}
         >
           <Text
-            style={[
-              styles.footerButtonText,
-              isDark
-                ? styles.footerButtonTextDark
-                : styles.footerButtonTextLight,
-            ]}
+            className={`text-base font-semibold ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             None of these match
           </Text>

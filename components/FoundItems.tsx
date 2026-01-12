@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { supabase } from "../lib/supabaseClient";
 
 interface FoundReport {
@@ -156,7 +156,7 @@ const FoundItems: React.FC<FoundItemsProps> = ({
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View className="p-4 items-center justify-center">
         <ActivityIndicator size="small" color="#2bee79" />
       </View>
     );
@@ -164,26 +164,13 @@ const FoundItems: React.FC<FoundItemsProps> = ({
 
   if (error) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>{error}</Text>
+      <View className="p-4 items-center justify-center">
+        <Text className="text-lost-light text-sm text-center">{error}</Text>
       </View>
     );
   }
 
   return null; // Data is passed via onDataLoaded callback
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  errorText: {
-    color: "#f43f5e",
-    fontSize: 14,
-    textAlign: "center",
-  },
-});
 
 export default FoundItems;

@@ -26,7 +26,6 @@ import {
   generateImageEmbedding,
 } from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
-import { reportLostStyles as styles } from "../styles/reportLostStyles";
 
 const CATEGORY_OPTIONS = [
   { label: "Electronics", value: "electronics" },
@@ -582,25 +581,18 @@ export default function ReportLostScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
-    >
+    <View className={`flex-1 ${isDark ? "bg-[#102217]" : "bg-[#f8fafc]"}`}>
       <View
-        style={[
-          styles.header,
-          isDark ? styles.headerSurfaceDark : styles.headerSurfaceLight,
-        ]}
+        className={`flex-row items-center justify-between px-5 pt-14 pb-4 ${
+          isDark ? "bg-[#193324]" : "bg-white"
+        }`}
       >
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => router.back()}
-          style={[
-            styles.backButton,
-            isDark ? styles.backButtonDark : styles.backButtonLight,
-          ]}
+          className={`w-11 h-11 rounded-full items-center justify-center ${
+            isDark ? "bg-[#102217]" : "bg-[#f1f5f9]"
+          }`}
         >
           <MaterialIcons
             name="arrow-back"
@@ -610,35 +602,36 @@ export default function ReportLostScreen() {
         </TouchableOpacity>
 
         <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.headerTitleDark : styles.headerTitleLight,
-          ]}
+          className={`text-lg font-bold ${
+            isDark ? "text-white" : "text-[#0f172a]"
+          }`}
         >
           Report Lost Item
         </Text>
 
-        <View style={{ width: 44 }} />
+        <View className="w-11" />
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: 120,
+        }}
         showsVerticalScrollIndicator={false}
       >
         <View>
           <Text
-            style={[
-              styles.heroHeading,
-              isDark ? styles.heroHeadingDark : styles.heroHeadingLight,
-            ]}
+            className={`text-2xl font-bold mb-2 ${
+              isDark ? "text-white" : "text-[#0f172a]"
+            }`}
           >
             Lost something?
           </Text>
           <Text
-            style={[
-              styles.heroBody,
-              isDark ? styles.heroBodyDark : styles.heroBodyLight,
-            ]}
+            className={`text-base leading-6 ${
+              isDark ? "text-[#92c9a8]" : "text-[#64748b]"
+            }`}
           >
             Upload a photo to help others identify and return your item.
           </Text>
@@ -647,46 +640,44 @@ export default function ReportLostScreen() {
         <TouchableOpacity activeOpacity={0.9} onPress={handlePickImage}>
           <ImageBackground
             source={imageAsset ? { uri: imageAsset.uri } : PLACEHOLDER_IMAGE}
-            style={[
-              styles.uploadCard,
-              isDark ? styles.uploadCardDark : styles.uploadCardLight,
-            ]}
+            className={`w-full h-48 rounded-2xl overflow-hidden mt-6 ${
+              isDark ? "border border-[#326747]" : "border border-[#e2e8f0]"
+            }`}
             imageStyle={{ opacity: 0.85 }}
           >
             <View
-              style={[
-                styles.uploadOverlay,
-                imageAsset ? { backgroundColor: "rgba(0,0,0,0.25)" } : null,
-              ]}
+              className={`flex-1 items-center justify-center ${
+                imageAsset ? "bg-black/25" : "bg-black/40"
+              }`}
             >
-              <View style={styles.uploadIconWrapper}>
+              <View className="w-16 h-16 rounded-full bg-white/90 items-center justify-center mb-3">
                 <MaterialIcons
                   name={imageAsset ? "photo-camera" : "add-a-photo"}
                   size={32}
                   color="#f43f5e"
                 />
               </View>
-              <Text style={styles.uploadText}>
+              <Text className="text-base font-semibold text-white">
                 {imageAsset ? "Tap to change photo" : "Tap to Upload Photo"}
               </Text>
             </View>
           </ImageBackground>
         </TouchableOpacity>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Item Name
           </Text>
           <TextInput
-            style={[
-              styles.textInput,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`h-14 px-4 rounded-2xl text-base ${
+              isDark
+                ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+            }`}
             placeholder="e.g. Blue Backpack"
             placeholderTextColor={placeholderColor}
             value={itemName}
@@ -694,37 +685,33 @@ export default function ReportLostScreen() {
           />
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Item Category
           </Text>
-          <View style={styles.pickerContainer}>
+          <View className="relative">
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={() => setShowCategoryList((prev) => !prev)}
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-                styles.pickerTrigger,
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl flex-row items-center justify-between ${
+                isDark
+                  ? "bg-[#193324] border border-[#326747]"
+                  : "bg-white border border-[#e2e8f0]"
+              }`}
             >
               <Text
-                style={[
-                  styles.pickerTriggerText,
-                  {
-                    color: category
-                      ? isDark
-                        ? "#f8fafc"
-                        : "#0f172a"
-                      : placeholderColor,
-                  },
-                ]}
+                style={{
+                  color: category
+                    ? isDark
+                      ? "#f8fafc"
+                      : "#0f172a"
+                    : placeholderColor,
+                  fontSize: 16,
+                }}
               >
                 {category
                   ? CATEGORY_OPTIONS.find((option) => option.value === category)
@@ -735,28 +722,16 @@ export default function ReportLostScreen() {
                 name={showCategoryList ? "expand-less" : "expand-more"}
                 size={24}
                 color={placeholderColor}
-                style={styles.trailingIcon}
+                style={{ position: "absolute", right: 12, top: 15 }}
               />
             </TouchableOpacity>
             {showCategoryList ? (
               <View
-                style={[
-                  {
-                    marginTop: 8,
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    overflow: "hidden",
-                  },
+                className={`mt-2 rounded-2xl border overflow-hidden ${
                   isDark
-                    ? {
-                        backgroundColor: DARK_SURFACE_COLOR,
-                        borderColor: DARK_BORDER_COLOR,
-                      }
-                    : {
-                        backgroundColor: LIGHT_SURFACE_COLOR,
-                        borderColor: LIGHT_BORDER_COLOR,
-                      },
-                ]}
+                    ? "bg-[#193324] border-[#326747]"
+                    : "bg-white border-[#e2e8f0]"
+                }`}
               >
                 {CATEGORY_OPTIONS.map((option) => {
                   const isSelected = option.value === category;
@@ -796,21 +771,22 @@ export default function ReportLostScreen() {
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Description
           </Text>
           <TextInput
             multiline
-            style={[
-              styles.textArea,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`min-h-[100px] p-4 rounded-2xl text-base ${
+              isDark
+                ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+            }`}
+            style={{ textAlignVertical: "top" }}
             placeholder="Describe the item (color, brand, distinguishing marks...)"
             placeholderTextColor={placeholderColor}
             value={description}
@@ -818,22 +794,21 @@ export default function ReportLostScreen() {
           />
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Last Seen Location
           </Text>
-          <View style={{ position: "relative" }}>
+          <View className="relative">
             <TextInput
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl text-base ${
+                isDark
+                  ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                  : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+              }`}
               placeholder="e.g. DIT 5th Floor, around 2pm"
               placeholderTextColor={placeholderColor}
               value={lastSeen}
@@ -843,30 +818,28 @@ export default function ReportLostScreen() {
               name="location-on"
               size={22}
               color={placeholderColor}
-              style={styles.trailingIcon}
+              style={{ position: "absolute", right: 12, top: 16 }}
             />
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Date & Time Lost
           </Text>
-          <View style={{ position: "relative" }}>
+          <View className="relative">
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={openDateTimePicker}
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-                { justifyContent: "center" },
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl justify-center ${
+                isDark
+                  ? "bg-[#193324] border border-[#326747]"
+                  : "bg-white border border-[#e2e8f0]"
+              }`}
             >
               <Text
                 style={{
@@ -885,30 +858,35 @@ export default function ReportLostScreen() {
               name="calendar-today"
               size={22}
               color={placeholderColor}
-              style={styles.trailingIcon}
+              style={{ position: "absolute", right: 12, top: 16 }}
             />
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Reward{" "}
-            <Text style={isDark ? styles.optionalDark : styles.optionalLight}>
+            <Text
+              className={
+                isDark
+                  ? "text-[#92c9a8] font-normal"
+                  : "text-[#94a3b8] font-normal"
+              }
+            >
               (Optional)
             </Text>
           </Text>
-          <View style={{ position: "relative" }}>
+          <View className="relative">
             <TextInput
-              style={[
-                styles.textInput,
-                isDark ? styles.textInputDark : styles.textInputLight,
-                styles.iconInput,
-              ]}
+              className={`h-14 px-4 pr-12 rounded-2xl text-base ${
+                isDark
+                  ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                  : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+              }`}
               placeholder="e.g. ₱100"
               placeholderTextColor={placeholderColor}
               value={reward}
@@ -918,30 +896,36 @@ export default function ReportLostScreen() {
               name="payments"
               size={22}
               color={placeholderColor}
-              style={styles.trailingIcon}
+              style={{ position: "absolute", right: 12, top: 16 }}
             />
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Additional Notes{" "}
-            <Text style={isDark ? styles.optionalDark : styles.optionalLight}>
+            <Text
+              className={
+                isDark
+                  ? "text-[#92c9a8] font-normal"
+                  : "text-[#94a3b8] font-normal"
+              }
+            >
               (Optional)
             </Text>
           </Text>
           <TextInput
             multiline
-            style={[
-              styles.textArea,
-              styles.textAreaSmall,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`min-h-[80px] p-4 rounded-2xl text-base ${
+              isDark
+                ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+            }`}
+            style={{ textAlignVertical: "top" }}
             placeholder="Any other details?"
             placeholderTextColor={placeholderColor}
             value={notes}
@@ -949,16 +933,15 @@ export default function ReportLostScreen() {
           />
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mt-6">
           <Text
-            style={[
-              styles.label,
-              isDark ? styles.labelDark : styles.labelLight,
-            ]}
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-[#f8fafc]" : "text-[#334155]"
+            }`}
           >
             Contact Preference
           </Text>
-          <View style={styles.contactGrid}>
+          <View className="flex-row flex-wrap gap-2 mb-3">
             {CONTACT_OPTIONS.map((option) => {
               const isSelected = option.value === contactPref;
               return (
@@ -966,28 +949,24 @@ export default function ReportLostScreen() {
                   key={option.value}
                   activeOpacity={0.85}
                   onPress={() => setContactPref(option.value)}
-                  style={[
-                    styles.contactOption,
-                    isDark
-                      ? styles.contactOptionDark
-                      : styles.contactOptionLight,
-                    isSelected ? styles.contactOptionActive : null,
-                    isSelected && isDark
-                      ? styles.contactOptionActiveDark
-                      : null,
-                  ]}
+                  className={`px-4 py-3 rounded-xl border ${
+                    isSelected
+                      ? "bg-[#f43f5e]/10 border-[#f43f5e]"
+                      : isDark
+                      ? "bg-[#193324] border-[#326747]"
+                      : "bg-white border-[#e2e8f0]"
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.contactLabel,
+                    className={`text-sm font-medium ${
                       isSelected
                         ? isDark
-                          ? styles.contactLabelActiveDark
-                          : styles.contactLabelActive
+                          ? "text-[#fda4af]"
+                          : "text-[#f43f5e]"
                         : isDark
-                        ? styles.contactLabelDark
-                        : styles.contactLabelLight,
-                    ]}
+                        ? "text-[#f8fafc]"
+                        : "text-[#334155]"
+                    }`}
                   >
                     {option.label}
                   </Text>
@@ -996,10 +975,11 @@ export default function ReportLostScreen() {
             })}
           </View>
           <TextInput
-            style={[
-              styles.textInput,
-              isDark ? styles.textInputDark : styles.textInputLight,
-            ]}
+            className={`h-14 px-4 rounded-2xl text-base ${
+              isDark
+                ? "bg-[#193324] border border-[#326747] text-[#f8fafc]"
+                : "bg-white border border-[#e2e8f0] text-[#0f172a]"
+            }`}
             placeholder="Enter link, email, or phone number"
             placeholderTextColor={placeholderColor}
             value={contactInfo}
@@ -1009,15 +989,23 @@ export default function ReportLostScreen() {
       </ScrollView>
 
       <View
-        style={[styles.footer, isDark ? styles.footerDark : styles.footerLight]}
+        className={`absolute bottom-0 left-0 right-0 px-5 pt-4 pb-8 ${
+          isDark ? "bg-[#193324]" : "bg-white"
+        }`}
+        style={{
+          borderTopWidth: 1,
+          borderTopColor: isDark ? "#326747" : "#e2e8f0",
+        }}
       >
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handleSubmit}
           disabled={uploading}
-          style={[styles.submitButton, uploading ? { opacity: 0.6 } : null]}
+          className={`flex-row items-center justify-center h-14 rounded-full bg-[#f43f5e] ${
+            uploading ? "opacity-60" : ""
+          }`}
         >
-          <Text style={styles.submitText}>
+          <Text className="text-base font-bold text-white mr-2">
             {uploading ? "Submitting..." : "Submit Report"}
           </Text>
           {uploading ? (
@@ -1029,28 +1017,11 @@ export default function ReportLostScreen() {
       </View>
 
       {Platform.OS === "ios" && showIOSPicker ? (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.4)",
-            alignItems: "center",
-            justifyContent: "flex-end",
-          }}
-        >
+        <View className="absolute inset-0 bg-black/40 items-center justify-end">
           <View
-            style={{
-              width: "100%",
-              backgroundColor: isDark ? "#193324" : "#ffffff",
-              paddingHorizontal: 16,
-              paddingTop: 12,
-              paddingBottom: 24,
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-            }}
+            className={`w-full px-4 pt-3 pb-6 rounded-t-3xl ${
+              isDark ? "bg-[#193324]" : "bg-white"
+            }`}
           >
             <DateTimePicker
               mode="datetime"
@@ -1064,12 +1035,10 @@ export default function ReportLostScreen() {
               themeVariant={isDark ? "dark" : "light"}
             />
             <TouchableOpacity
-              style={{ alignSelf: "flex-end", marginTop: 12 }}
+              className="self-end mt-3"
               onPress={() => setShowIOSPicker(false)}
             >
-              <Text
-                style={{ color: "#f43f5e", fontSize: 16, fontWeight: "600" }}
-              >
+              <Text className="text-[#f43f5e] text-base font-semibold">
                 Done
               </Text>
             </TouchableOpacity>
@@ -1084,42 +1053,16 @@ export default function ReportLostScreen() {
         animationType="fade"
         statusBarTranslucent
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(16, 34, 23, 0.95)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 24,
-          }}
-        >
+        <View className="flex-1 bg-[#102217]/95 justify-center items-center p-6">
           {/* Animated Search Icon */}
-          <View style={{ marginBottom: 32 }}>
+          <View className="mb-8">
             <Animated.View
               style={{
                 transform: [{ scale: pulseAnim }],
               }}
             >
-              <View
-                style={{
-                  width: 100,
-                  height: 100,
-                  borderRadius: 50,
-                  backgroundColor: "rgba(34, 197, 94, 0.15)",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <View
-                  style={{
-                    width: 70,
-                    height: 70,
-                    borderRadius: 35,
-                    backgroundColor: "rgba(34, 197, 94, 0.25)",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
+              <View className="w-[100px] h-[100px] rounded-full bg-[#22c55e]/15 justify-center items-center">
+                <View className="w-[70px] h-[70px] rounded-full bg-[#22c55e]/25 justify-center items-center">
                   <Animated.View
                     style={{
                       transform: [{ rotate: rotateInterpolate }],
@@ -1137,59 +1080,28 @@ export default function ReportLostScreen() {
           </View>
 
           {/* Title */}
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "700",
-              color: "#ffffff",
-              marginBottom: 12,
-              textAlign: "center",
-            }}
-          >
+          <Text className="text-2xl font-bold text-white mb-3 text-center">
             Finding a match...
           </Text>
 
           {/* Subtitle */}
-          <Text
-            style={{
-              fontSize: 15,
-              color: "#92c9a8",
-              textAlign: "center",
-              marginBottom: 40,
-              lineHeight: 22,
-            }}
-          >
+          <Text className="text-[15px] text-[#92c9a8] text-center mb-10 leading-[22px]">
             The system is finding a match for the{"\n"}lost item
           </Text>
 
           {/* Progress Section */}
-          <View style={{ width: "100%", maxWidth: 280 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 8,
-              }}
-            >
-              <Text style={{ fontSize: 14, color: "#92c9a8" }}>
+          <View className="w-full max-w-[280px]">
+            <View className="flex-row justify-between mb-2">
+              <Text className="text-sm text-[#92c9a8]">
                 Scanning database...
               </Text>
-              <Text
-                style={{ fontSize: 14, color: "#22c55e", fontWeight: "600" }}
-              >
+              <Text className="text-sm text-[#22c55e] font-semibold">
                 {Math.min(Math.round(searchProgress), 100)}%
               </Text>
             </View>
 
             {/* Progress Bar */}
-            <View
-              style={{
-                height: 6,
-                backgroundColor: "rgba(34, 197, 94, 0.2)",
-                borderRadius: 3,
-                overflow: "hidden",
-              }}
-            >
+            <View className="h-[6px] bg-[#22c55e]/20 rounded-[3px] overflow-hidden">
               <Animated.View
                 style={{
                   height: "100%",
@@ -1204,14 +1116,7 @@ export default function ReportLostScreen() {
             </View>
 
             {/* Status Text */}
-            <Text
-              style={{
-                fontSize: 13,
-                color: "#6b7c72",
-                textAlign: "center",
-                marginTop: 16,
-              }}
-            >
+            <Text className="text-[13px] text-[#6b7c72] text-center mt-4">
               Analyzing image features...
             </Text>
           </View>
@@ -1222,23 +1127,9 @@ export default function ReportLostScreen() {
               setSearchingMatches(false);
               router.back();
             }}
-            style={{
-              marginTop: 48,
-              backgroundColor: "#22c55e",
-              paddingVertical: 14,
-              paddingHorizontal: 48,
-              borderRadius: 25,
-            }}
+            className="mt-12 bg-[#22c55e] py-3.5 px-12 rounded-full"
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#ffffff",
-              }}
-            >
-              Cancel
-            </Text>
+            <Text className="text-base font-semibold text-white">Cancel</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -1250,87 +1141,27 @@ export default function ReportLostScreen() {
         animationType="fade"
         statusBarTranslucent
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(16, 34, 23, 0.95)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 24,
-          }}
-        >
+        <View className="flex-1 bg-[#102217]/95 justify-center items-center p-6">
           {/* Icon */}
-          <View
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: "rgba(234, 179, 8, 0.15)",
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 24,
-            }}
-          >
-            <View
-              style={{
-                width: 70,
-                height: 70,
-                borderRadius: 35,
-                backgroundColor: "rgba(234, 179, 8, 0.25)",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+          <View className="w-[100px] h-[100px] rounded-full bg-[#eab308]/15 justify-center items-center mb-6">
+            <View className="w-[70px] h-[70px] rounded-full bg-[#eab308]/25 justify-center items-center">
               <MaterialIcons name="search-off" size={36} color="#eab308" />
             </View>
           </View>
 
           {/* Title */}
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "700",
-              color: "#ffffff",
-              marginBottom: 12,
-              textAlign: "center",
-            }}
-          >
+          <Text className="text-2xl font-bold text-white mb-3 text-center">
             No matches found
           </Text>
 
           {/* Subtitle */}
-          <Text
-            style={{
-              fontSize: 15,
-              color: "#92c9a8",
-              textAlign: "center",
-              marginBottom: 16,
-              lineHeight: 22,
-              paddingHorizontal: 20,
-            }}
-          >
+          <Text className="text-[15px] text-[#92c9a8] text-center mb-4 leading-[22px] px-5">
             We couldn't find any matching found items in our database right now.
           </Text>
 
           {/* Info Box */}
-          <View
-            style={{
-              backgroundColor: "rgba(34, 197, 94, 0.1)",
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 32,
-              width: "100%",
-              maxWidth: 300,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#92c9a8",
-                textAlign: "center",
-                lineHeight: 20,
-              }}
-            >
+          <View className="bg-[#22c55e]/10 rounded-xl p-4 mb-8 w-full max-w-[300px]">
+            <Text className="text-sm text-[#92c9a8] text-center leading-5">
               ✨ Don't worry! Your report has been saved. You'll be notified if
               someone finds a matching item.
             </Text>
@@ -1339,20 +1170,9 @@ export default function ReportLostScreen() {
           {/* Button */}
           <TouchableOpacity
             onPress={handleCloseNoMatchModal}
-            style={{
-              backgroundColor: "#22c55e",
-              paddingVertical: 14,
-              paddingHorizontal: 48,
-              borderRadius: 25,
-            }}
+            className="bg-[#22c55e] py-3.5 px-12 rounded-full"
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#ffffff",
-              }}
-            >
+            <Text className="text-base font-semibold text-white">
               Go to Home
             </Text>
           </TouchableOpacity>

@@ -15,7 +15,6 @@ import BottomNav from "../components/BottomNav";
 import FoundItems from "../components/FoundItems";
 import LostItems from "../components/LostItems";
 import { supabase } from "../lib/supabaseClient";
-import { homeStyles as styles } from "../styles/homeStyles";
 
 const FILTERS = ["All", "Lost", "Found"];
 
@@ -40,7 +39,6 @@ const FILTER_COLORS = {
   },
 };
 
-const PRIMARY_COLOR = "#2bee79";
 const SURFACE_ICON_COLOR = "#102217";
 const LIGHT_TEXT_COLOR = "#0f172a";
 const DARK_TEXT_COLOR = "#f8fafc";
@@ -219,12 +217,7 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <View
-      style={[
-        styles.container,
-        isDark ? styles.containerDark : styles.containerLight,
-      ]}
-    >
+    <View className={`flex-1 ${isDark ? "bg-[#0b1610]" : "bg-[#f0f5f2]"}`}>
       {/* FoundItems component fetches data and passes it via callback */}
       <FoundItems onDataLoaded={handleFoundDataLoaded} filter={activeFilter} />
       {/* LostItems component fetches data and passes it via callback */}
@@ -236,47 +229,63 @@ export default function HomeScreen() {
       {/* Notification Button Overlay */}
       <TouchableOpacity
         activeOpacity={0.85}
-        style={[
-          styles.bellButton,
-          isDark ? styles.bellButtonDark : styles.bellButtonLight,
-          styles.bellButtonOverlay,
-        ]}
+        className={`absolute top-12 right-4 z-50 w-11 h-11 rounded-full items-center justify-center ${
+          isDark ? "bg-[#12251a]" : "bg-white"
+        }`}
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
         onPress={() => router.push("/notifications")}
       >
         <MaterialIcons name="notifications" size={26} color={baseTextColor} />
-        {unreadCount > 0 && <View style={styles.bellBadge} />}
+        {unreadCount > 0 && (
+          <View className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-[#f43f5e]" />
+        )}
       </TouchableOpacity>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.heroSection}>
+        {/* Hero Section */}
+        <View className="px-5 pt-6 pb-3">
           <Text
-            style={[
-              styles.heroHeading,
-              isDark ? styles.heroHeadingDark : styles.heroHeadingLight,
-            ]}
+            className={`text-2xl font-bold mb-1 ${
+              isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+            }`}
           >
             Hello, Student!
           </Text>
           <Text
-            style={[
-              styles.heroSubtitle,
-              isDark ? styles.heroSubtitleDark : styles.heroSubtitleLight,
-            ]}
+            className={`text-base ${
+              isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+            }`}
           >
             Did you lose or find something today?
           </Text>
         </View>
 
-        <View style={styles.actionRow}>
+        {/* Action Buttons Row */}
+        <View className="flex-row justify-center items-start gap-8 px-5 py-4">
           <TouchableOpacity
             activeOpacity={0.9}
-            style={styles.actionButton}
+            className="items-center w-32"
             onPress={() => router.push("/report-lost")}
           >
-            <View style={styles.actionCircle}>
+            <View
+              className="w-24 h-24 rounded-full bg-[#2bee79] items-center justify-center mb-3"
+              style={{
+                shadowColor: "#2bee79",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+            >
               <MaterialIcons
                 name="search"
                 size={32}
@@ -284,10 +293,9 @@ export default function HomeScreen() {
               />
             </View>
             <Text
-              style={[
-                styles.actionText,
-                isDark ? styles.actionTextDark : styles.actionTextLight,
-              ]}
+              className={`text-sm font-semibold text-center ${
+                isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+              }`}
             >
               Report{"\n"}Lost Item
             </Text>
@@ -295,10 +303,19 @@ export default function HomeScreen() {
 
           <TouchableOpacity
             activeOpacity={0.9}
-            style={styles.actionButton}
+            className="items-center w-32"
             onPress={() => router.push("/report-found")}
           >
-            <View style={styles.actionCircle}>
+            <View
+              className="w-24 h-24 rounded-full bg-[#2bee79] items-center justify-center mb-3"
+              style={{
+                shadowColor: "#2bee79",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+            >
               <MaterialIcons
                 name="volunteer-activism"
                 size={32}
@@ -306,21 +323,21 @@ export default function HomeScreen() {
               />
             </View>
             <Text
-              style={[
-                styles.actionText,
-                isDark ? styles.actionTextDark : styles.actionTextLight,
-              ]}
+              className={`text-sm font-semibold text-center ${
+                isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+              }`}
             >
               Report{"\n"}Found Item
             </Text>
           </TouchableOpacity>
         </View>
 
+        {/* Filter Tabs */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[styles.filtersContainer]}
-          style={styles.filtersSection}
+          contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+          className="mb-4"
         >
           {FILTERS.map((filter) => {
             const isActive = filter === activeFilter;
@@ -340,25 +357,29 @@ export default function HomeScreen() {
                 key={filter}
                 activeOpacity={0.85}
                 onPress={() => setActiveFilter(filter)}
-                style={[
-                  styles.filterChip,
-                  isDark ? styles.filterChipDark : null,
+                className={`px-5 py-2 rounded-full border ${
+                  isDark
+                    ? "border-[#1e3a2f] bg-[#12251a]"
+                    : "border-[#e2e8f0] bg-white"
+                }`}
+                style={
                   isActive && activeBackground
                     ? {
                         backgroundColor: activeBackground,
                         borderColor: "transparent",
                       }
-                    : null,
-                ]}
+                    : undefined
+                }
               >
                 <Text
-                  style={[
-                    styles.filterLabel,
-                    isDark ? styles.filterLabelDark : null,
+                  className={`text-sm font-medium ${
+                    isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+                  }`}
+                  style={
                     isActive && activeTextColor
                       ? { color: activeTextColor }
-                      : null,
-                  ]}
+                      : undefined
+                  }
                 >
                   {filter}
                 </Text>
@@ -367,28 +388,40 @@ export default function HomeScreen() {
           })}
         </ScrollView>
 
-        <View style={styles.sectionHeader}>
+        {/* Section Header */}
+        <View className="flex-row justify-between items-center px-5 mb-3">
           <Text
-            style={[
-              styles.sectionTitle,
-              isDark ? styles.sectionTitleDark : styles.sectionTitleLight,
-            ]}
+            className={`text-lg font-bold ${
+              isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+            }`}
           >
             Recent Posts
           </Text>
           <TouchableOpacity activeOpacity={0.8}>
-            <Text style={styles.viewAll}>View All</Text>
+            <Text className="text-sm font-semibold text-[#2bee79]">
+              View All
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.postsGrid}>
+        {/* Posts Grid */}
+        <View className="flex-row flex-wrap justify-between px-5">
           {filteredPosts.map((post) => {
             const isFound = post.status === "Found";
             return (
               <TouchableOpacity
                 key={post.id}
                 activeOpacity={0.92}
-                style={[styles.postCard, isDark ? styles.postCardDark : null]}
+                className={`w-[48%] rounded-2xl h-[230px] mb-4 overflow-hidden ${
+                  isDark ? "bg-[#12251a]" : "bg-white"
+                }`}
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 8,
+                  elevation: 3,
+                }}
                 onPress={() =>
                   router.push({
                     pathname: "/item-detail",
@@ -412,21 +445,18 @@ export default function HomeScreen() {
                   })
                 }
               >
-                <View style={styles.postImageWrapper}>
+                {/* Post Image */}
+                <View className="w-full h-[145px] relative">
                   {post.image ? (
                     <Image
                       source={{ uri: post.image }}
-                      style={{ width: "100%", height: "100%" }}
+                      className="w-full h-full"
                     />
                   ) : (
                     <View
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: isDark ? "#1e3a2f" : "#e2e8f0",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
+                      className={`w-full h-full items-center justify-center ${
+                        isDark ? "bg-[#1e3a2f]" : "bg-[#e2e8f0]"
+                      }`}
                     >
                       <MaterialIcons
                         name="image"
@@ -435,85 +465,88 @@ export default function HomeScreen() {
                       />
                     </View>
                   )}
+                  {/* Status Badge */}
                   <View
-                    style={[
-                      styles.statusPill,
-                      isFound ? styles.statusFound : styles.statusLost,
-                    ]}
+                    className={`absolute top-2 left-2 px-2.5 py-1 rounded-full ${
+                      isFound ? "bg-[#2bee79]" : "bg-[#f43f5e]"
+                    }`}
                   >
                     <Text
-                      style={[
-                        styles.statusLabel,
-                        isFound
-                          ? styles.statusLabelLight
-                          : styles.statusLabelDark,
-                      ]}
+                      className={`text-xs font-bold ${
+                        isFound ? "text-[#0b1610]" : "text-white"
+                      }`}
                     >
                       {post.status.toUpperCase()}
                     </Text>
                   </View>
                 </View>
 
-                <Text
-                  style={[
-                    styles.postTitle,
-                    isDark ? styles.postTitleDark : styles.postTitleLight,
-                  ]}
-                  numberOfLines={1}
-                >
-                  {post.title}
-                </Text>
-
-                <View style={styles.postMetaRow}>
-                  <MaterialIcons
-                    name="location-on"
-                    size={16}
-                    color={mutedTextColor}
-                  />
+                {/* Post Content */}
+                <View className="p-3">
                   <Text
-                    style={[
-                      styles.postMetaText,
-                      isDark ? styles.postMetaDark : styles.postMetaLight,
-                    ]}
+                    className={`text-sm font-semibold mb-1.5 ${
+                      isDark ? "text-[#f8fafc]" : "text-[#0f172a]"
+                    }`}
                     numberOfLines={1}
                   >
-                    {post.location}
+                    {post.title}
                   </Text>
-                </View>
 
-                <View style={styles.postFooter}>
-                  <View style={styles.userInfo}>
-                    <View style={styles.avatar}>
-                      {post.avatar ? (
-                        <Image
-                          source={{ uri: post.avatar }}
-                          style={{ width: "100%", height: "100%" }}
-                        />
-                      ) : (
-                        <MaterialIcons
-                          name="person"
-                          size={20}
-                          color={isDark ? "#4ade80" : "#94a3b8"}
-                        />
-                      )}
-                    </View>
+                  {/* Location Row */}
+                  <View className="flex-row items-center mb-2">
+                    <MaterialIcons
+                      name="location-on"
+                      size={16}
+                      color={mutedTextColor}
+                    />
                     <Text
-                      style={[
-                        styles.avatarLabel,
-                        isDark ? styles.avatarLabelDark : null,
-                      ]}
+                      className={`text-xs ml-1 flex-1 ${
+                        isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+                      }`}
+                      numberOfLines={1}
                     >
-                      {post.author}
+                      {post.location}
                     </Text>
                   </View>
-                  <Text
-                    style={[
-                      styles.timeLabel,
-                      isDark ? styles.timeLabelDark : null,
-                    ]}
-                  >
-                    {post.timeAgo}
-                  </Text>
+
+                  {/* Footer Row */}
+                  <View className="flex-row justify-between items-center">
+                    <View className="flex-row items-center flex-1">
+                      <View
+                        className={`w-6 h-6 rounded-full items-center justify-center overflow-hidden ${
+                          isDark ? "bg-[#1e3a2f]" : "bg-[#e2e8f0]"
+                        }`}
+                      >
+                        {post.avatar ? (
+                          <Image
+                            source={{ uri: post.avatar }}
+                            className="w-full h-full"
+                          />
+                        ) : (
+                          <MaterialIcons
+                            name="person"
+                            size={20}
+                            color={isDark ? "#4ade80" : "#94a3b8"}
+                          />
+                        )}
+                      </View>
+                      <Text
+                        className={`text-xs ml-1.5 flex-1 ${
+                          isDark ? "text-[#94a3b8]" : "text-[#64748b]"
+                        }`}
+                        numberOfLines={1}
+                      >
+                        {post.author}
+                      </Text>
+                    </View>
+                    <Text
+                      className={`text-xs ${
+                        isDark ? "text-[#64748b]" : "text-[#94a3b8]"
+                      }`}
+                    >
+                      {post.timeAgo}
+                    </Text>
+                  </View>
                 </View>
               </TouchableOpacity>
             );
