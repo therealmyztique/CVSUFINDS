@@ -14,7 +14,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import { notificationStyles as styles } from "./styles/notificationStyles";
+import { notificationStyles as styles } from "../styles/notificationStyles";
 
 const PRIMARY_COLOR = "#2bee79";
 

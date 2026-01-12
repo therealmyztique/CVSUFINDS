@@ -14,10 +14,10 @@ import {
   useColorScheme,
 } from "react-native";
 
+import AppHeader from "../components/AppHeader";
+import BottomNav from "../components/BottomNav";
 import { supabase } from "../lib/supabaseClient";
-import AppHeader from "./components/AppHeader";
-import BottomNav from "./components/BottomNav";
-import { profileStyles as styles } from "./styles/profileStyles";
+import { profileStyles as styles } from "../styles/profileStyles";
 
 const AVATAR_URI =
   "https://lh3.googleusercontent.com/d/15hdjPNF0qwo2q3wmfRp2NZNQiIqHZ1ai";
@@ -287,7 +287,9 @@ export default function ProfileScreen() {
             <View style={styles.avatarWrapper}>
               <View style={styles.avatarRing}>
                 <Image
-                  source={{ uri: profile?.avatar_url || AVATAR_URI }}
+                  source={{
+                    uri: profile?.avatar_url ? profile.avatar_url : AVATAR_URI,
+                  }}
                   style={styles.avatarImage}
                 />
               </View>

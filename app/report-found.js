@@ -21,7 +21,7 @@ import {
 } from "react-native";
 import { generateImageEmbedding } from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
-import { reportFoundStyles as styles } from "./styles/reportFoundStyles";
+import { reportFoundStyles as styles } from "../styles/reportFoundStyles";
 
 const CATEGORY_OPTIONS = [
   { label: "Electronics", value: "electronics" },
@@ -367,9 +367,7 @@ export default function ReportFoundScreen() {
             "found"
           );
           if (embeddingResult.success) {
-            console.log(
-              "Image embedding generated successfully for found report"
-            );
+            // Embedding generated successfully
           } else {
             console.warn(
               "Failed to generate embedding:",

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 
 interface LostReport {
   id: string;
@@ -77,7 +77,7 @@ const LostItems: React.FC<LostItemsProps> = ({
         {
           id: string;
           first_name?: string;
-          full_name?: string;
+          last_name?: string;
           avatar_url?: string;
         }
       > = {};
@@ -90,7 +90,7 @@ const LostItems: React.FC<LostItemsProps> = ({
         try {
           const res = await supabase
             .from("profiles")
-            .select("id, first_name, full_name, avatar_url")
+            .select("id, first_name, last_name, avatar_url")
             .in("id", reporterIds);
           profilesData = res.data as any[] | null;
           profilesError = res.error;
@@ -123,13 +123,12 @@ const LostItems: React.FC<LostItemsProps> = ({
           );
         } else if (profilesData) {
           profilesData.forEach((p: any) => {
-            const name = p.first_name ?? p.full_name ?? p.name ?? "";
-            const avatar =
-              p.avatar_url ?? p.avatar ?? p.avatarPath ?? p.avatarUrl ?? "";
+            const firstName = p.first_name ?? "";
+            const avatar = p.avatar_url ?? "";
             profilesMap[p.id] = {
               id: p.id,
-              first_name: name,
-              full_name: p.full_name,
+              first_name: firstName,
+              last_name: p.last_name ?? "",
               avatar_url: avatar,
             };
           });
@@ -138,10 +137,7 @@ const LostItems: React.FC<LostItemsProps> = ({
 
       const enriched = reports.map((r) => ({
         ...r,
-        reporter_name:
-          profilesMap[r.reporter_id]?.first_name ||
-          profilesMap[r.reporter_id]?.full_name ||
-          "",
+        reporter_name: profilesMap[r.reporter_id]?.first_name || "",
         avatar_url: profilesMap[r.reporter_id]?.avatar_url || "",
       }));
 

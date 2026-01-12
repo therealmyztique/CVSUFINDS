@@ -26,7 +26,7 @@ import {
   generateImageEmbedding,
 } from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
-import { reportLostStyles as styles } from "./styles/reportLostStyles";
+import { reportLostStyles as styles } from "../styles/reportLostStyles";
 
 const CATEGORY_OPTIONS = [
   { label: "Electronics", value: "electronics" },
@@ -449,8 +449,6 @@ export default function ReportLostScreen() {
           );
 
           if (embeddingResult.success) {
-            console.log("Image embedding generated successfully");
-
             // Wait a moment for the embedding to be stored, then search for matches
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -493,7 +491,6 @@ export default function ReportLostScreen() {
               });
               return; // Exit early to navigate to results page
             } else {
-              console.log("No matching found items detected");
               setSearchingMatches(false);
               setShowNoMatchModal(true);
               // Reset form

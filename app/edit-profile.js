@@ -18,7 +18,7 @@ import {
 } from "react-native";
 
 import { supabase } from "../lib/supabaseClient";
-import { editProfileStyles as styles } from "./styles/editProfileStyles";
+import { editProfileStyles as styles } from "../styles/editProfileStyles";
 
 const DEFAULT_AVATAR = "https://via.placeholder.com/150";
 

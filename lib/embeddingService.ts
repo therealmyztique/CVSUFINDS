@@ -15,8 +15,6 @@ export async function generateImageEmbedding(
   reportType: 'lost' | 'found'
 ): Promise<{ success: boolean; embeddingDimensions?: number; error?: string }> {
   try {
-    console.log(`Generating embedding for ${reportType} report ${reportId}`);
-    
     const { data, error } = await supabase.functions.invoke('generate-image-embedding', {
       body: {
         image_url: imageUrl,
@@ -47,7 +45,6 @@ export async function generateImageEmbedding(
       return { success: false, error: data.error };
     }
 
-    console.log('Embedding generated successfully:', data);
     return {
       success: true,
       embeddingDimensions: data?.embedding_dimensions || 384,

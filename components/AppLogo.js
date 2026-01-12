@@ -8,7 +8,7 @@ export default function AppLogo() {
         <View style={welcomeStyles.logoGlow} />
         <View style={welcomeStyles.logoContainer}>
           <Image
-            source={require("../../assets/images/CvSUFindsLogo.png")}
+            source={require("../assets/images/CvSUFindsLogo.png")}
             style={welcomeStyles.logoImage}
             resizeMode="contain"
             accessibilityRole="image"

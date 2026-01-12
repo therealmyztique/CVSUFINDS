@@ -13,7 +13,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import { matchResultsStyles as styles } from "./styles/matchResultsStyles";
+import { matchResultsStyles as styles } from "../styles/matchResultsStyles";
 
 const PRIMARY_COLOR = "#2bee79";
 
@@ -74,8 +74,6 @@ export default function MatchResultsScreen() {
       setReportType(params.reportType);
     }
   }, [params.matches, params.sourceItem, params.reportType]);
-
-  console.log(sourceItem);
 
   const fetchUserProfiles = async (matchesList) => {
     try {

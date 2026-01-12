@@ -20,7 +20,7 @@ import {
     useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import { reportFoundStyles as styles } from "./styles/reportFoundStyles";
+import { reportFoundStyles as styles } from "../styles/reportFoundStyles";
 
 const CATEGORY_OPTIONS = [
   { label: "Electronics", value: "electronics" },

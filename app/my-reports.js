@@ -3,27 +3,27 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    Easing,
-    Image,
-    Modal,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Easing,
+  Image,
+  Modal,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 import {
-    findMatchesForLostItem,
-    generateImageEmbedding,
+  findMatchesForLostItem,
+  generateImageEmbedding,
 } from "../lib/embeddingService";
 import { supabase } from "../lib/supabaseClient";
-import AppHeader from "./components/AppHeader";
-import BottomNav from "./components/BottomNav";
-import { myReportsStyles as styles } from "./styles/myReportsStyles";
+import AppHeader from "../components/AppHeader";
+import BottomNav from "../components/BottomNav";
+import { myReportsStyles as styles } from "../styles/myReportsStyles";
 
 const PRIMARY_COLOR = "#2bee79";
 const FILTERS = ["All", "Lost", "Found", "Resolved"];
@@ -71,7 +71,9 @@ export default function MyReportsScreen() {
 
   // Success modal states
   const [showDeleteSuccessModal, setShowDeleteSuccessModal] = useState(false);
-  const [showResolvedSuccessModal, setShowResolvedSuccessModal] = useState(false);
+  const [showResolvedSuccessModal, setShowResolvedSuccessModal] =
+    useState(false);
+  const [showNoMatchModal, setShowNoMatchModal] = useState(false);
 
   // Matching state
   const [searchingMatches, setSearchingMatches] = useState(false);
@@ -148,7 +150,9 @@ export default function MyReportsScreen() {
   // Fetch current user
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
       }
@@ -224,7 +228,10 @@ export default function MyReportsScreen() {
   const filteredReports = reports.filter((report) => {
     if (activeFilter === "All") return true;
     if (activeFilter === "Resolved") return report.status === "resolved";
-    return report.type.toLowerCase() === activeFilter.toLowerCase() && report.status !== "resolved";
+    return (
+      report.type.toLowerCase() === activeFilter.toLowerCase() &&
+      report.status !== "resolved"
+    );
   });
 
   const formatDate = (dateString) => {
@@ -277,7 +284,11 @@ export default function MyReportsScreen() {
   // Menu handlers
   const handleMenuPress = (item, e) => {
     e.stopPropagation();
-    setMenuVisible(menuVisible === `${item.type}-${item.id}` ? null : `${item.type}-${item.id}`);
+    setMenuVisible(
+      menuVisible === `${item.type}-${item.id}`
+        ? null
+        : `${item.type}-${item.id}`
+    );
   };
 
   const handleEditPress = (item) => {
@@ -303,8 +314,9 @@ export default function MyReportsScreen() {
     setDeleting(true);
 
     try {
-      const tableName = itemToDelete.type === "lost" ? "lost_reports" : "found_reports";
-      
+      const tableName =
+        itemToDelete.type === "lost" ? "lost_reports" : "found_reports";
+
       const { error } = await supabase
         .from(tableName)
         .delete()
@@ -345,7 +357,8 @@ export default function MyReportsScreen() {
       return;
     }
 
-    const table = targetItem.type === "found" ? "found_reports" : "lost_reports";
+    const table =
+      targetItem.type === "found" ? "found_reports" : "lost_reports";
     const typeLabel = targetItem.type === "found" ? "found" : "lost";
 
     if (targetItem.status === "resolved") {
@@ -353,17 +366,13 @@ export default function MyReportsScreen() {
     }
 
     try {
-      console.log("Marking as resolved:", { id: targetItem.id, type: targetItem.type });
-      
       // First, verify the item exists
       const { data: existingItem, error: fetchError } = await supabase
         .from(table)
         .select("id, status")
         .eq("id", targetItem.id)
         .single();
-      
-      console.log("Existing item check:", { existingItem, fetchError });
-      
+
       if (fetchError) {
         Alert.alert("Error", "Could not find item: " + fetchError.message);
         return;
@@ -375,8 +384,6 @@ export default function MyReportsScreen() {
         .update({ status: "resolved" })
         .eq("id", targetItem.id)
         .select();
-
-      console.log("Update response:", { data, error, count });
 
       if (error) {
         Alert.alert("Error", error.message || "Failed to mark as resolved");
@@ -394,11 +401,13 @@ export default function MyReportsScreen() {
         .select("id, status")
         .eq("id", targetItem.id)
         .single();
-      
-      console.log("Verify after update:", verifyData);
 
       if (verifyData?.status !== "resolved") {
-        Alert.alert("Error", "Update appeared to succeed but status is still: " + verifyData?.status);
+        Alert.alert(
+          "Error",
+          "Update appeared to succeed but status is still: " +
+            verifyData?.status
+        );
         return;
       }
 
@@ -439,11 +448,7 @@ export default function MyReportsScreen() {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Find matches
-      const result = await findMatchesForLostItem(
-        selectedItem.id,
-        0.5,
-        10
-      );
+      const result = await findMatchesForLostItem(selectedItem.id, 0.5, 10);
 
       setSearchingMatches(false);
 
@@ -461,14 +466,20 @@ export default function MyReportsScreen() {
           },
         });
       } else {
-        // No matches found - navigate to home with message
-        router.replace("/home");
+        // No matches found - show modal before redirecting
+        setShowNoMatchModal(true);
       }
     } catch (error) {
       console.error("Error matching:", error);
       setSearchingMatches(false);
-      router.replace("/home");
+      setShowNoMatchModal(true);
     }
+  };
+
+  // Handle closing the no match modal
+  const handleCloseNoMatchModal = () => {
+    setShowNoMatchModal(false);
+    router.replace("/home");
   };
 
   const renderReportCard = (item) => {
@@ -520,7 +531,9 @@ export default function MyReportsScreen() {
               <Text
                 style={[
                   styles.dropdownItemText,
-                  isDark ? styles.dropdownItemTextDark : styles.dropdownItemTextLight,
+                  isDark
+                    ? styles.dropdownItemTextDark
+                    : styles.dropdownItemTextLight,
                 ]}
               >
                 Edit
@@ -574,7 +587,10 @@ export default function MyReportsScreen() {
                       : isLost
                       ? styles.statusBadgeLost
                       : styles.statusBadgeFound,
-                    isDark && isLost && !isResolved && styles.statusBadgeLostDark,
+                    isDark &&
+                      isLost &&
+                      !isResolved &&
+                      styles.statusBadgeLostDark,
                   ]}
                 >
                   <Text
@@ -649,7 +665,9 @@ export default function MyReportsScreen() {
 
     const isLost = selectedItem.type === "lost";
     const categoryLabel =
-      CATEGORY_LABELS[selectedItem.category] || selectedItem.category || "Other";
+      CATEGORY_LABELS[selectedItem.category] ||
+      selectedItem.category ||
+      "Other";
 
     return (
       <Modal
@@ -907,10 +925,12 @@ export default function MyReportsScreen() {
                   onPress={() => handleMarkAsResolved(selectedItem)}
                   activeOpacity={0.8}
                 >
-                  <MaterialIcons name="check-circle" size={20} color="#0b1610" />
-                  <Text style={styles.resolveButtonText}>
-                    Mark as Resolved
-                  </Text>
+                  <MaterialIcons
+                    name="check-circle"
+                    size={20}
+                    color="#0b1610"
+                  />
+                  <Text style={styles.resolveButtonText}>Mark as Resolved</Text>
                 </TouchableOpacity>
               )}
 
@@ -921,10 +941,12 @@ export default function MyReportsScreen() {
                   onPress={() => handleMarkAsResolved(selectedItem)}
                   activeOpacity={0.8}
                 >
-                  <MaterialIcons name="check-circle" size={20} color="#ffffff" />
-                  <Text style={styles.resolveButtonText}>
-                    Mark as Resolved
-                  </Text>
+                  <MaterialIcons
+                    name="check-circle"
+                    size={20}
+                    color="#ffffff"
+                  />
+                  <Text style={styles.resolveButtonText}>Mark as Resolved</Text>
                 </TouchableOpacity>
               )}
 
@@ -960,7 +982,11 @@ export default function MyReportsScreen() {
                 <Animated.View
                   style={{ transform: [{ rotate: rotateInterpolate }] }}
                 >
-                  <MaterialIcons name="find-replace" size={36} color="#22c55e" />
+                  <MaterialIcons
+                    name="find-replace"
+                    size={36}
+                    color="#22c55e"
+                  />
                 </Animated.View>
               </View>
             </View>
@@ -1015,7 +1041,9 @@ export default function MyReportsScreen() {
         <View
           style={[
             styles.deleteModalContainer,
-            isDark ? styles.deleteModalContainerDark : styles.deleteModalContainerLight,
+            isDark
+              ? styles.deleteModalContainerDark
+              : styles.deleteModalContainerLight,
           ]}
         >
           {/* Warning Icon */}
@@ -1027,7 +1055,9 @@ export default function MyReportsScreen() {
           <Text
             style={[
               styles.deleteModalTitle,
-              isDark ? styles.deleteModalTitleDark : styles.deleteModalTitleLight,
+              isDark
+                ? styles.deleteModalTitleDark
+                : styles.deleteModalTitleLight,
             ]}
           >
             Are you sure to delete this item?
@@ -1037,7 +1067,9 @@ export default function MyReportsScreen() {
           <Text
             style={[
               styles.deleteModalSubtitle,
-              isDark ? styles.deleteModalSubtitleDark : styles.deleteModalSubtitleLight,
+              isDark
+                ? styles.deleteModalSubtitleDark
+                : styles.deleteModalSubtitleLight,
             ]}
           >
             This action cannot be undone.
@@ -1049,14 +1081,18 @@ export default function MyReportsScreen() {
               style={[
                 styles.deleteModalButton,
                 styles.deleteModalCancelButton,
-                isDark ? styles.deleteModalCancelButtonDark : styles.deleteModalCancelButtonLight,
+                isDark
+                  ? styles.deleteModalCancelButtonDark
+                  : styles.deleteModalCancelButtonLight,
               ]}
               onPress={handleCancelDelete}
             >
               <Text
                 style={[
                   styles.deleteModalButtonText,
-                  isDark ? styles.deleteModalCancelTextDark : styles.deleteModalCancelTextLight,
+                  isDark
+                    ? styles.deleteModalCancelTextDark
+                    : styles.deleteModalCancelTextLight,
                 ]}
               >
                 Cancel
@@ -1415,6 +1451,122 @@ export default function MyReportsScreen() {
 
       {/* Resolved Success Modal */}
       {renderResolvedSuccessModal()}
+
+      {/* No Match Found Modal */}
+      <Modal
+        visible={showNoMatchModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(16, 34, 23, 0.95)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
+          }}
+        >
+          {/* Icon */}
+          <View
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              backgroundColor: "rgba(234, 179, 8, 0.15)",
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: 24,
+            }}
+          >
+            <View
+              style={{
+                width: 70,
+                height: 70,
+                borderRadius: 35,
+                backgroundColor: "rgba(234, 179, 8, 0.25)",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <MaterialIcons name="search-off" size={36} color="#eab308" />
+            </View>
+          </View>
+
+          {/* Title */}
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "700",
+              color: "#ffffff",
+              marginBottom: 12,
+              textAlign: "center",
+            }}
+          >
+            No matches found
+          </Text>
+
+          {/* Subtitle */}
+          <Text
+            style={{
+              fontSize: 15,
+              color: "#92c9a8",
+              textAlign: "center",
+              marginBottom: 16,
+              lineHeight: 22,
+              paddingHorizontal: 20,
+            }}
+          >
+            We couldn't find any matching found items in our database right now.
+          </Text>
+
+          {/* Info Box */}
+          <View
+            style={{
+              backgroundColor: "rgba(34, 197, 94, 0.1)",
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 32,
+              width: "100%",
+              maxWidth: 300,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#92c9a8",
+                textAlign: "center",
+                lineHeight: 20,
+              }}
+            >
+              ✨ Don't worry! Your report is saved. You'll be notified if
+              someone finds a matching item.
+            </Text>
+          </View>
+
+          {/* Button */}
+          <TouchableOpacity
+            onPress={handleCloseNoMatchModal}
+            style={{
+              backgroundColor: "#22c55e",
+              paddingVertical: 14,
+              paddingHorizontal: 48,
+              borderRadius: 25,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#ffffff",
+              }}
+            >
+              Go to Home
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }

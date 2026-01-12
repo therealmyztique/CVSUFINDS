@@ -12,7 +12,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import { itemDetailStyles as styles } from "./styles/itemDetailStyles";
+import { itemDetailStyles as styles } from "../styles/itemDetailStyles";
 
 const DEFAULT_AVATAR = "https://via.placeholder.com/150";
 
@@ -227,11 +227,30 @@ export default function ItemDetailScreen() {
       >
         {/* Image Section */}
         <View style={styles.imageCarousel}>
-          <Image
-            source={{ uri: item.image }}
-            style={styles.itemImage}
-            resizeMode="cover"
-          />
+          {item.image ? (
+            <Image
+              source={{ uri: item.image }}
+              style={styles.itemImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View
+              style={[
+                styles.itemImage,
+                {
+                  backgroundColor: isDark ? "#1e3a2f" : "#e2e8f0",
+                  alignItems: "center",
+                  justifyContent: "center",
+                },
+              ]}
+            >
+              <MaterialIcons
+                name="image"
+                size={64}
+                color={isDark ? "#4ade80" : "#94a3b8"}
+              />
+            </View>
+          )}
           <View
             style={[
               styles.statusBadge,
@@ -300,10 +319,17 @@ export default function ItemDetailScreen() {
           >
             <View style={styles.userInfo}>
               <View style={styles.avatar}>
-                <Image
-                  source={{ uri: item.avatar || DEFAULT_AVATAR }}
-                  style={styles.avatarImage}
-                />
+                {item.avatar ? (
+                  <Image
+                    source={{ uri: item.avatar }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <Image
+                    source={{ uri: DEFAULT_AVATAR }}
+                    style={styles.avatarImage}
+                  />
+                )}
               </View>
               <View>
                 <Text

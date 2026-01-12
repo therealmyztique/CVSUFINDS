@@ -11,8 +11,8 @@ import {
   useColorScheme,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import AppLogo from "./components/AppLogo";
-import { loginStyles as styles } from "./styles/loginStyles";
+import AppLogo from "../components/AppLogo";
+import { loginStyles as styles } from "../styles/loginStyles";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -69,7 +69,6 @@ export default function LoginScreen() {
     }
   }
 
-  console.log();
   return (
     <View
       style={[

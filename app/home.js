@@ -10,12 +10,12 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import AppHeader from "../components/AppHeader";
+import BottomNav from "../components/BottomNav";
+import FoundItems from "../components/FoundItems";
+import LostItems from "../components/LostItems";
 import { supabase } from "../lib/supabaseClient";
-import AppHeader from "./components/AppHeader";
-import BottomNav from "./components/BottomNav";
-import FoundItems from "./components/FoundItems";
-import LostItems from "./components/LostItems";
-import { homeStyles as styles } from "./styles/homeStyles";
+import { homeStyles as styles } from "../styles/homeStyles";
 
 const FILTERS = ["All", "Lost", "Found"];
 
@@ -63,7 +63,9 @@ export default function HomeScreen() {
   // Fetch current user and check auth
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
       } else {
@@ -210,12 +212,10 @@ export default function HomeScreen() {
 
   const handleFoundDataLoaded = useCallback((data) => {
     setFoundReports(data);
-    console.log("Found reports loaded:", data);
   }, []);
 
   const handleLostDataLoaded = useCallback((data) => {
     setLostReports(data);
-    console.log("Lost reports loaded:", data);
   }, []);
 
   return (
@@ -413,10 +413,28 @@ export default function HomeScreen() {
                 }
               >
                 <View style={styles.postImageWrapper}>
-                  <Image
-                    source={{ uri: post.image }}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  {post.image ? (
+                    <Image
+                      source={{ uri: post.image }}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  ) : (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: isDark ? "#1e3a2f" : "#e2e8f0",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <MaterialIcons
+                        name="image"
+                        size={48}
+                        color={isDark ? "#4ade80" : "#94a3b8"}
+                      />
+                    </View>
+                  )}
                   <View
                     style={[
                       styles.statusPill,
@@ -466,10 +484,18 @@ export default function HomeScreen() {
                 <View style={styles.postFooter}>
                   <View style={styles.userInfo}>
                     <View style={styles.avatar}>
-                      <Image
-                        source={{ uri: post.avatar }}
-                        style={{ width: "100%", height: "100%" }}
-                      />
+                      {post.avatar ? (
+                        <Image
+                          source={{ uri: post.avatar }}
+                          style={{ width: "100%", height: "100%" }}
+                        />
+                      ) : (
+                        <MaterialIcons
+                          name="person"
+                          size={20}
+                          color={isDark ? "#4ade80" : "#94a3b8"}
+                        />
+                      )}
                     </View>
                     <Text
                       style={[

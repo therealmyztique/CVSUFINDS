@@ -2,10 +2,10 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View, useColorScheme } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-import AppLogo from "./components/AppLogo";
-import LoginButton from "./components/LogInButton";
-import SignUpButton from "./components/SignUpButton";
-import { welcomeStyles } from "./styles/welcomeStyles";
+import AppLogo from "../components/AppLogo";
+import LoginButton from "../components/LogInButton";
+import SignUpButton from "../components/SignUpButton";
+import { welcomeStyles } from "../styles/welcomeStyles";
 
 export default function WelcomeScreen() {
   const router = useRouter();

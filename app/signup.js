@@ -15,9 +15,9 @@ import {
 } from "react-native";
 
 import { supabase } from "../lib/supabaseClient";
-import AppLogo from "./components/AppLogo";
-import SignUpButton from "./components/SignUpButton";
-import { signupStyles as styles } from "./styles/signupStyles";
+import AppLogo from "../components/AppLogo";
+import SignUpButton from "../components/SignUpButton";
+import { signupStyles as styles } from "../styles/signupStyles";
 
 export default function SignUpScreen() {
   const router = useRouter();
